@@ -1,0 +1,372 @@
+import 'package:onmat/screens/authentication/sign_up.dart';
+import 'package:onmat/screens/authentication/verify_email.dart';
+import 'package:onmat/screens/splash.dart';
+import 'package:onmat/utils/constants/sizes.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
+import '../../common/styles/spacing_styles.dart';
+import '../../controllers/auth.dart';
+import '../../utils/helpers/helper_functions.dart';
+
+class LoginInScreen extends StatefulWidget {
+  const LoginInScreen({super.key});
+
+  @override
+  _LoginInScreenState createState() => _LoginInScreenState();
+}
+
+class _LoginInScreenState extends State<LoginInScreen> {
+  final AuthService _authService = AuthService();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _emailEditingController = TextEditingController();
+  final TextEditingController _passwordEditingController = TextEditingController();
+  late AppLocalizations appLocalizations;
+  bool isPasswordVisible = false;
+  bool rememberMe = false;
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    appLocalizations = AppLocalizations.of(context)!;
+    final dark = THelperFunctions.isDarkMode(context);
+
+    return Scaffold(
+        extendBodyBehindAppBar: true,
+        resizeToAvoidBottomInset: true,
+        appBar: AppBar(
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(
+                left: TSizes.borderRadiusMd,
+                right: TSizes.borderRadiusMd,
+              ),
+              child: PopupMenuButton(
+                icon: Icon(Iconsax.language_circle, size: TSizes.iconMd),
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<Locale>>[
+                  PopupMenuItem<Locale>(
+                    value: const Locale('en'),
+                    child: Row(
+                      children: [
+                        Image.asset('assets/images/english.png', width: TSizes.iconMd, height: TSizes.iconMd), // Replace with your flag image
+                        const SizedBox(width: TSizes.md),
+                        Text(
+                          appLocalizations.english,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<Locale>(
+                    value: const Locale('ar'),
+                    child: Row(
+                      children: [
+                        Image.asset('assets/images/arabic.png', width: TSizes.iconMd, height: TSizes.iconMd), // Replace with your flag image
+                        const SizedBox(width: TSizes.md),
+                        Text(
+                          appLocalizations.arabic,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                onSelected: (Locale locale) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Get.updateLocale(locale);
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/fitness_background.jpg',  // Change this to your image path
+                fit: BoxFit.cover,  // Ensures it covers the screen without white spaces
+                alignment: Alignment.center,  // Centers the image
+              ),
+            ),
+
+
+            Positioned.fill(
+              child: Container(
+                width: double.infinity,
+                height: THelperFunctions.screenHeight(context),
+                color: dark ? Color(0xFF1E1E1E).withOpacity(0.6) : Color(0xFFECEFF1).withOpacity(0.9),  // Adjust opacity for darkness effect
+              ),
+            ),
+
+            Positioned.fill(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: TSpacingStyle.paddingWithAppBarHeight,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: TSizes.appBarHeight),
+                      /// Language, Logo, Title & Sub-Title
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Image(
+                            height: 150,
+                            image: AssetImage('assets/images/demo-logo.png'),
+                          ), // Image
+                          Text(appLocalizations.loginTitle, style: Theme.of(context).textTheme.headlineMedium),
+                          const SizedBox(height: TSizes.sm),
+                          Text(appLocalizations.loginSubtitle, style: Theme.of(context).textTheme.bodyMedium),
+                        ],
+                      ),
+
+                      /// Form
+                      Form(
+                        key: _formKey,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: TSizes.spaceBtwSections),
+                          child: Column(
+                            children: [
+                              ///Email
+                              TextFormField(
+                                controller: _emailEditingController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return appLocalizations.enterYourEmail;
+                                  }
+
+                                  bool emailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value);
+                                  if (! emailValid) {
+                                    return appLocalizations.emailValidation;
+                                  }
+
+                                  return null;
+                                },
+                                decoration: InputDecoration(
+                                  labelText: appLocalizations.email,
+                                  prefixIcon: Icon(Iconsax.direct_right),
+                                ),
+                              ),
+                              const SizedBox(height: TSizes.spaceBtwInputFields),
+
+                              /// Password
+                              TextFormField(
+                                controller: _passwordEditingController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return appLocalizations.enterYourPassword;
+                                  }
+
+                                  if (value.length < 6) {
+                                    return appLocalizations.passwordValidation;
+                                  }
+                                  return null;
+                                },
+                                obscureText: ! isPasswordVisible,
+                                decoration: InputDecoration(
+                                    labelText: appLocalizations.password,
+                                    prefixIcon: const Icon(Iconsax.password_check),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(isPasswordVisible
+                                          ? Iconsax.eye
+                                          : Iconsax.eye_slash),
+                                      onPressed: () {
+                                        setState(() {
+                                          isPasswordVisible = ! isPasswordVisible;
+                                        });
+                                      },
+                                    )),
+                              ),
+                              const SizedBox(height: TSizes.spaceBtwInputFields / 2),
+
+                              /// Remember Me & Forget Password
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  /// Remember Me
+                                  Row(
+                                    children: [
+                                      Checkbox(
+                                          value: rememberMe,
+                                          onChanged: (value) {
+                                            if (value == null) {
+                                              return;
+                                            }
+                                            setState(() {
+                                              rememberMe = value;
+                                            });
+                                          }
+                                      ),
+                                      Text(
+                                        appLocalizations.rememberMe,
+                                        style: Theme.of(context).textTheme.labelLarge
+                                      )
+                                    ],
+                                  ),
+
+                                  /// Forget Password
+                                  TextButton(
+                                      onPressed: () {
+
+                                      },
+                                      child: Text(
+                                        appLocalizations.forgetPassword,
+                                        style: const TextStyle(
+                                            fontFamily: "Inter",
+                                            fontSize: 12,
+                                        ),
+                                      )
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: TSizes.spaceBtwSections),
+
+                              /// Sign In Button
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: _isLoading
+                                    ? null
+                                    : () async {
+                                      if (_formKey.currentState?.validate() ?? false) {
+                                        setState(() {
+                                          _isLoading = true;
+                                        });
+
+                                        final result = await _authService.signInByEmail(
+                                            _emailEditingController.text.trim(),
+                                            _passwordEditingController.text.trim()
+                                        );
+
+                                        setState(() {
+                                          _isLoading = false;
+                                        });
+
+                                        if (result.success) {
+                                          await FirebaseAuth.instance.currentUser?.reload();
+                                          final user = FirebaseAuth.instance.currentUser;
+
+                                          if (! user!.emailVerified) {
+                                            Get.to(() => VerifyEmailScreen(email: _emailEditingController.text.trim()));
+                                          } else {
+                                            Get.to(() => SplashScreen());
+                                          }
+                                        } else {
+                                          if (! mounted) return;
+                                          final errorCode = result.errorMessage;
+
+                                          final message = switch (errorCode) {
+                                            'invalid-credential' => appLocalizations.userNotFound,
+                                            'user-disabled' => appLocalizations.userDisabled,
+                                            _ => appLocalizations.signInFailedMessage,
+                                          };
+
+                                          Get.snackbar(
+                                            "",
+                                            "",
+                                            snackPosition: SnackPosition.BOTTOM,
+                                            titleText: Text(
+                                              appLocalizations.signInFailedTitle,
+                                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                                            ),
+                                            messageText: Text(
+                                              message,
+                                              style: Theme.of(context).textTheme.bodyMedium,
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
+                                  child: _isLoading
+                                      ? const SizedBox(
+                                        height: TSizes.md,
+                                        width: TSizes.md,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                        ),
+                                      ) : Text(
+                                        appLocalizations.signIn,
+                                        style: const TextStyle(
+                                            fontFamily: "Inter",
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold
+                                        ),
+                                      ),
+                                ),
+                              ),
+                              const SizedBox(height: TSizes.spaceBtwItems),
+
+                              /// Create Account Button
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  style: ButtonStyle(
+                                    backgroundColor: MaterialStateProperty.all(Color(0xFFECEFF1)),
+                                  ),
+                                  child: Text(
+                                    appLocalizations.createAccount,
+                                    style: const TextStyle(
+                                        fontFamily: "Inter",
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold
+                                    ),
+                                  ),
+                                  onPressed: () => Get.to(() => SignUpScreen()),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      ),
+
+                      /// Divider
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Flexible(child: Divider(thickness: 0.5, indent: 60, endIndent: 5)),
+                          Text(
+                            appLocalizations.orSignInWith,
+                            style: Theme.of(context).textTheme.labelMedium
+                          ),
+                          Flexible(child: Divider(thickness: 0.5, indent: 5, endIndent: 60))
+                        ],
+                      ),
+                      const SizedBox(height: TSizes.spaceBtwSections),
+
+                      /// Footer
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Color(0xFFECEFF1),
+                              ),
+                              borderRadius: BorderRadius.circular(100)
+                            ),
+                            child: IconButton(
+                                onPressed: (){
+
+                                },
+                                icon: const Image(
+                                  width: TSizes.iconMd,
+                                  height: TSizes.iconMd,
+                                  image: AssetImage('assets/images/google.png')
+                                )
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ]
+        )
+    );
+  }
+}

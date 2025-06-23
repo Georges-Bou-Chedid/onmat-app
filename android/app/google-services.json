@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "410498260820",
+    "project_id": "onmat-app",
+    "storage_bucket": "onmat-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:410498260820:android:2c4654899e9aec84cb32c1",
+        "android_client_info": {
+          "package_name": "com.myapp.onmat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPlBcBLSAEb7vznr6LNb2_2i5FK-_9Jj8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
