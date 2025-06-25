@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:onmat/screens/authentication/verify_email.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -328,7 +329,7 @@ class _SignUpScreenScreenState extends State<SignUpScreen> {
                                   });
 
                                   if (result.success) {
-                                    if (_authService.getCurrentUser != null) {
+                                    if (FirebaseAuth.instance.currentUser != null) {
                                       UserAccount userAccount = UserAccount(
                                         userId: _authService.getCurrentUser?.uid,
                                         firstName: _firstNameEditingController.text,

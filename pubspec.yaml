@@ -51,6 +51,7 @@ dependencies:
 dev_dependencies:
   flutter_gen_runner: any
   build_runner: any
+  flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
 
@@ -63,6 +64,10 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+flutter_launcher_icons:
+  ios: true
+  android: true
+  image_path: "assets/images/app_icon.jpeg"  # Path to your icon image
 
 # The following section is specific to Flutter packages.
 flutter:
