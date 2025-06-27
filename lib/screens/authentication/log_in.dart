@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../common/styles/spacing_styles.dart';
 import '../../controllers/auth.dart';
-import '../../utils/helpers/helper_functions.dart';
 
 class LoginInScreen extends StatefulWidget {
   const LoginInScreen({super.key});
@@ -31,11 +30,9 @@ class _LoginInScreenState extends State<LoginInScreen> {
   @override
   Widget build(BuildContext context) {
     appLocalizations = AppLocalizations.of(context)!;
-    final dark = THelperFunctions.isDarkMode(context);
 
     return Scaffold(
         extendBodyBehindAppBar: true,
-        resizeToAvoidBottomInset: true,
         appBar: AppBar(
           actions: [
             Padding(
@@ -82,291 +79,267 @@ class _LoginInScreenState extends State<LoginInScreen> {
             ),
           ],
         ),
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: Image.asset(
-                'assets/images/fitness_background.jpg',  // Change this to your image path
-                fit: BoxFit.cover,  // Ensures it covers the screen without white spaces
-                alignment: Alignment.center,  // Centers the image
-              ),
-            ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: TSpacingStyle.paddingWithAppBarHeight,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: TSizes.appBarHeight),
+                /// Language, Logo, Title & Sub-Title
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Image.asset('assets/images/logo-red.png', width: 80, height: 130),
+                    Text(appLocalizations.loginTitle, style: Theme.of(context).textTheme.headlineMedium),
+                    const SizedBox(height: TSizes.sm),
+                    Text(appLocalizations.loginSubtitle, style: Theme.of(context).textTheme.bodyMedium),
+                  ],
+                ),
 
-
-            Positioned.fill(
-              child: Container(
-                width: double.infinity,
-                height: THelperFunctions.screenHeight(context),
-                color: dark ? Color(0xFF1E1E1E).withOpacity(0.6) : Color(0xFFECEFF1).withOpacity(0.9),  // Adjust opacity for darkness effect
-              ),
-            ),
-
-            Positioned.fill(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: TSpacingStyle.paddingWithAppBarHeight,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: TSizes.appBarHeight),
-                      /// Language, Logo, Title & Sub-Title
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                /// Form
+                Form(
+                    key: _formKey,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: TSizes.spaceBtwSections),
+                      child: Column(
                         children: [
-                          Image(
-                            height: 150,
-                            image: AssetImage('assets/images/demo-logo.png'),
-                          ), // Image
-                          Text(appLocalizations.loginTitle, style: Theme.of(context).textTheme.headlineMedium),
-                          const SizedBox(height: TSizes.sm),
-                          Text(appLocalizations.loginSubtitle, style: Theme.of(context).textTheme.bodyMedium),
-                        ],
-                      ),
+                          ///Email
+                          TextFormField(
+                            controller: _emailEditingController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return appLocalizations.enterYourEmail;
+                              }
 
-                      /// Form
-                      Form(
-                        key: _formKey,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: TSizes.spaceBtwSections),
-                          child: Column(
+                              bool emailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value);
+                              if (! emailValid) {
+                                return appLocalizations.emailValidation;
+                              }
+
+                              return null;
+                            },
+                            decoration: InputDecoration(
+                              labelText: appLocalizations.email,
+                              prefixIcon: Icon(Iconsax.direct_right),
+                            ),
+                          ),
+                          const SizedBox(height: TSizes.spaceBtwInputFields),
+
+                          /// Password
+                          TextFormField(
+                            controller: _passwordEditingController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return appLocalizations.enterYourPassword;
+                              }
+
+                              if (value.length < 6) {
+                                return appLocalizations.passwordValidation;
+                              }
+                              return null;
+                            },
+                            obscureText: ! isPasswordVisible,
+                            decoration: InputDecoration(
+                                labelText: appLocalizations.password,
+                                prefixIcon: const Icon(Iconsax.password_check),
+                                suffixIcon: IconButton(
+                                  icon: Icon(isPasswordVisible
+                                      ? Iconsax.eye
+                                      : Iconsax.eye_slash),
+                                  onPressed: () {
+                                    setState(() {
+                                      isPasswordVisible = ! isPasswordVisible;
+                                    });
+                                  },
+                                )),
+                          ),
+                          const SizedBox(height: TSizes.spaceBtwInputFields / 2),
+
+                          /// Remember Me & Forget Password
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              ///Email
-                              TextFormField(
-                                controller: _emailEditingController,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return appLocalizations.enterYourEmail;
-                                  }
-
-                                  bool emailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value);
-                                  if (! emailValid) {
-                                    return appLocalizations.emailValidation;
-                                  }
-
-                                  return null;
-                                },
-                                decoration: InputDecoration(
-                                  labelText: appLocalizations.email,
-                                  prefixIcon: Icon(Iconsax.direct_right),
-                                ),
-                              ),
-                              const SizedBox(height: TSizes.spaceBtwInputFields),
-
-                              /// Password
-                              TextFormField(
-                                controller: _passwordEditingController,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return appLocalizations.enterYourPassword;
-                                  }
-
-                                  if (value.length < 6) {
-                                    return appLocalizations.passwordValidation;
-                                  }
-                                  return null;
-                                },
-                                obscureText: ! isPasswordVisible,
-                                decoration: InputDecoration(
-                                    labelText: appLocalizations.password,
-                                    prefixIcon: const Icon(Iconsax.password_check),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(isPasswordVisible
-                                          ? Iconsax.eye
-                                          : Iconsax.eye_slash),
-                                      onPressed: () {
-                                        setState(() {
-                                          isPasswordVisible = ! isPasswordVisible;
-                                        });
-                                      },
-                                    )),
-                              ),
-                              const SizedBox(height: TSizes.spaceBtwInputFields / 2),
-
-                              /// Remember Me & Forget Password
+                              /// Remember Me
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  /// Remember Me
-                                  Row(
-                                    children: [
-                                      Checkbox(
-                                          value: rememberMe,
-                                          onChanged: (value) {
-                                            if (value == null) {
-                                              return;
-                                            }
-                                            setState(() {
-                                              rememberMe = value;
-                                            });
-                                          }
-                                      ),
-                                      Text(
-                                        appLocalizations.rememberMe,
-                                        style: Theme.of(context).textTheme.labelLarge
-                                      )
-                                    ],
+                                  Checkbox(
+                                      value: rememberMe,
+                                      onChanged: (value) {
+                                        if (value == null) {
+                                          return;
+                                        }
+                                        setState(() {
+                                          rememberMe = value;
+                                        });
+                                      }
                                   ),
-
-                                  /// Forget Password
-                                  TextButton(
-                                      onPressed: () {
-
-                                      },
-                                      child: Text(
-                                        appLocalizations.forgetPassword,
-                                        style: const TextStyle(
-                                            fontFamily: "Inter",
-                                            fontSize: 12,
-                                        ),
-                                      )
-                                  ),
+                                  Text(
+                                      appLocalizations.rememberMe,
+                                      style: Theme.of(context).textTheme.labelLarge
+                                  )
                                 ],
                               ),
-                              const SizedBox(height: TSizes.spaceBtwSections),
 
-                              /// Sign In Button
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: _isLoading
-                                    ? null
-                                    : () async {
-                                      if (_formKey.currentState?.validate() ?? false) {
-                                        setState(() {
-                                          _isLoading = true;
-                                        });
+                              /// Forget Password
+                              TextButton(
+                                  onPressed: () {
 
-                                        final result = await _authService.signInByEmail(
-                                            _emailEditingController.text.trim(),
-                                            _passwordEditingController.text.trim()
-                                        );
-
-                                        setState(() {
-                                          _isLoading = false;
-                                        });
-
-                                        if (result.success) {
-                                          await FirebaseAuth.instance.currentUser?.reload();
-                                          final user = FirebaseAuth.instance.currentUser;
-
-                                          if (! user!.emailVerified) {
-                                            Get.to(() => VerifyEmailScreen(email: _emailEditingController.text.trim()));
-                                          } else {
-                                            Get.to(() => SplashScreen());
-                                          }
-                                        } else {
-                                          if (! mounted) return;
-                                          final errorCode = result.errorMessage;
-
-                                          final message = switch (errorCode) {
-                                            'invalid-credential' => appLocalizations.userNotFound,
-                                            'user-disabled' => appLocalizations.userDisabled,
-                                            _ => appLocalizations.signInFailedMessage,
-                                          };
-
-                                          Get.snackbar(
-                                            "",
-                                            "",
-                                            snackPosition: SnackPosition.BOTTOM,
-                                            titleText: Text(
-                                              appLocalizations.signInFailedTitle,
-                                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-                                            ),
-                                            messageText: Text(
-                                              message,
-                                              style: Theme.of(context).textTheme.bodyMedium,
-                                            ),
-                                          );
-                                        }
-                                      }
-                                    },
-                                  child: _isLoading
-                                      ? const SizedBox(
-                                        height: TSizes.md,
-                                        width: TSizes.md,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                                        ),
-                                      ) : Text(
-                                        appLocalizations.signIn,
-                                        style: const TextStyle(
-                                            fontFamily: "Inter",
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold
-                                        ),
-                                      ),
-                                ),
-                              ),
-                              const SizedBox(height: TSizes.spaceBtwItems),
-
-                              /// Create Account Button
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  style: ButtonStyle(
-                                    backgroundColor: MaterialStateProperty.all(Color(0xFFECEFF1)),
-                                  ),
+                                  },
                                   child: Text(
-                                    appLocalizations.createAccount,
+                                    appLocalizations.forgotPassword,
                                     style: const TextStyle(
-                                        fontFamily: "Inter",
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold
+                                      fontFamily: "Inter",
+                                      fontSize: 12,
                                     ),
-                                  ),
-                                  onPressed: () => Get.to(() => SignUpScreen()),
-                                ),
+                                  )
                               ),
                             ],
                           ),
-                        )
-                      ),
+                          const SizedBox(height: TSizes.spaceBtwSections),
 
-                      /// Divider
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Flexible(child: Divider(thickness: 0.5, indent: 60, endIndent: 5)),
-                          Text(
-                            appLocalizations.orSignInWith,
-                            style: Theme.of(context).textTheme.labelMedium
-                          ),
-                          Flexible(child: Divider(thickness: 0.5, indent: 5, endIndent: 60))
-                        ],
-                      ),
-                      const SizedBox(height: TSizes.spaceBtwSections),
+                          /// Sign In Button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _isLoading
+                                  ? null
+                                  : () async {
+                                if (_formKey.currentState?.validate() ?? false) {
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
 
-                      /// Footer
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Color(0xFFECEFF1),
+                                  final result = await _authService.signInByEmail(
+                                      _emailEditingController.text.trim(),
+                                      _passwordEditingController.text.trim()
+                                  );
+
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
+
+                                  if (result.success) {
+                                    await FirebaseAuth.instance.currentUser?.reload();
+                                    final user = FirebaseAuth.instance.currentUser;
+
+                                    if (! user!.emailVerified) {
+                                      Get.to(() => VerifyEmailScreen(email: _emailEditingController.text.trim()));
+                                    } else {
+                                      Get.to(() => SplashScreen());
+                                    }
+                                  } else {
+                                    if (! mounted) return;
+                                    final errorCode = result.errorMessage;
+
+                                    final message = switch (errorCode) {
+                                      'invalid-credential' => appLocalizations.userNotFound,
+                                      'user-disabled' => appLocalizations.userDisabled,
+                                      _ => appLocalizations.signInFailedMessage,
+                                    };
+
+                                    Get.snackbar(
+                                      "",
+                                      "",
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      titleText: Text(
+                                        appLocalizations.signInFailedTitle,
+                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                                      ),
+                                      messageText: Text(
+                                        message,
+                                        style: Theme.of(context).textTheme.bodyMedium,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                              child: _isLoading
+                                  ? const SizedBox(
+                                height: TSizes.md,
+                                width: TSizes.md,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E1E1E)),
+                                ),
+                              ) : Text(
+                                appLocalizations.signIn,
+                                style: const TextStyle(
+                                    fontFamily: "Inter",
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(100)
                             ),
-                            child: IconButton(
-                                onPressed: (){
+                          ),
+                          const SizedBox(height: TSizes.spaceBtwItems),
 
-                                },
-                                icon: const Image(
-                                  width: TSizes.iconMd,
-                                  height: TSizes.iconMd,
-                                  image: AssetImage('assets/images/google.png')
-                                )
+                          /// Create Account Button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ButtonStyle(
+                                backgroundColor: WidgetStateProperty.all(Colors.grey.shade400),
+                                foregroundColor: WidgetStateProperty.all(const Color(0xFF1E1E1E)),
+                              ),
+                              child: Text(
+                                appLocalizations.createAccount,
+                                style: const TextStyle(
+                                    fontFamily: "Inter",
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold
+                                ),
+                              ),
+                              onPressed: () => Get.to(() => SignUpScreen()),
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    )
                 ),
-              ),
+
+                /// Divider
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(child: Divider(thickness: 0.5, indent: 60, endIndent: 5)),
+                    Text(
+                        appLocalizations.orSignInWith,
+                        style: Theme.of(context).textTheme.labelMedium
+                    ),
+                    Flexible(child: Divider(thickness: 0.5, indent: 5, endIndent: 60))
+                  ],
+                ),
+                const SizedBox(height: TSizes.spaceBtwSections),
+
+                /// Footer
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.grey.shade500,
+                          ),
+                          borderRadius: BorderRadius.circular(100)
+                      ),
+                      child: IconButton(
+                          onPressed: (){
+
+                          },
+                          icon: const Image(
+                              width: TSizes.iconMd,
+                              height: TSizes.iconMd,
+                              image: AssetImage('assets/images/google.png')
+                          )
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ]
-        )
+          ),
+        ),
     );
   }
 }

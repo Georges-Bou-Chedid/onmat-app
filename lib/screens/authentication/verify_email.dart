@@ -96,93 +96,105 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(TSizes.defaultSpace),
-          child: Column(
-            children: [
-              ///Image
-              Image.asset(
-                'assets/images/receive_mail.png',
-                width: THelperFunctions.screenWidth(context) * 0.6,
-                alignment: Alignment.center,
-              ),
-              const SizedBox(height: TSizes.spaceBtwSections),
-
-              /// Title & Subtitle
-              Text(
-                appLocalizations.confirmEmail,
-                style: Theme.of(context).textTheme.headlineMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: TSizes.spaceBtwItems),
-              Text(
-                widget.email,
-                style: Theme.of(context).textTheme.labelLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: TSizes.spaceBtwItems),
-              Text(
-                appLocalizations.confirmEmailSubtitle,
-                style: Theme.of(context).textTheme.labelMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: TSizes.spaceBtwSections),
-
-              /// Buttons
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isContinueLoading
-                    ? null
-                    : () async {
-                      verify();
-                    },
-                  child: _isContinueLoading
-                      ? const SizedBox(
-                        height: TSizes.md,
-                        width: TSizes.md,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                        ),
-                      )
-                      : Text(
-                          appLocalizations.tContinue,
+          padding: EdgeInsets.only(
+            top: 0,
+            left: TSizes.defaultSpace,
+            bottom: TSizes.defaultSpace,
+            right: TSizes.defaultSpace,
+          ),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height -
+                kToolbarHeight -
+                MediaQuery.of(context).padding.top,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ///Image
+                Image.asset(
+                  'assets/images/logo-red.png',
+                  width: THelperFunctions.screenWidth(context) * 0.3,
+                  alignment: Alignment.center,
+                ),
+                const SizedBox(height: TSizes.spaceBtwSections),
+            
+                /// Title & Subtitle
+                Text(
+                  appLocalizations.confirmEmail,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: TSizes.spaceBtwItems),
+                Text(
+                  widget.email,
+                  style: Theme.of(context).textTheme.labelLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: TSizes.spaceBtwItems),
+                Text(
+                  appLocalizations.confirmEmailSubtitle,
+                  style: Theme.of(context).textTheme.labelMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: TSizes.spaceBtwSections),
+            
+                /// Buttons
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isContinueLoading
+                      ? null
+                      : () async {
+                        verify();
+                      },
+                    child: _isContinueLoading
+                        ? const SizedBox(
+                          height: TSizes.md,
+                          width: TSizes.md,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E1E1E)),
+                          ),
+                        )
+                        : Text(
+                            appLocalizations.tContinue,
+                            style: const TextStyle(
+                                fontFamily: "Inter",
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold
+                            ),
+                          )
+                  ),
+                ),
+                const SizedBox(height: TSizes.spaceBtwItems),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: _isResendLoading
+                        ? null
+                        : () async {
+                          resendEmail();
+                        },
+                    child: _isResendLoading
+                        ? const SizedBox(
+                          height: TSizes.md,
+                          width: TSizes.md,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E1E1E)),
+                          ),
+                        ) : Text(
+                          appLocalizations.resendEmail,
                           style: const TextStyle(
                               fontFamily: "Inter",
                               fontSize: 14,
                               fontWeight: FontWeight.bold
                           ),
                         )
+                  ),
                 ),
-              ),
-              const SizedBox(height: TSizes.spaceBtwItems),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: _isResendLoading
-                      ? null
-                      : () async {
-                        resendEmail();
-                      },
-                  child: _isResendLoading
-                      ? const SizedBox(
-                        height: TSizes.md,
-                        width: TSizes.md,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                        ),
-                      ) : Text(
-                        appLocalizations.resendEmail,
-                        style: const TextStyle(
-                            fontFamily: "Inter",
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold
-                        ),
-                      )
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       )

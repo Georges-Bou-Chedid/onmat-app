@@ -5,6 +5,8 @@ class UserAccount {
   final String? firstName;
   final String? lastName;
   final String? username;
+  final String? dob;
+  final int? weight;
   final String? email;
   final String? phoneNumber;
   final String? role;
@@ -14,6 +16,8 @@ class UserAccount {
     this.firstName,
     this.lastName,
     this.username,
+    this.dob,
+    this.weight,
     this.email,
     this.phoneNumber,
     this.role,
@@ -26,6 +30,8 @@ class UserAccount {
       firstName: map['first_name'],
       lastName: map['last_name'],
       username: map['username'],
+      dob: map['dob'],
+      weight: map['weight'],
       email: map['email'],
       phoneNumber: map['phone_number'],
       role: map['role'],
@@ -38,6 +44,8 @@ class UserAccount {
       'first_name': firstName,
       'last_name': lastName,
       'username': username,
+      'dob': dob,
+      'weight': weight,
       'email': email,
       'phone_number': phoneNumber,
       'role': role,
@@ -52,6 +60,8 @@ class UserAccount {
         firstName: updateData['first_name'] ?? firstName,
         lastName: updateData['last_name'] ?? lastName,
         username: updateData['username'] ?? username,
+        dob: updateData['dob'] ?? dob,
+        weight: updateData['weight'] ?? weight,
         email: updateData['email'] ?? email,
         phoneNumber: updateData['phone_number'] ?? phoneNumber,
         role: updateData['role'] ?? role,

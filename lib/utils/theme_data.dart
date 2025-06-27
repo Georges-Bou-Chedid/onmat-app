@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 ThemeData darkTheme() =>
     ThemeData.dark().copyWith(
       brightness: Brightness.dark,
-      primaryColor: const Color(0xFF8BC34A), // Primary theme color
+      primaryColor: const Color(0xFFDF1E42), // Primary theme color
       scaffoldBackgroundColor: const Color(0xFF1E1E1E),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -41,8 +41,8 @@ ThemeData darkTheme() =>
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
-          backgroundColor: WidgetStateProperty.all(const Color(0xFF8BC34A)),
-          foregroundColor: WidgetStateProperty.all(const Color(0xFF1E1E1E)),
+          backgroundColor: WidgetStateProperty.all(const Color(0xFFDF1E42)),
+          foregroundColor: WidgetStateProperty.all(const Color(0xFFECEFF1)),
           shape: WidgetStateProperty.all(RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           )),
@@ -77,11 +77,12 @@ ThemeData darkTheme() =>
         ),
       ),
       colorScheme: const ColorScheme.dark(
-        primary: Color(0xFF8BC34A),
+        primary: Color(0xFFDF1E42),
         secondary: Color(0xFFECEFF1),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: Color(0xFF8BC34A), // Your desired color
+        strokeWidth: 2,
+        color: Color(0xFF1E1E1E), // Your desired color
         circularTrackColor: Color(0xFFECEFF1), // Optional: Track color
       ),
       popupMenuTheme: PopupMenuThemeData(
@@ -104,7 +105,7 @@ ThemeData darkTheme() =>
 ThemeData lightTheme() =>
     ThemeData.light().copyWith(
       brightness: Brightness.light,
-      primaryColor: const Color(0xFF8BC34A), // Primary theme color
+      primaryColor: const Color(0xFFDF1E42), // Primary theme color
       scaffoldBackgroundColor: Color(0xFFECEFF1),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -142,8 +143,8 @@ ThemeData lightTheme() =>
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
-          backgroundColor: WidgetStateProperty.all(const Color(0xFF8BC34A)),
-          foregroundColor: WidgetStateProperty.all(const Color(0xFF1E1E1E)),
+          backgroundColor: WidgetStateProperty.all(const Color(0xFFDF1E42)),
+          foregroundColor: WidgetStateProperty.all(const Color(0xFFECEFF1)),
           shape: WidgetStateProperty.all(RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           )),
@@ -178,11 +179,12 @@ ThemeData lightTheme() =>
         ),
       ),
       colorScheme: const ColorScheme.light(
-        primary: Color(0xFF8BC34A),
+        primary: Color(0xFFDF1E42),
         secondary: Color(0xFFECEFF1),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: Color(0xFF8BC34A), // Your desired color
+        strokeWidth: 2,
+        color: Color(0xFF1E1E1E), // Your desired color
         circularTrackColor: Color(0xFFECEFF1), // Optional: Track color
       ),
       popupMenuTheme: PopupMenuThemeData(
