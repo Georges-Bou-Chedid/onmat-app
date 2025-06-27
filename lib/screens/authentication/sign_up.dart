@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:onmat/controllers/user.dart';
 import 'package:onmat/screens/authentication/verify_email.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -21,6 +22,7 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenScreenState extends State<SignUpScreen> {
   final AuthService _authService = AuthService();
+  final UserAccountService userAccountService = UserAccountService();
   final GlobalKey<FormState> signUpKey = GlobalKey<FormState>();
   final TextEditingController _firstNameEditingController = TextEditingController();
   final TextEditingController _lastNameEditingController = TextEditingController();
@@ -380,9 +382,10 @@ class _SignUpScreenScreenState extends State<SignUpScreen> {
                           });
 
                           if (result.success) {
-                            if (FirebaseAuth.instance.currentUser != null) {
+                            final currentUser = FirebaseAuth.instance.currentUser;
+                            if (currentUser != null) {
                               UserAccount userAccount = UserAccount(
-                                userId: _authService.getCurrentUser?.uid,
+                                userId: currentUser.uid,
                                 firstName: _firstNameEditingController.text,
                                 lastName: _lastNameEditingController.text,
                                 username: _usernameEditingController.text,
@@ -393,7 +396,33 @@ class _SignUpScreenScreenState extends State<SignUpScreen> {
                                 role: _selectedRole,
                               );
 
-                              Get.to(() => VerifyEmailScreen(email: _emailEditingController.text.trim()));
+                              final userAccountresult = await userAccountService.createUserAccount(currentUser.uid, userAccount);
+
+                              if (userAccountresult.success) {
+                                Get.to(() => VerifyEmailScreen(email: _emailEditingController.text.trim()));
+                              } else {
+                                if (! mounted) return;
+                                final errorCode = userAccountresult.errorMessage;
+
+                                final message = switch (errorCode) {
+                                  'username-already-taken' => appLocalizations.usernameTaken,
+                                  _ => appLocalizations.signUpFailedMessage,
+                                };
+                                Get.snackbar(
+                                  "",
+                                  "",
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  titleText: Text(
+                                    appLocalizations.signUpFailedTitle,
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                  messageText: Text(
+                                    message,
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                );
+                                await currentUser.delete();
+                              }
                             }
                           } else {
                             if (! mounted) return;

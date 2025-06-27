@@ -57,5 +57,6 @@
   "dateOfBirthValidation": "التنسيق: DD/MM/YYYY",
   "weight": "وزن",
   "selectWeight": "الرجاء إدخال وزنك",
-  "weightValidation": "أدخل وزنًا صالحًا"
+  "weightValidation": "أدخل وزنًا صالحًا",
+  "usernameTaken": "اسم المستخدم مستخدم بالفعل"
 }

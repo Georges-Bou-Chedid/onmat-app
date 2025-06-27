@@ -57,5 +57,6 @@
   "dateOfBirthValidation": "Format: DD/MM/YYYY",
   "weight": "Weight",
   "selectWeight": "Please enter your weight",
-  "weightValidation": "Enter a valid weight"
+  "weightValidation": "Enter a valid weight",
+  "usernameTaken": "Username already taken"
 }

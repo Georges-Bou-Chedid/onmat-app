@@ -1,9 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
-import 'dart:math';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:intl/intl.dart';
+import '../models/AuthResult.dart';
 import '../models/UserAccount.dart';
 import 'auth.dart';
 
@@ -15,22 +12,29 @@ class UserAccountService with ChangeNotifier {
 
   //--------------------------------------- User Account
 
-  Future<UserAccount?> createUserAccount(String uid, UserAccount userAccount) async {
+  Future<AuthResult> createUserAccount(String uid, UserAccount userAccount) async {
     try {
-      // final DatabaseReference storeRef = FirebaseDatabase.instance.ref();
-      // await storeRef.child("user_account").child(uid).set(account.toMap());
-      //
-      // _userAccount = account;
-      // notifyListeners();
-      // return account;
-    } catch (e) {
-      print(e.toString());
-      return null;
-    }
-  }
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  String getTimestamp() {
-    final now = DateTime.now();
-    return DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+      // 🔍 Check if the username already exists
+      final existingUser = await firestore
+          .collection('user_accounts')
+          .where('username', isEqualTo: userAccount.username)
+          .limit(1)
+          .get();
+      if (existingUser.docs.isNotEmpty) {
+        // 🚫 Username already exists
+        return AuthResult(success: false, errorMessage: 'username-already-taken');
+      }
+
+      await firestore.collection('user_accounts').doc(uid).set(userAccount.toMap());
+
+      _userAccount = userAccount;
+      notifyListeners();
+      return AuthResult(success: true);
+    } catch (e) {
+      print('Error creating Firestore user: $e');
+      return AuthResult(success: false, errorMessage: 'unexpected-error');
+    }
   }
 }
