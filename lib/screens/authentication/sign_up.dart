@@ -12,6 +12,7 @@ import '../../common/styles/spacing_styles.dart';
 import '../../models/UserAccount.dart';
 import '../../utils/constants/sizes.dart';
 import '../../utils/helpers/helper_functions.dart';
+import '../splash.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -37,6 +38,8 @@ class _SignUpScreenScreenState extends State<SignUpScreen> {
   dynamic _selectedRole;
   bool termsError = false;
   bool _isLoading = false;
+  bool skipEmailValidation = false;
+  bool skipPasswordValidation = false;
 
   @override
   void initState() {
@@ -215,6 +218,8 @@ class _SignUpScreenScreenState extends State<SignUpScreen> {
                     TextFormField(
                       controller: _emailEditingController,
                       validator: (value) {
+                        if (skipEmailValidation) return null;
+
                         if (value == null || value.isEmpty) {
                           return appLocalizations.enterYourEmail;
                         }
@@ -274,6 +279,8 @@ class _SignUpScreenScreenState extends State<SignUpScreen> {
                     TextFormField(
                       controller: _passwordEditingController,
                       validator: (value) {
+                        if (skipPasswordValidation) return null;
+
                         if (value == null || value.isEmpty) {
                           return appLocalizations.enterYourPassword;
                         }
@@ -372,9 +379,21 @@ class _SignUpScreenScreenState extends State<SignUpScreen> {
                             _isLoading = true;
                           });
 
+                          UserAccount userAccount = UserAccount(
+                            firstName: _firstNameEditingController.text,
+                            lastName: _lastNameEditingController.text,
+                            username: _usernameEditingController.text,
+                            dob: _dateOfBirthEditingController.text,
+                            weight: int.tryParse(_weightEditingController.text),
+                            email: _emailEditingController.text,
+                            phoneNumber: _phoneNumberEditingController.text,
+                            role: _selectedRole,
+                          );
+
                           final result = await _authService.signUpByEmail(
-                              _emailEditingController.text.trim(),
-                              _passwordEditingController.text.trim()
+                            _emailEditingController.text.trim(),
+                            _passwordEditingController.text.trim(),
+                            userAccount
                           );
 
                           setState(() {
@@ -382,48 +401,7 @@ class _SignUpScreenScreenState extends State<SignUpScreen> {
                           });
 
                           if (result.success) {
-                            final currentUser = FirebaseAuth.instance.currentUser;
-                            if (currentUser != null) {
-                              UserAccount userAccount = UserAccount(
-                                userId: currentUser.uid,
-                                firstName: _firstNameEditingController.text,
-                                lastName: _lastNameEditingController.text,
-                                username: _usernameEditingController.text,
-                                dob: _dateOfBirthEditingController.text,
-                                weight: int.tryParse(_weightEditingController.text),
-                                email: _emailEditingController.text,
-                                phoneNumber: _phoneNumberEditingController.text,
-                                role: _selectedRole,
-                              );
-
-                              final userAccountresult = await userAccountService.createUserAccount(currentUser.uid, userAccount);
-
-                              if (userAccountresult.success) {
-                                Get.to(() => VerifyEmailScreen(email: _emailEditingController.text.trim()));
-                              } else {
-                                if (! mounted) return;
-                                final errorCode = userAccountresult.errorMessage;
-
-                                final message = switch (errorCode) {
-                                  'username-already-taken' => appLocalizations.usernameTaken,
-                                  _ => appLocalizations.signUpFailedMessage,
-                                };
-                                Get.snackbar(
-                                  "",
-                                  "",
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  titleText: Text(
-                                    appLocalizations.signUpFailedTitle,
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                  messageText: Text(
-                                    message,
-                                    style: Theme.of(context).textTheme.bodyMedium,
-                                  ),
-                                );
-                                await currentUser.delete();
-                              }
-                            }
+                            Get.to(() => VerifyEmailScreen(email: _emailEditingController.text.trim()));
                           } else {
                             if (! mounted) return;
                             final errorCode = result.errorMessage;
@@ -432,6 +410,7 @@ class _SignUpScreenScreenState extends State<SignUpScreen> {
                               'email-already-in-use' => appLocalizations.emailAlreadyInUse,
                               'invalid-email' => appLocalizations.invalidEmail,
                               'weak-password' => appLocalizations.weakPassword,
+                              'username-already-taken' => appLocalizations.usernameTaken,
                               _ => appLocalizations.signUpFailedMessage,
                             };
 
@@ -500,8 +479,68 @@ class _SignUpScreenScreenState extends State<SignUpScreen> {
                         borderRadius: BorderRadius.circular(100)
                     ),
                     child: IconButton(
-                        onPressed: (){
+                        onPressed: () async {
+                          setState(() {
+                            skipEmailValidation = true;
+                            skipPasswordValidation = true;
+                          });
 
+                          final isFormValid = signUpKey.currentState!.validate();
+
+                          setState(() {
+                            skipEmailValidation = false;
+                            skipPasswordValidation = false;
+                          });
+
+                          if (! isFormValid || ! termsAndConditions) {
+                            if (! termsAndConditions) {
+                              setState(() {
+                                termsError = true;
+                              });
+                            }
+                            return;
+                          }
+
+                          UserAccount userAccount = UserAccount(
+                            firstName: _firstNameEditingController.text,
+                            lastName: _lastNameEditingController.text,
+                            username: _usernameEditingController.text,
+                            dob: _dateOfBirthEditingController.text,
+                            weight: int.tryParse(_weightEditingController.text),
+                            email: _emailEditingController.text,
+                            phoneNumber: _phoneNumberEditingController.text,
+                            role: _selectedRole,
+                          );
+
+                          final result = await _authService.signUpWithGoogleAndCreateUser(userAccount);
+
+                          if (result.success) {
+                            Get.offAll(() => const SplashScreen());
+                          } else {
+                            if (! mounted) return;
+                            final errorCode = result.errorMessage;
+
+                            final message = switch (errorCode) {
+                              'google-cancelled' => appLocalizations.googleCancelled,
+                              'user-already-exists' => appLocalizations.googleUserFound,
+                              'username-already-taken' => appLocalizations.usernameTaken,
+                              _ => appLocalizations.signUpFailedMessage,
+                            };
+
+                            Get.snackbar(
+                              "",
+                              "",
+                              snackPosition: SnackPosition.BOTTOM,
+                              titleText: Text(
+                                appLocalizations.signUpFailedTitle,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              messageText: Text(
+                                message,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            );
+                          }
                         },
                         icon: const Image(
                             width: TSizes.iconMd,

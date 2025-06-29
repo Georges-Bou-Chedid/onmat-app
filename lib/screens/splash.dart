@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../utils/constants/sizes.dart';
 import 'authentication/log_in.dart';
 import 'instructor/home/home.dart';
@@ -29,6 +30,7 @@ class _SplashScreenState extends State<SplashScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (user != null) {
         FirebaseAuth.instance.signOut();
+        GoogleSignIn().signOut();
         // Get.offAll(() => const HomePageScreen());
       } else {
         Get.offAll(() => const LoginInScreen());

@@ -58,5 +58,8 @@
   "weight": "Weight",
   "selectWeight": "Please enter your weight",
   "weightValidation": "Enter a valid weight",
-  "usernameTaken": "Username already taken"
+  "usernameTaken": "Username already taken",
+  "googleCancelled": "Google Cancelled",
+  "googleUserNotFound": "No account found. Please sign up using your Google account",
+  "googleUserFound": "Account found. Please sign in using your Google account"
 }

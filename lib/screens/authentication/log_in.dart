@@ -226,7 +226,7 @@ class _LoginInScreenState extends State<LoginInScreen> {
                                     if (! user!.emailVerified) {
                                       Get.to(() => VerifyEmailScreen(email: _emailEditingController.text.trim()));
                                     } else {
-                                      Get.to(() => SplashScreen());
+                                      Get.offAll(() => const SplashScreen());
                                     }
                                   } else {
                                     if (! mounted) return;
@@ -324,8 +324,35 @@ class _LoginInScreenState extends State<LoginInScreen> {
                           borderRadius: BorderRadius.circular(100)
                       ),
                       child: IconButton(
-                          onPressed: (){
+                          onPressed: () async {
+                            final result = await _authService.signInWithGoogleIfExists();
 
+                            if (result.success) {
+                              Get.offAll(() => const SplashScreen());
+                            } else {
+                              if (! mounted) return;
+                              final errorCode = result.errorMessage;
+
+                              final message = switch (errorCode) {
+                                'google-cancelled' => appLocalizations.googleCancelled,
+                                'user-not-found' => appLocalizations.googleUserNotFound,
+                                _ => appLocalizations.signInFailedMessage,
+                              };
+
+                              Get.snackbar(
+                                "",
+                                "",
+                                snackPosition: SnackPosition.BOTTOM,
+                                titleText: Text(
+                                  appLocalizations.signInFailedTitle,
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                messageText: Text(
+                                  message,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              );
+                            }
                           },
                           icon: const Image(
                               width: TSizes.iconMd,
