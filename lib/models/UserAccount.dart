@@ -1,13 +1,13 @@
 import 'package:intl/intl.dart';
 
 class UserAccount {
-  final String? userId;
+  late String? userId;
   final String? firstName;
   final String? lastName;
   final String? username;
   final String? dob;
   final int? weight;
-  final String? email;
+  late String? email;
   final String? phoneNumber;
   final String? role;
 

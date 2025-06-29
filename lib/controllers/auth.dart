@@ -61,6 +61,7 @@ class AuthService {
         await user.sendEmailVerification();
       }
 
+      userAccount.userId = user.uid;
       // 4. Create Firestore user account
       await FirebaseFirestore.instance
           .collection('user_accounts')
@@ -164,6 +165,8 @@ class AuthService {
         return AuthResult(success: false, errorMessage: 'username-already-taken');
       }
 
+      userAccount.userId = uid;
+      userAccount.email = user.email;
       await FirebaseFirestore.instance
           .collection('user_accounts')
           .doc(uid)

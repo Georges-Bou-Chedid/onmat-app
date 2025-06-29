@@ -29,9 +29,9 @@ class _SplashScreenState extends State<SplashScreen> {
     // Make sure we navigate AFTER current frame is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (user != null) {
-        FirebaseAuth.instance.signOut();
-        GoogleSignIn().signOut();
-        // Get.offAll(() => const HomePageScreen());
+        // FirebaseAuth.instance.signOut();
+        // GoogleSignIn().signOut();
+        Get.offAll(() => const HomePageScreen());
       } else {
         Get.offAll(() => const LoginInScreen());
       }

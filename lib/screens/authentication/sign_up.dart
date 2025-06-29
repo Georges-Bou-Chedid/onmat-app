@@ -507,7 +507,6 @@ class _SignUpScreenScreenState extends State<SignUpScreen> {
                             username: _usernameEditingController.text,
                             dob: _dateOfBirthEditingController.text,
                             weight: int.tryParse(_weightEditingController.text),
-                            email: _emailEditingController.text,
                             phoneNumber: _phoneNumberEditingController.text,
                             role: _selectedRole,
                           );
