@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../utils/constants/sizes.dart';
-import 'authentication/log_in.dart';
+import 'authentication/login/login.dart';
 import 'instructor/home/home.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -29,11 +29,11 @@ class _SplashScreenState extends State<SplashScreen> {
     // Make sure we navigate AFTER current frame is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (user != null) {
-        // FirebaseAuth.instance.signOut();
-        // GoogleSignIn().signOut();
-        Get.offAll(() => const HomePageScreen());
+        FirebaseAuth.instance.signOut();
+        GoogleSignIn().signOut();
+        // Get.offAll(() => const HomePageScreen());
       } else {
-        Get.offAll(() => const LoginInScreen());
+        Get.offAll(() => const LoginScreen());
       }
     });
   }

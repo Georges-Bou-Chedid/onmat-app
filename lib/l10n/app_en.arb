@@ -10,7 +10,7 @@
   "enterYourPassword": "Please enter your password",
   "passwordValidation": "Password must be at least 6 characters",
   "rememberMe": "Remember Me",
-  "forgotPassword": "Forgot Password?",
+  "forgotPassword": "Forgot Password",
   "signIn": "Sign In",
   "createAccount": "Create Account",
   "orSignInWith": "Or Sign In With",
@@ -61,5 +61,9 @@
   "usernameTaken": "Username already taken",
   "googleCancelled": "Google Cancelled",
   "googleUserNotFound": "No account found. Please sign up using your Google account",
-  "googleUserFound": "Account found. Please sign in using your Google account"
+  "googleUserFound": "Account found. Please sign in using your Google account",
+  "forgotPasswordSubtitle": "Enter your email and we will send you a password reset link",
+  "passwordResetEmailSent": "Password Reset Email Sent",
+  "passwordResetEmailSentSubtitle": "Your Account Security is Our Priority! We've Sent You a Secure Link to Safely Change Your Password and Keep Your Account Protected.",
+  "done": "Done"
 }

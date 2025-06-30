@@ -1,27 +1,26 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:onmat/controllers/user.dart';
-import 'package:onmat/screens/authentication/verify_email.dart';
+import 'package:onmat/screens/authentication/onboarding/verify_email.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-import '../../../../controllers/auth.dart';
+import '../../../../../controllers/auth.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../../common/styles/spacing_styles.dart';
-import '../../models/UserAccount.dart';
-import '../../utils/constants/sizes.dart';
-import '../../utils/helpers/helper_functions.dart';
-import '../splash.dart';
+import '../../../common/styles/spacing_styles.dart';
+import '../../../models/UserAccount.dart';
+import '../../../utils/constants/sizes.dart';
+import '../../../utils/helpers/helper_functions.dart';
+import '../../splash.dart';
 
-class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
   _SignUpScreenScreenState createState() => _SignUpScreenScreenState();
 }
 
-class _SignUpScreenScreenState extends State<SignUpScreen> {
+class _SignUpScreenScreenState extends State<SignupScreen> {
   final AuthService _authService = AuthService();
   final UserAccountService userAccountService = UserAccountService();
   final GlobalKey<FormState> signUpKey = GlobalKey<FormState>();

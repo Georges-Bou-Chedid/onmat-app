@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../utils/constants/sizes.dart';
-import '../../utils/helpers/helper_functions.dart';
+import '../../../utils/constants/sizes.dart';
+import '../../../utils/helpers/helper_functions.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../splash.dart';
+import '../../splash.dart';
+import '../login/login.dart';
 
-class SuccessScreen extends StatelessWidget {
-  const SuccessScreen({super.key});
+class ResetPasswordScreen extends StatelessWidget {
+  const ResetPasswordScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,20 +34,20 @@ class SuccessScreen extends StatelessWidget {
                   ///Image
                   Image.asset(
                     'assets/images/logo-red.png',
-                    width: THelperFunctions.screenWidth(context) * 0.3,
+                    width: THelperFunctions.screenWidth(context) * 0.28,
                     alignment: Alignment.center,
                   ),
                   const SizedBox(height: TSizes.spaceBtwSections),
 
                   /// Title & Subtitle
                   Text(
-                    appLocalizations.yourAccountCreatedTitle,
+                    appLocalizations.passwordResetEmailSent,
                     style: Theme.of(context).textTheme.headlineMedium,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: TSizes.spaceBtwItems),
                   Text(
-                    appLocalizations.yourAccountCreatedSubTitle,
+                    appLocalizations.passwordResetEmailSentSubtitle,
                     style: Theme.of(context).textTheme.labelMedium,
                     textAlign: TextAlign.center,
                   ),
@@ -57,14 +58,14 @@ class SuccessScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       child: Text(
-                        appLocalizations.tContinue,
+                        appLocalizations.done,
                         style: const TextStyle(
                             fontFamily: "Inter",
                             fontSize: 14,
                             fontWeight: FontWeight.bold
                         ),
                       ),
-                      onPressed: () => Get.offAll(() => const SplashScreen())
+                      onPressed: () => Get.offAll(() => const LoginScreen())
                     ),
                   ),
                 ],

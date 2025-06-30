@@ -1,5 +1,5 @@
-import 'package:onmat/screens/authentication/sign_up.dart';
-import 'package:onmat/screens/authentication/verify_email.dart';
+import 'package:onmat/screens/authentication/onboarding/signup.dart';
+import 'package:onmat/screens/authentication/onboarding/verify_email.dart';
 import 'package:onmat/screens/splash.dart';
 import 'package:onmat/utils/constants/sizes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,17 +7,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import '../../common/styles/spacing_styles.dart';
-import '../../controllers/auth.dart';
+import '../../../common/styles/spacing_styles.dart';
+import '../../../controllers/auth.dart';
+import '../password_configuration/forgot_password.dart';
 
-class LoginInScreen extends StatefulWidget {
-  const LoginInScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  _LoginInScreenState createState() => _LoginInScreenState();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginInScreenState extends State<LoginInScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailEditingController = TextEditingController();
@@ -184,10 +185,10 @@ class _LoginInScreenState extends State<LoginInScreen> {
                               /// Forget Password
                               TextButton(
                                   onPressed: () {
-
+                                    Get.to(() => ForgotPasswordScreen());
                                   },
                                   child: Text(
-                                    appLocalizations.forgotPassword,
+                                    "${appLocalizations.forgotPassword}?",
                                     style: const TextStyle(
                                       fontFamily: "Inter",
                                       fontSize: 12,
@@ -290,7 +291,7 @@ class _LoginInScreenState extends State<LoginInScreen> {
                                     fontWeight: FontWeight.bold
                                 ),
                               ),
-                              onPressed: () => Get.to(() => SignUpScreen()),
+                              onPressed: () => Get.to(() => SignupScreen()),
                             ),
                           ),
                         ],

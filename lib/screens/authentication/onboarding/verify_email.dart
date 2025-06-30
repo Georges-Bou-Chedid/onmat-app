@@ -1,12 +1,12 @@
-import 'package:onmat/screens/authentication/success.dart';
+import 'package:onmat/screens/authentication/onboarding/success.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../utils/constants/sizes.dart';
-import '../../utils/helpers/helper_functions.dart';
+import '../../../utils/constants/sizes.dart';
+import '../../../utils/helpers/helper_functions.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'log_in.dart';
+import '../login/login.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
   final String email;
@@ -88,7 +88,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               icon: const Icon(CupertinoIcons.clear),
                 onPressed: () async {
                   await FirebaseAuth.instance.signOut();  // Log out the user
-                  Get.offAll(() => const LoginInScreen());  // Navigate to login screen, removing all previous routes
+                  Get.offAll(() => const LoginScreen());  // Navigate to login screen, removing all previous routes
                 }
             ),
           )
@@ -113,7 +113,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 ///Image
                 Image.asset(
                   'assets/images/logo-red.png',
-                  width: THelperFunctions.screenWidth(context) * 0.3,
+                  width: THelperFunctions.screenWidth(context) * 0.28,
                   alignment: Alignment.center,
                 ),
                 const SizedBox(height: TSizes.spaceBtwSections),
