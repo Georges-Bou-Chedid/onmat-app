@@ -193,7 +193,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                         labelText: appLocalizations.registerAs, // "Register as"
                         prefixIcon: Icon(Iconsax.user_cirlce_add),
                       ),
-                      dropdownColor: Color(0xFFECEFF1),
+                      dropdownColor: Colors.white,
                       borderRadius: BorderRadius.circular(20.0),
                       items: [
                         DropdownMenuItem(value: 'instructor', child: Text(appLocalizations.instructor)), // "Student"
@@ -267,7 +267,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                       keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
                       inputBorder: InputBorder.none,
                       selectorTextStyle: TextStyle(
-                        color: dark ? Color(0xFFECEFF1) : Color(0xFF1E1E1E),
+                        color: dark ? Colors.white : Color(0xFF1E1E1E),
                         fontSize: 16.0,
                       ),
                       cursorColor: Color(0xFF1E1E1E),

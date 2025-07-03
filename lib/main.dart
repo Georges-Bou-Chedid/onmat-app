@@ -1,3 +1,4 @@
+import 'package:onmat/controllers/user.dart';
 import 'package:onmat/screens/splash.dart';
 import 'package:onmat/utils/theme_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,7 +16,14 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => UserAccountService()),
+        ],
+        child: MyApp(),
+      )
+  );
 }
 
 class MyApp extends StatefulWidget {

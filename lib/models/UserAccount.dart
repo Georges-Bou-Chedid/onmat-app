@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
 
+import '../utils/helpers/helper_functions.dart';
+
 class UserAccount {
   late String? userId;
   final String? firstName;
@@ -24,17 +26,17 @@ class UserAccount {
   });
 
   // Factory method to convert data from Firebase to Account
-  factory UserAccount.fromListMap(String id, Map<String, dynamic> map) {
+  factory UserAccount.fromFirestore(String id, Map<String, dynamic> map) {
     return UserAccount(
       userId: id,
-      firstName: map['first_name'],
-      lastName: map['last_name'],
-      username: map['username'],
-      dob: map['dob'],
-      weight: map['weight'],
-      email: map['email'],
-      phoneNumber: map['phone_number'],
-      role: map['role'],
+      firstName: map['first_name'] ?? '',
+      lastName: map['last_name'] ?? '',
+      username: map['username'] ?? '',
+      dob: map['dob'] ?? '',
+      weight: THelperFunctions.parseInt(map['weight']),
+      email: map['email'] ?? '',
+      phoneNumber: map['phone_number'] ?? '',
+      role: map['role'] ?? '',
     );
   }
 

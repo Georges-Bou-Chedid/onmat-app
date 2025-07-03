@@ -31,4 +31,11 @@ class THelperFunctions {
   static double screenWidth(BuildContext context) {
     return MediaQuery.of(context).size.width;
   }
+
+  static int? parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
 }

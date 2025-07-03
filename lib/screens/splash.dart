@@ -2,10 +2,11 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:onmat/screens/instructor/settings/settings.dart';
+import 'package:provider/provider.dart';
+import '../controllers/user.dart';
 import '../utils/constants/sizes.dart';
 import 'authentication/login/login.dart';
-import 'instructor/home/home.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -27,11 +28,16 @@ class _SplashScreenState extends State<SplashScreen> {
     final user = FirebaseAuth.instance.currentUser;
 
     // Make sure we navigate AFTER current frame is built
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (user != null) {
-        FirebaseAuth.instance.signOut();
-        GoogleSignIn().signOut();
-        // Get.offAll(() => const HomePageScreen());
+        final userProvider = Provider.of<UserAccountService>(context, listen: false);
+        final success = await userProvider.fetchAndSetUser(user.uid);
+
+        if (success) {
+          Get.offAll(() => const SettingsScreen());
+        } else {
+          Get.offAll(() => const LoginScreen()); // or onboarding
+        }
       } else {
         Get.offAll(() => const LoginScreen());
       }

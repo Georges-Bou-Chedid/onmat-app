@@ -5,9 +5,8 @@ import "package:onmat/models/UserAccount.dart";
 import "../models/AuthResult.dart";
 
 class AuthService {
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   User? getCurrentUser = FirebaseAuth.instance.currentUser;
 
@@ -16,9 +15,14 @@ class AuthService {
     return _auth.authStateChanges();
   }
 
+  Future<void> signOut() async {
+    await _auth.signOut();
+    await _googleSignIn.signOut();
+  }
+
   Future<AuthResult> signInByEmail(String email, String password) async {
     try {
-      UserCredential result = await _auth.signInWithEmailAndPassword(
+      await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -82,7 +86,7 @@ class AuthService {
 
   Future<AuthResult> signInWithGoogleIfExists() async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         return AuthResult(success: false, errorMessage: 'google-cancelled');
       }
@@ -121,7 +125,7 @@ class AuthService {
 
   Future<AuthResult> signUpWithGoogleAndCreateUser(UserAccount userAccount) async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         return AuthResult(success: false, errorMessage: 'google-cancelled');
       }

@@ -1,40 +1,42 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
-import '../models/AuthResult.dart';
 import '../models/UserAccount.dart';
-import 'auth.dart';
 
 class UserAccountService with ChangeNotifier {
-  final AuthService _authService = AuthService();
   UserAccount? _userAccount;
 
   UserAccount? get userAccount => _userAccount;
 
-  //--------------------------------------- User Account
+  void setUser(UserAccount userAccount) {
+    _userAccount = userAccount;
+    notifyListeners();
+  }
 
-  Future<AuthResult> createUserAccount(String uid, UserAccount userAccount) async {
+  void clearUser() {
+    _userAccount = null;
+    notifyListeners();
+  }
+
+  /// --------------------------------------- User Account
+
+  /// ✅ Fetch user from Firestore and store in provider
+  Future<bool> fetchAndSetUser(String uid) async {
     try {
-      final FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-      // 🔍 Check if the username already exists
-      final existingUser = await firestore
+      final doc = await FirebaseFirestore.instance
           .collection('user_accounts')
-          .where('username', isEqualTo: userAccount.username)
-          .limit(1)
+          .doc(uid)
           .get();
-      if (existingUser.docs.isNotEmpty) {
-        // 🚫 Username already exists
-        return AuthResult(success: false, errorMessage: 'username-already-taken');
+
+      if (doc.exists) {
+        final userAccount = UserAccount.fromFirestore(uid, doc.data()!);
+        setUser(userAccount);
+        return true;
+      } else {
+        return false; // Firestore doc doesn't exist
       }
-
-      await firestore.collection('user_accounts').doc(uid).set(userAccount.toMap());
-
-      _userAccount = userAccount;
-      notifyListeners();
-      return AuthResult(success: true);
     } catch (e) {
-      print('Error creating Firestore user: $e');
-      return AuthResult(success: false, errorMessage: 'unexpected-error');
+      print("🔥 Failed to fetch user: $e");
+      return false;
     }
   }
 }
