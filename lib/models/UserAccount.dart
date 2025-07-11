@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 import '../utils/helpers/helper_functions.dart';
@@ -12,6 +13,7 @@ class UserAccount {
   late String? email;
   final String? phoneNumber;
   final String? role;
+  final bool? notifications;
 
   UserAccount({
     this.userId,
@@ -23,6 +25,7 @@ class UserAccount {
     this.email,
     this.phoneNumber,
     this.role,
+    this.notifications
   });
 
   // Factory method to convert data from Firebase to Account
@@ -37,6 +40,7 @@ class UserAccount {
       email: map['email'] ?? '',
       phoneNumber: map['phone_number'] ?? '',
       role: map['role'] ?? '',
+      notifications: map['notifications'] ?? false
     );
   }
 
@@ -51,8 +55,9 @@ class UserAccount {
       'email': email,
       'phone_number': phoneNumber,
       'role': role,
-      'created_at': getTimestamp(),
-      'updated_at': getTimestamp()
+      'notifications': notifications,
+      'created_at': FieldValue.serverTimestamp(),
+      'updated_at': FieldValue.serverTimestamp()
     };
   }
 
@@ -67,11 +72,7 @@ class UserAccount {
         email: updateData['email'] ?? email,
         phoneNumber: updateData['phone_number'] ?? phoneNumber,
         role: updateData['role'] ?? role,
+        notifications: updateData['notifications'] ?? notifications,
     );
   }
-}
-
-String getTimestamp() {
-  final now = DateTime.now();
-  return DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
 }

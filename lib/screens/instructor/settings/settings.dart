@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:onmat/controllers/auth.dart';
 import 'package:onmat/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +12,7 @@ import '../../../controllers/user.dart';
 import '../../../utils/widgets/circular_image.dart';
 import '../../../utils/widgets/section_header.dart';
 import '../../splash.dart';
+import 'app_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -87,37 +87,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Column(
                   children: [
                     /// Account Settings
-                    TSectionHeading(title: "Account Settings", showActionButton: false),
+                    TSectionHeading(title: appLocalizations.accountSettings, showActionButton: false),
                     SizedBox(height: TSizes.spaceBtwItems),
 
                     TSettingsMenuTile(
                       icon: Iconsax.wallet_check,
-                      title: "My Wallet",
-                      subTitle: "Outstanding: \$135.00",
+                      title: appLocalizations.myWallet,
+                      subTitle: "${appLocalizations.myWalletSub} \$135.00",
                       onTap: () {
 
                       },
                     ),
                     TSettingsMenuTile(
                       icon: Iconsax.setting_2,
-                      title: "App Preferences",
-                      subTitle: "Language and Notifications",
+                      title: appLocalizations.appPreferences,
+                      subTitle: appLocalizations.appPreferencesSub,
                       onTap: () {
-
+                        Get.to(
+                          () => const AppPreferencesPage(),
+                          transition: Transition.downToUp,        // comes from bottom, exits at top
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,               // optional: smoother easing
+                        );
                       },
                     ),
                     TSettingsMenuTile(
                       icon: Iconsax.security,
-                      title: "Account & Security",
-                      subTitle: "Manage password and account access",
+                      title: appLocalizations.accountAndSecurity,
+                      subTitle: appLocalizations.accountAndSecuritySub,
                       onTap: () {
 
                       },
                     ),
                     TSettingsMenuTile(
                       icon: Iconsax.support,
-                      title: "Support & Legal",
-                      subTitle: "Help, terms, and privacy",
+                      title: appLocalizations.supportAndLegal,
+                      subTitle: appLocalizations.supportAndLegalSub,
                       onTap: () {
 
                       },
@@ -134,16 +139,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               context: context,
                               barrierDismissible: true,
                               builder: (context) => AlertDialog(
-                                title: const Text('Confirm Logout'),
-                                content: const Text('Are you sure you want to log out?'),
+                                title: Text(appLocalizations.confirmLogout),
+                                content: Text(appLocalizations.confirmLogoutText),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.of(context).pop(false),
-                                    child: const Text('Cancel'),
+                                    child: Text(appLocalizations.cancel),
                                   ),
-                                  TextButton(
+                                  ElevatedButton(
                                     onPressed: () => Navigator.of(context).pop(true),
-                                    child: const Text('Logout'),
+                                    child: Text(appLocalizations.logout),
                                   ),
                                 ],
                               ),
@@ -154,7 +159,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               }
                             });
                           },
-                          child: const Text('Logout')
+                          child: Text(appLocalizations.logout)
                       )
                     ),
                     const SizedBox(height: TSizes.spaceBtwSections * 2.5)

@@ -387,6 +387,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                             email: _emailEditingController.text,
                             phoneNumber: _phoneNumberEditingController.text,
                             role: _selectedRole,
+                            notifications: false
                           );
 
                           final result = await _authService.signUpByEmail(
@@ -508,6 +509,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                             weight: int.tryParse(_weightEditingController.text),
                             phoneNumber: _phoneNumberEditingController.text,
                             role: _selectedRole,
+                            notifications: false
                           );
 
                           final result = await _authService.signUpWithGoogleAndCreateUser(userAccount);

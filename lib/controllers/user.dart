@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import '../models/UserAccount.dart';
 
 class UserAccountService with ChangeNotifier {
@@ -34,6 +34,28 @@ class UserAccountService with ChangeNotifier {
       } else {
         return false; // Firestore doc doesn't exist
       }
+    } catch (e) {
+      print("🔥 Failed to fetch user: $e");
+      return false;
+    }
+  }
+
+  Future<bool> updateFields(String? uid, Map<String, dynamic> changes) async {
+    try {
+      if (uid == null) {
+        return false;
+      }
+      changes.removeWhere((_, value) => value == null);
+      changes['updated_at'] = FieldValue.serverTimestamp();
+
+      await FirebaseFirestore.instance
+          .collection('user_accounts')
+          .doc(uid)
+          .set(changes, SetOptions(merge: true));
+
+      _userAccount = _userAccount?.copyWith(changes);
+      notifyListeners();
+      return true;
     } catch (e) {
       print("🔥 Failed to fetch user: $e");
       return false;

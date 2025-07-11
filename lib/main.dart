@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'controllers/auth.dart';
 import 'firebase_options.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -16,18 +17,24 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  final prefs = await SharedPreferences.getInstance();
+  final savedCode = prefs.getString('lang');
+  final startLocale = savedCode != null
+      ? Locale(savedCode)
+      : Get.deviceLocale ?? const Locale('en');
   runApp(
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => UserAccountService()),
         ],
-        child: MyApp(),
+        child: MyApp(startLocale),
       )
   );
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  const MyApp(this.initialLocale, {super.key});
+  final Locale initialLocale;
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -40,7 +47,7 @@ class _MyAppState extends State<MyApp> {
       value: AuthService().user,
       initialData: null,
       child: GetMaterialApp(
-        locale: Get.locale,
+        locale: widget.initialLocale,
         fallbackLocale: Locale('en'),
         supportedLocales: const [
           Locale('en'),

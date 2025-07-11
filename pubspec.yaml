@@ -47,6 +47,7 @@ dependencies:
   iconsax: ^0.0.8
   intl_phone_number_input: ^0.7.4
   get: ^4.7.2
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_gen_runner: any

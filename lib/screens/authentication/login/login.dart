@@ -51,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Image.asset('assets/images/english.png', width: TSizes.iconMd, height: TSizes.iconMd), // Replace with your flag image
                         const SizedBox(width: TSizes.md),
                         Text(
-                          appLocalizations.english,
+                          'English',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Image.asset('assets/images/arabic.png', width: TSizes.iconMd, height: TSizes.iconMd), // Replace with your flag image
                         const SizedBox(width: TSizes.md),
                         Text(
-                          appLocalizations.arabic,
+                          'العربية',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
@@ -73,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
                 onSelected: (Locale locale) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    Get.updateLocale(locale);
+                    _authService.applyLocale(locale.languageCode);
                   });
                 },
               ),

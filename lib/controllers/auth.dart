@@ -2,7 +2,10 @@ import "package:cloud_firestore/cloud_firestore.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:google_sign_in/google_sign_in.dart";
 import "package:onmat/models/UserAccount.dart";
+import "package:shared_preferences/shared_preferences.dart";
 import "../models/AuthResult.dart";
+import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -122,7 +125,6 @@ class AuthService {
     }
   }
 
-
   Future<AuthResult> signUpWithGoogleAndCreateUser(UserAccount userAccount) async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -181,5 +183,11 @@ class AuthService {
       print('Sign-up error: $e');
       return AuthResult(success: false, errorMessage: 'unexpected-error');
     }
+  }
+
+  Future<void> applyLocale(String code) async {
+    Get.updateLocale(Locale(code));
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('lang', code);      // persists the choice
   }
 }

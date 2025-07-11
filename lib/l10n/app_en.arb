@@ -1,6 +1,4 @@
 {
-  "english": "English",
-  "arabic": "Arabic",
   "loginTitle": "Welcome Back,",
   "loginSubtitle": "Stay on track. Stay ON MAT.",
   "email": "E-Mail",
@@ -65,5 +63,24 @@
   "forgotPasswordSubtitle": "Enter your email and we will send you a password reset link",
   "passwordResetEmailSent": "Password Reset Email Sent",
   "passwordResetEmailSentSubtitle": "Your Account Security is Our Priority! We've Sent You a Secure Link to Safely Change Your Password and Keep Your Account Protected.",
-  "done": "Done"
+  "done": "Done",
+  "accountSettings": "Account Settings",
+  "myWallet": "My Wallet",
+  "myWalletSub": "Outstanding:",
+  "appPreferences": "App Preferences",
+  "appPreferencesSub": "Language and Notifications",
+  "accountAndSecurity": "Account & Security",
+  "accountAndSecuritySub": "Manage password and account access",
+  "supportAndLegal": "Support & Legal",
+  "supportAndLegalSub": "Help, terms, and privacy",
+  "confirmLogout": "Confirm Logout",
+  "confirmLogoutText": "Are you sure you want to log out?",
+  "cancel": "Cancel",
+  "logout": "Logout",
+  "language": "Language",
+  "changeLanguage": "Change Language",
+  "languageSub": "Choose your preferred language",
+  "notifications": "Notifications",
+  "notificationsSub": "Manage alerts and reminders",
+  "ok": "Ok"
 }

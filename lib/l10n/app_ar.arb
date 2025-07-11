@@ -1,6 +1,4 @@
 {
-  "english": "إنجليزي",
-  "arabic": "عربي",
   "loginTitle": "مرحبًا بعودتك،",
   "loginSubtitle": "ابقَ على المسار. ابقَ على ON MAT.",
   "email": "بريد إلكتروني",
@@ -65,5 +63,24 @@
   "forgotPasswordSubtitle": "أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة تعيين كلمة المرور",
   "passwordResetEmailSent": "تم إرسال بريد إلكتروني لإعادة تعيين كلمة المرور",
   "passwordResetEmailSentSubtitle": "أمان حسابك هو أولويتنا! أرسلنا لك رابطًا آمنًا لتغيير كلمة مرورك بأمان والحفاظ على حسابك محميًا.",
-  "done": "منتهي"
+  "done": "منتهي",
+  "accountSettings": "إعدادات الحساب",
+  "myWallet": "محفظتي",
+  "myWalletSub": "متميز:",
+  "appPreferences": "تفضيلات التطبيق",
+  "appPreferencesSub": "اللغة والإشعارات",
+  "accountAndSecurity": "الحساب والأمن",
+  "accountAndSecuritySub": "إدارة كلمة المرور والوصول إلى الحساب",
+  "supportAndLegal": "الدعم والشؤون القانونية",
+  "supportAndLegalSub": "المساعدة والشروط والخصوصية",
+  "confirmLogout": "تأكيد الخروج",
+  "confirmLogoutText": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+  "cancel": "يلغي",
+  "logout": "تسجيل الخروج",
+  "language": "لغة",
+  "changeLanguage": "تغيير اللغة",
+  "languageSub": "اختر لغتك المفضلة",
+  "notifications": "إشعارات",
+  "notificationsSub": "إدارة التنبيهات والتذكيرات",
+  "ok": "نعم"
 }

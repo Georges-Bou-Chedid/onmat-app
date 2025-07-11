@@ -114,11 +114,14 @@ ThemeData darkTheme() {
     ),
     dialogTheme: DialogTheme(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(30),
-        side: BorderSide(color: Color(0xFFDF1E42).withOpacity(0.7), width: 2),
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+            color: Color(0xFF1E1E1E).withOpacity(0.5),
+            width: 2
+        ),
       ),
       backgroundColor: Color(0xFF1E1E1E),
-      elevation: 10,
+      elevation: 0,
       titleTextStyle: TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.bold,
@@ -251,11 +254,14 @@ ThemeData lightTheme() {
     ),
     dialogTheme: DialogTheme(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(30),
-        side: BorderSide(color: Color(0xFFDF1E42).withOpacity(0.7), width: 2),
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+            color: Color(0xFF1E1E1E).withOpacity(0.5),
+            width: 2
+        ),
       ),
       backgroundColor: Colors.white,
-      elevation: 10,
+      elevation: 0,
       titleTextStyle: TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.bold,
