@@ -1,9 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/helpers/helper_functions.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../../splash.dart';
 import '../login/login.dart';
 
 class ResetPasswordScreen extends StatelessWidget {
@@ -65,7 +65,16 @@ class ResetPasswordScreen extends StatelessWidget {
                             fontWeight: FontWeight.bold
                         ),
                       ),
-                      onPressed: () => Get.offAll(() => const LoginScreen())
+                      onPressed: () {
+                        final isLoggedIn = FirebaseAuth.instance.currentUser != null;
+
+                        if (isLoggedIn) {
+                          Get.back();
+                          Get.back();
+                        } else {
+                          Get.offAll(() => const LoginScreen());
+                        }
+                      }
                     ),
                   ),
                 ],

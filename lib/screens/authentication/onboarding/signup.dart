@@ -102,7 +102,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                           child: TextFormField(
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return appLocalizations.lastNameRequired; // "Please select your role"
+                                return appLocalizations.lastNameRequired;
                               }
                               return null;
                             },

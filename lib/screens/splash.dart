@@ -30,11 +30,13 @@ class _SplashScreenState extends State<SplashScreen> {
     // Make sure we navigate AFTER current frame is built
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (user != null) {
-        final userProvider = Provider.of<UserAccountService>(context, listen: false);
-        final success = await userProvider.fetchAndSetUser(user.uid);
+        final UserAccountService userAccountService = Provider.of<UserAccountService>(context, listen: false);
+        final success = await userAccountService.fetchAndSetUser(user.uid);
 
         if (success) {
-          Get.offAll(() => const SettingsScreen());
+          if (userAccountService.userAccount!.role == 'instructor') {
+            Get.offAll(() => const SettingsScreen());
+          }
         } else {
           Get.offAll(() => const LoginScreen()); // or onboarding
         }

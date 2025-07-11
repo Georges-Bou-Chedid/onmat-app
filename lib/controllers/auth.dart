@@ -18,6 +18,11 @@ class AuthService {
     return _auth.authStateChanges();
   }
 
+  bool isGoogleUser() {
+    final user = _auth.currentUser;
+    return user?.providerData.any((p) => p.providerId == 'google.com') ?? false;
+  }
+
   Future<void> signOut() async {
     await _auth.signOut();
     await _googleSignIn.signOut();
@@ -181,6 +186,32 @@ class AuthService {
       return AuthResult(success: true);
     } catch (e) {
       print('Sign-up error: $e');
+      return AuthResult(success: false, errorMessage: 'unexpected-error');
+    }
+  }
+
+  Future<AuthResult> deleteAccount() async {
+    try {
+      final user = _auth.currentUser;
+      final uid = user?.uid;
+
+      if (uid == null) {
+        return AuthResult(success: false, errorMessage: 'user-not-found');
+      }
+
+      // 🔴 1. Delete FirebaseAuth user
+      await user!.delete();
+
+      // 🔴 2. Delete Firestore user document
+      await FirebaseFirestore.instance
+          .collection('user_accounts')
+          .doc(uid)
+          .delete();
+
+      return AuthResult(success: true);
+    } on FirebaseAuthException catch (e) {
+      return AuthResult(success: false, errorMessage: e.code);
+    } catch (e) {
       return AuthResult(success: false, errorMessage: 'unexpected-error');
     }
   }

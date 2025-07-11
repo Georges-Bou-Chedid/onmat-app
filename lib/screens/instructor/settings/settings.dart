@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:onmat/controllers/auth.dart';
+import 'package:onmat/screens/instructor/settings/account_security.dart';
+import 'package:onmat/screens/instructor/settings/support_legal.dart';
 import 'package:onmat/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -13,6 +15,7 @@ import '../../../utils/widgets/circular_image.dart';
 import '../../../utils/widgets/section_header.dart';
 import '../../splash.dart';
 import 'app_preferences.dart';
+import 'edit_profile.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -72,7 +75,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         style: Theme.of(context).textTheme.bodyMedium!.apply(color: Colors.white)
                       ),
                       trailing: IconButton(
-                        onPressed: (){},
+                        onPressed: (){
+                          Get.to(
+                            () => const EditProfilePage(),
+                            transition: Transition.downToUp,        // comes from bottom, exits at top
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,               // optional: smoother easing
+                          );
+                        },
                         icon: const Icon(Iconsax.edit, color: Colors.white)
                       ),
                     ),
@@ -116,7 +126,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: appLocalizations.accountAndSecurity,
                       subTitle: appLocalizations.accountAndSecuritySub,
                       onTap: () {
-
+                        Get.to(
+                          () => const AccountSecurityPage(),
+                          transition: Transition.downToUp,        // comes from bottom, exits at top
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,               // optional: smoother easing
+                        );
                       },
                     ),
                     TSettingsMenuTile(
@@ -124,7 +139,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: appLocalizations.supportAndLegal,
                       subTitle: appLocalizations.supportAndLegalSub,
                       onTap: () {
-
+                        Get.to(
+                          () => const SupportLegalPage(),
+                          transition: Transition.downToUp,        // comes from bottom, exits at top
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,               // optional: smoother easing
+                        );
                       },
                     ),
 

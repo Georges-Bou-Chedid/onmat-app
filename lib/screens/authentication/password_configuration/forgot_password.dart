@@ -1,6 +1,5 @@
 import 'package:iconsax/iconsax.dart';
 import 'package:onmat/screens/authentication/password_configuration/reset_password.dart';
-import 'package:onmat/screens/authentication/onboarding/success.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +7,6 @@ import 'package:get/get.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/helpers/helper_functions.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../login/login.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -59,9 +57,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             child: IconButton(
               icon: const Icon(CupertinoIcons.clear),
-                onPressed: () async {
-                  Get.offAll(() => const LoginScreen());  // Navigate to login screen, removing all previous routes
-                }
+              onPressed: () => Get.back()
             ),
           )
         ],
