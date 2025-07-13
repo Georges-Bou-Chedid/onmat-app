@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../controllers/user.dart';
 import '../utils/constants/sizes.dart';
 import 'authentication/login/login.dart';
+import 'instructor/start.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -35,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
         if (success) {
           if (userAccountService.userAccount!.role == 'instructor') {
-            Get.offAll(() => const SettingsScreen());
+            Get.offAll(() => const StartScreen());
           }
         } else {
           Get.offAll(() => const LoginScreen()); // or onboarding

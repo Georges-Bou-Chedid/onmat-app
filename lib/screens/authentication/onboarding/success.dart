@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/helpers/helper_functions.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../splash.dart';
 
 class SuccessScreen extends StatelessWidget {

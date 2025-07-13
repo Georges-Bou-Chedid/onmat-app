@@ -99,5 +99,7 @@
   "editProfile": "تحرير الملف الشخصي",
   "save": "يحفظ",
   "success": "نجاح",
-  "profileUpdated": "تم تحديث الملف الشخصي"
+  "profileUpdated": "تم تحديث الملف الشخصي",
+  "myAccount": "حسابي",
+  "dashboard": "لوحة القيادة"
 }

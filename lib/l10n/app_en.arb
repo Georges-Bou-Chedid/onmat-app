@@ -99,5 +99,7 @@
   "editProfile": "Edit Profile",
   "save": "Save",
   "success": "Success",
-  "profileUpdated": "Profile Updated"
+  "profileUpdated": "Profile Updated",
+  "myAccount": "My Account",
+  "dashboard": "Dashboard"
 }

@@ -4,11 +4,11 @@ import 'package:onmat/screens/splash.dart';
 import 'package:onmat/utils/constants/sizes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../common/styles/spacing_styles.dart';
 import '../../../controllers/auth.dart';
+import '../../../l10n/app_localizations.dart';
 import '../password_configuration/forgot_password.dart';
 
 class LoginScreen extends StatefulWidget {

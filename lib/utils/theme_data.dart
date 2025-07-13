@@ -82,7 +82,7 @@ ThemeData darkTheme() {
       labelMedium: TextStyle(color: Colors.white),
       titleMedium: TextStyle(fontWeight: FontWeight.w500, color: Colors.white),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: const Color(0xFF1E1E1E),
       shadowColor: Colors.grey.withOpacity(0.2),
       shape: RoundedRectangleBorder(
@@ -112,7 +112,7 @@ ThemeData darkTheme() {
     dividerTheme: DividerThemeData(
       color: Colors.white, // Set divider color
     ),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
@@ -132,6 +132,11 @@ ThemeData darkTheme() {
         color: Colors.white54,
       ),
     ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: Colors.white10.withOpacity(0.05),
+        elevation: 30,
+        selectedIconTheme: const IconThemeData(color: Color(0xFFDF1E42)),
+    )
   );
 }
 
@@ -221,7 +226,7 @@ ThemeData lightTheme() {
       labelMedium: TextStyle(color: Color(0xFF1E1E1E)),
       titleMedium: TextStyle(fontWeight: FontWeight.w500, color: Color(0xFF1E1E1E)),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: Colors.white,
       shadowColor: Colors.grey.withOpacity(0.2),
       shape: RoundedRectangleBorder(
@@ -252,7 +257,7 @@ ThemeData lightTheme() {
     dividerTheme: DividerThemeData(
       color: Color(0xFF1E1E1E), // Set divider color
     ),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
@@ -272,5 +277,11 @@ ThemeData lightTheme() {
         color: Colors.black54,
       ),
     ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: Colors.white,
+      elevation: 30,
+      selectedItemColor: Color(0xFF1E1E1E),
+      selectedIconTheme: const IconThemeData(color: Color(0xFFDF1E42)),
+    )
   );
 }

@@ -4,13 +4,13 @@ import 'package:onmat/screens/instructor/settings/account_security.dart';
 import 'package:onmat/screens/instructor/settings/support_legal.dart';
 import 'package:onmat/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:onmat/utils/widgets/primary_header_container.dart';
 import 'package:onmat/utils/widgets/settings_menu_tile.dart';
 import 'package:provider/provider.dart';
 
 import '../../../controllers/user.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../utils/widgets/circular_image.dart';
 import '../../../utils/widgets/section_header.dart';
 import '../../splash.dart';

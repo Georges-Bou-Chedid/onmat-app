@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../controllers/auth.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/settings_menu_tile.dart';
 import '../../authentication/password_configuration/forgot_password.dart';
