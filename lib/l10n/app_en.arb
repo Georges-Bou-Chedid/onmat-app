@@ -101,5 +101,15 @@
   "success": "Success",
   "profileUpdated": "Profile Updated",
   "myAccount": "My Account",
-  "dashboard": "Dashboard"
+  "dashboard": "Dashboard",
+  "myClasses": "My Classes",
+  "createClass": "Create Class",
+  "className": "Class Name",
+  "required": "Required",
+  "classType": "Class Type",
+  "country": "Country",
+  "location": "Location",
+  "locationHint": "City, Street, Building…",
+  "searchCountry": "Search country",
+  "create": "Create"
 }

@@ -101,5 +101,15 @@
   "success": "نجاح",
   "profileUpdated": "تم تحديث الملف الشخصي",
   "myAccount": "حسابي",
-  "dashboard": "لوحة القيادة"
+  "dashboard": "لوحة القيادة",
+  "myClasses": "فصولي",
+  "createClass": "إنشاء فئة",
+  "className": "اسم الفئة",
+  "required": "مطلوب",
+  "classType": "نوع الفصل",
+  "country": "دولة",
+  "location": "موقع",
+  "locationHint": "المدينة، الشارع، المبنى…",
+  "searchCountry": "ابحث عن الدولة",
+  "create": "خلق"
 }

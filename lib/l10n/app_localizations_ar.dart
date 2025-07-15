@@ -316,4 +316,34 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get dashboard => 'لوحة القيادة';
+
+  @override
+  String get myClasses => 'فصولي';
+
+  @override
+  String get createClass => 'إنشاء فئة';
+
+  @override
+  String get className => 'اسم الفئة';
+
+  @override
+  String get required => 'مطلوب';
+
+  @override
+  String get classType => 'نوع الفصل';
+
+  @override
+  String get country => 'دولة';
+
+  @override
+  String get location => 'موقع';
+
+  @override
+  String get locationHint => 'المدينة، الشارع، المبنى…';
+
+  @override
+  String get searchCountry => 'ابحث عن الدولة';
+
+  @override
+  String get create => 'خلق';
 }

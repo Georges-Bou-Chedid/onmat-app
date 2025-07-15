@@ -316,4 +316,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboard => 'Dashboard';
+
+  @override
+  String get myClasses => 'My Classes';
+
+  @override
+  String get createClass => 'Create Class';
+
+  @override
+  String get className => 'Class Name';
+
+  @override
+  String get required => 'Required';
+
+  @override
+  String get classType => 'Class Type';
+
+  @override
+  String get country => 'Country';
+
+  @override
+  String get location => 'Location';
+
+  @override
+  String get locationHint => 'City, Street, Building…';
+
+  @override
+  String get searchCountry => 'Search country';
+
+  @override
+  String get create => 'Create';
 }

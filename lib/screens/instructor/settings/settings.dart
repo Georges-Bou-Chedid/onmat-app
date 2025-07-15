@@ -46,7 +46,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Container(
                       height: 150, // enough height for your image
                       padding: EdgeInsets.only(top: TSizes.defaultSpace, left: 20, right: 20),
-                      // alignment: Alignment.topCenter,
                       alignment: Alignment.centerLeft,
                       child: Image.asset(
                         'assets/images/logo-white.png',

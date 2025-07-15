@@ -39,6 +39,10 @@ ThemeData darkTheme() {
             color: Colors.white,
             fontSize: 14.0,
             fontWeight: FontWeight.bold
+        ),
+        hintStyle: TextStyle(
+          color: Colors.white.withOpacity(0.5),
+          fontSize: 13.0,
         )
     ),
     textSelectionTheme: TextSelectionThemeData(
@@ -182,7 +186,12 @@ ThemeData lightTheme() {
         labelStyle: TextStyle(
             color: Color(0xFF1E1E1E),
             fontSize: 14.0,
-            fontWeight: FontWeight.bold)
+            fontWeight: FontWeight.bold
+        ),
+        hintStyle: TextStyle(
+            color: Color(0xFF1E1E1E).withOpacity(0.5),
+            fontSize: 13.0,
+        )
     ),
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: Color(0xFF1E1E1E).withOpacity(0.8), // Set cursor color globally here

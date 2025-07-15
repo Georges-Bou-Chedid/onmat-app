@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:onmat/screens/instructor/dashboard/add_class.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/primary_header_container.dart';
-import '../settings/edit_profile.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -33,7 +33,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Container(
                       height: 150, // enough height for your image
                       padding: EdgeInsets.only(top: TSizes.defaultSpace, left: 20, right: 20),
-                      // alignment: Alignment.topCenter,
                       alignment: Alignment.centerLeft,
                       child: Image.asset(
                         'assets/images/logo-white.png',
@@ -46,13 +45,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     /// Classes Card
                     ListTile(
                       title: Text(
-                          "My Classes",
+                          appLocalizations.myClasses,
                           style: Theme.of(context).textTheme.headlineSmall!.apply(color: Colors.white)
                       ),
                       trailing: IconButton(
                           onPressed: (){
                             Get.to(
-                              () => const EditProfilePage(),
+                              () => const AddClassScreen(),
                               transition: Transition.downToUp,        // comes from bottom, exits at top
                               duration: const Duration(milliseconds: 300),
                               curve: Curves.easeInOut,               // optional: smoother easing
