@@ -433,10 +433,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                             ? const SizedBox(
                           height: TSizes.md,
                           width: TSizes.md,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E1E1E)),
-                          ),
+                          child: CircularProgressIndicator(),
                         )
                             : Text(
                           appLocalizations.createAccount,

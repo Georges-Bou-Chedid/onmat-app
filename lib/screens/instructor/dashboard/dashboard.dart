@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../controllers/class.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
+import '../../../utils/helpers/helper_functions.dart';
 import '../../../utils/widgets/primary_header_container.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -123,14 +124,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _isLoading
                           ? SizedBox(
                               height: MediaQuery.of(context).size.height * 0.5,
-                              child: const Center(
+                              child: Center(
                                 child: SizedBox(
                                   height: TSizes.lg,
                                   width: TSizes.lg,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E1E1E)),
-                                  ),
+                                  child: CircularProgressIndicator(),
                                 ),
                               ),
                             )
@@ -154,7 +152,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     return Card(
                                       margin: const EdgeInsets.only(bottom: TSizes.spaceBtwItems),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.md)),
-                                      elevation: 3,
+                                      elevation: 4,
                                       child: ListTile(
                                         contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                                         leading: CircleAvatar(
