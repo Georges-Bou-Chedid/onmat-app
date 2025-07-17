@@ -111,5 +111,8 @@
   "location": "Location",
   "locationHint": "City, Street, Building…",
   "searchCountry": "Search country",
-  "create": "Create"
+  "create": "Create",
+  "classCreatedMessage": "Class Created",
+  "searchClasses": "Search classes...",
+  "noClassesFound": "No Classes Found"
 }

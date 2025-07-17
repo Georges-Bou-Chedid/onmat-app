@@ -346,4 +346,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get create => 'Create';
+
+  @override
+  String get classCreatedMessage => 'Class Created';
+
+  @override
+  String get searchClasses => 'Search classes...';
+
+  @override
+  String get noClassesFound => 'No Classes Found';
 }

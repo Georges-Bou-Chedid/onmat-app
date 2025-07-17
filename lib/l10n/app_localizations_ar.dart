@@ -346,4 +346,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get create => 'خلق';
+
+  @override
+  String get classCreatedMessage => 'تم إنشاء الفصل';
+
+  @override
+  String get searchClasses => 'فئات البحث...';
+
+  @override
+  String get noClassesFound => 'لم يتم العثور على فئات';
 }

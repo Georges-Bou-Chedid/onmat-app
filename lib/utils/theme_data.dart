@@ -120,7 +120,7 @@ ThemeData darkTheme() {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-            color: Color(0xFF1E1E1E).withOpacity(0.5),
+            color: Color(0xFF1E1E1E).withOpacity(0.7),
             width: 2
         ),
       ),
@@ -167,8 +167,7 @@ ThemeData lightTheme() {
     inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(20.0)),
-          borderSide: BorderSide(
-              width: 1.0, color: Color(0xFF1E1E1E)), // Default border
+          borderSide: BorderSide(width: 1.0, color: Color(0xFF1E1E1E)), // Default border
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(20.0)),
@@ -270,7 +269,7 @@ ThemeData lightTheme() {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-            color: Color(0xFF1E1E1E).withOpacity(0.5),
+            color: Color(0xFF1E1E1E).withOpacity(0.7),
             width: 2
         ),
       ),

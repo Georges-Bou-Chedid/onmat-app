@@ -111,5 +111,8 @@
   "location": "موقع",
   "locationHint": "المدينة، الشارع، المبنى…",
   "searchCountry": "ابحث عن الدولة",
-  "create": "خلق"
+  "create": "خلق",
+  "classCreatedMessage": "تم إنشاء الفصل",
+  "searchClasses": "فئات البحث...",
+  "noClassesFound": "لم يتم العثور على فئات"
 }

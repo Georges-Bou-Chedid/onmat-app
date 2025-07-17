@@ -1,3 +1,4 @@
+import 'package:onmat/controllers/class.dart';
 import 'package:onmat/controllers/user.dart';
 import 'package:onmat/screens/splash.dart';
 import 'package:onmat/utils/theme_data.dart';
@@ -26,6 +27,7 @@ void main() async {
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => UserAccountService()),
+          ChangeNotifierProvider(create: (_) => ClassService()),
         ],
         child: MyApp(startLocale),
       )

@@ -1,10 +1,16 @@
 import 'package:country_picker/country_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:onmat/controllers/class.dart';
+import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../models/Class.dart';
 import '../../../utils/constants/sizes.dart';
+import '../../../utils/helpers/helper_functions.dart';
 import '../../../utils/widgets/background_image_header_container.dart';
 import '../start.dart';
 
@@ -42,7 +48,9 @@ class _AddClassScreenState extends State<AddClassScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ClassService classService = Provider.of<ClassService>(context);
     appLocalizations = AppLocalizations.of(context)!;
+    final dark = THelperFunctions.isDarkMode(context);
 
     return Scaffold(
         body: SingleChildScrollView(
@@ -115,19 +123,19 @@ class _AddClassScreenState extends State<AddClassScreen> {
                           labelText: appLocalizations.classType,
                           prefixIcon: Icon(Iconsax.tag),
                         ),
-                        dropdownColor: Colors.white,
+                        dropdownColor: dark ? Color(0xFF1E1E1E) : Colors.white,
                         borderRadius: BorderRadius.circular(20.0),
                         items: [
-                          DropdownMenuItem(value: 'bjj',  child: Text('Jiu‑Jitsu')),
-                          DropdownMenuItem(value: 'muay-thai',  child: Text('Muay Thai')),
-                          DropdownMenuItem(value: 'boxing',     child: Text('Boxing')),
-                          DropdownMenuItem(value: 'karate',     child: Text('Karate')),
-                          DropdownMenuItem(value: 'taekwondo',  child: Text('Taekwondo')),
-                          DropdownMenuItem(value: 'mma',        child: Text('MMA')),
-                          DropdownMenuItem(value: 'yoga',       child: Text('Yoga')),
-                          DropdownMenuItem(value: 'pilates',    child: Text('Pilates')),
-                          DropdownMenuItem(value: 'strength',   child: Text('Strength Training')),
-                          DropdownMenuItem(value: 'condition',  child: Text('Conditioning')),
+                          DropdownMenuItem(value: 'Jiu‑Jitsu',  child: Text('Jiu‑Jitsu')),
+                          DropdownMenuItem(value: 'Muay Thai',  child: Text('Muay Thai')),
+                          DropdownMenuItem(value: 'Boxing',     child: Text('Boxing')),
+                          DropdownMenuItem(value: 'Karate',     child: Text('Karate')),
+                          DropdownMenuItem(value: 'Taekwondo',  child: Text('Taekwondo')),
+                          DropdownMenuItem(value: 'MMA',        child: Text('MMA')),
+                          DropdownMenuItem(value: 'Yoga',       child: Text('Yoga')),
+                          DropdownMenuItem(value: 'Pilates',    child: Text('Pilates')),
+                          DropdownMenuItem(value: 'Strength Training',   child: Text('Strength Training')),
+                          DropdownMenuItem(value: 'Conditioning',  child: Text('Conditioning')),
                         ],
                         onChanged: (String? value) {
                           setState(() {
@@ -204,12 +212,37 @@ class _AddClassScreenState extends State<AddClassScreen> {
                               setState(() {
                                 _isSaving = true;
                               });
-                              print(nameCtrl);
-                              // locationCtrl
-                              // _selectedCountry
-                              // countryCtrl
-                              // selectedType
 
+                              final String qrCode = const Uuid().v4();
+                              Class cl = Class(
+                                  ownerId: FirebaseAuth.instance.currentUser?.uid,
+                                  className: nameCtrl.text.trim(),
+                                  classType: selectedType,
+                                  country: countryCtrl.text.trim(),
+                                  location: locationCtrl.text.trim(),
+                                  qrCode: qrCode
+                              );
+
+                              final success = await classService.createClass(cl);
+
+                              setState(() {
+                                _isSaving = false;
+                              });
+
+                              if (success) {
+                                Get.back();
+                                Get.snackbar(
+                                  appLocalizations.success,
+                                  appLocalizations.classCreatedMessage,
+                                  snackPosition: SnackPosition.BOTTOM,
+                                );
+                              } else {
+                                Get.snackbar(
+                                  appLocalizations.error,
+                                  appLocalizations.errorMessage,
+                                  snackPosition: SnackPosition.BOTTOM,
+                                );
+                              }
                             }
                           },
                           child: _isSaving

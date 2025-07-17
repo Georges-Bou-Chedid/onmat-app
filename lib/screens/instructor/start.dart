@@ -16,26 +16,25 @@ class _StartScreenState extends State<StartScreen> {
   late AppLocalizations appLocalizations;
   int _selectedIndex = 0;
 
-  static final List<Widget> _pages = <Widget>[
+  final List<Widget> _pages = const [
     DashboardScreen(),
     SettingsScreen(),
   ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     appLocalizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        onTap: (index) {
+          setState(() => _selectedIndex = index);
+        },
         items: [
           BottomNavigationBarItem(
             icon: Icon(Iconsax.home),

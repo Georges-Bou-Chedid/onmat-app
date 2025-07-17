@@ -772,6 +772,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create'**
   String get create;
+
+  /// No description provided for @classCreatedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Class Created'**
+  String get classCreatedMessage;
+
+  /// No description provided for @searchClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'Search classes...'**
+  String get searchClasses;
+
+  /// No description provided for @noClassesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No Classes Found'**
+  String get noClassesFound;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

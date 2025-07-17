@@ -193,7 +193,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                         labelText: appLocalizations.registerAs, // "Register as"
                         prefixIcon: Icon(Iconsax.user_cirlce_add),
                       ),
-                      dropdownColor: Colors.white,
+                      dropdownColor: dark ? Color(0xFF1E1E1E) : Colors.white,
                       borderRadius: BorderRadius.circular(20.0),
                       items: [
                         DropdownMenuItem(value: 'instructor', child: Text(appLocalizations.instructor)), // "Student"
