@@ -7,6 +7,7 @@ class Class {
   final String? country;
   final String? location;
   final String? qrCode;
+  final List<Map<String, String>>? schedule;
 
   Class({
     this.ownerId,
@@ -14,18 +15,27 @@ class Class {
     this.classType,
     this.country,
     this.location,
-    this.qrCode
+    this.qrCode,
+    this.schedule
   });
 
   // Factory method to convert data from Firebase to Class
-  factory Class.fromFirestore(String id, Map<String, dynamic> map) {
+  factory Class.fromFirestore(String id, Map<String, dynamic> data) {
+    List<Map<String, String>>? parsedSchedule;
+    if (data['schedule'] != null) {
+      parsedSchedule = (data['schedule'] as List<dynamic>)
+          .map((item) => Map<String, String>.from(item as Map))
+          .toList();
+    }
+
     return Class(
       ownerId: id,
-      className: map['class_name'] ?? '',
-      classType: map['class_type'] ?? '',
-      country: map['country'] ?? '',
-      location: map['location'] ?? '',
-      qrCode: map['qr_code'] ?? ''
+      className: data['class_name'] ?? '',
+      classType: data['class_type'] ?? '',
+      country: data['country'] ?? '',
+      location: data['location'] ?? '',
+      qrCode: data['qr_code'] ?? '',
+      schedule: parsedSchedule
     );
   }
 
@@ -37,6 +47,7 @@ class Class {
       'country': country,
       'location': location,
       'qr_code': qrCode,
+      'schedule': schedule,
       'created_at': FieldValue.serverTimestamp(),
       'updated_at': FieldValue.serverTimestamp()
     };
@@ -49,7 +60,8 @@ class Class {
       classType: updateData['class_type'] ?? classType,
       country: updateData['country'] ?? country,
       location: updateData['location'] ?? location,
-      qrCode: updateData['qr_code'] ?? qrCode
+      qrCode: updateData['qr_code'] ?? qrCode,
+      schedule: updateData['schedule'] ?? schedule
     );
   }
 }

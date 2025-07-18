@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:onmat/screens/instructor/settings/settings.dart';
 import 'package:provider/provider.dart';
 import '../controllers/user.dart';
 import '../utils/constants/sizes.dart';
@@ -17,13 +16,24 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  bool _started = false;
+
   @override
-  void initState() {
-    super.initState();
-    _startApp();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_started) {
+      _started = true;
+      _startApp();
+    }
   }
 
   void _startApp() async {
+    Future.wait([
+      precacheImage(const AssetImage('assets/images/dashboard_background.jpg'), context),
+      precacheImage(const AssetImage('assets/images/create_class_background.jpg'), context),
+      precacheImage(const AssetImage('assets/images/class_details_background.jpg'), context),
+    ]);
+
     await Future.delayed(const Duration(seconds: 3)); // splash delay
 
     final user = FirebaseAuth.instance.currentUser;

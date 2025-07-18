@@ -7,8 +7,8 @@ import 'package:provider/provider.dart';
 import '../../../controllers/class.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
-import '../../../utils/helpers/helper_functions.dart';
-import '../../../utils/widgets/primary_header_container.dart';
+import '../../../utils/widgets/background_image_header_container.dart';
+import 'class_details.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -61,7 +61,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               children: [
                 /// -- Header
-                TPrimaryHeaderContainer(
+                TBackgroundImageHeaderContainer(
+                  image: 'assets/images/dashboard_background.jpg',
                   child: Column(
                     children: [
                       /// AppBar
@@ -95,7 +96,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             icon: const Icon(Iconsax.additem, color: Colors.white)
                         ),
                       ),
-                      const SizedBox(height: TSizes.spaceBtwSections)
+                      const SizedBox(height: TSizes.appBarHeight)
                     ],
                   ),
                 ),
@@ -186,7 +187,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         ),
                                         trailing: Icon(Iconsax.arrow_21, size: TSizes.md),
                                         onTap: () {
-      
+                                          Get.to(
+                                            () => const ClassDetailsScreen(),
+                                            transition: Transition.rightToLeft,
+                                            duration: const Duration(milliseconds: 300),
+                                            curve: Curves.easeInOut,
+                                          );
                                         },
                                       ),
                                     );

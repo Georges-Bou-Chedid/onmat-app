@@ -25,8 +25,10 @@ class _AddClassScreenState extends State<AddClassScreen> {
   final GlobalKey<FormState> createClassKey = GlobalKey<FormState>();
   final TextEditingController nameCtrl       = TextEditingController();
   final TextEditingController locationCtrl   = TextEditingController();
-  Country? _selectedCountry;
   final TextEditingController countryCtrl    = TextEditingController();
+  Country? _selectedCountry;
+  List<Map<String, String>> schedule = [];
+  List<Map<String, String?>> scheduleErrors = [];
   late AppLocalizations appLocalizations;
   String? selectedType;
   bool _isSaving = false;
@@ -36,6 +38,8 @@ class _AddClassScreenState extends State<AddClassScreen> {
     super.initState();
     _selectedCountry = Country.parse('LB');   // Lebanon 🇱🇧
     countryCtrl.text = _selectedCountry!.name;
+    schedule = [];
+    scheduleErrors = List.generate(schedule.length, (_) => {'day': null, 'time': null, 'duration': null});
   }
 
   @override
@@ -46,11 +50,39 @@ class _AddClassScreenState extends State<AddClassScreen> {
     super.dispose();
   }
 
+  bool validateSchedule() {
+    bool valid = true;
+
+    scheduleErrors = List.generate(schedule.length, (_) => {'day': null, 'time': null, 'duration': null});
+
+    for (int i = 0; i < schedule.length; i++) {
+      final item = schedule[i];
+      if (item['day'] == null || item['day']!.trim().isEmpty) {
+        scheduleErrors[i]['day'] = appLocalizations.required;
+        valid = false;
+      }
+      if (item['time'] == null || item['time']!.trim().isEmpty) {
+        scheduleErrors[i]['time'] = appLocalizations.required;
+        valid = false;
+      }
+      if (item['duration'] == null || item['duration']!.trim().isEmpty) {
+        scheduleErrors[i]['duration'] = appLocalizations.required;
+        valid = false;
+      }
+    }
+
+    setState(() {}); // Update UI to show errors
+    return valid;
+  }
+
   @override
   Widget build(BuildContext context) {
     final ClassService classService = Provider.of<ClassService>(context);
     appLocalizations = AppLocalizations.of(context)!;
     final dark = THelperFunctions.isDarkMode(context);
+    final List<String> weekdays = [
+      appLocalizations.monday, appLocalizations.tuesday, appLocalizations.wednesday, appLocalizations.thursday, appLocalizations.friday, appLocalizations.saturday, appLocalizations.sunday
+    ];
 
     return Scaffold(
         body: SingleChildScrollView(
@@ -58,7 +90,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
             children: [
               /// -- Header
               TBackgroundImageHeaderContainer(
-                image: 'assets/images/fitness_background.jpg',
+                image: 'assets/images/create_class_background.jpg',
                 child: Column(
                   children: [
                     /// AppBar
@@ -199,6 +231,128 @@ class _AddClassScreenState extends State<AddClassScreen> {
                         ),
                         validator: (v) => v == null || v.trim().isEmpty ? appLocalizations.required : null,
                       ),
+                      const SizedBox(height: TSizes.spaceBtwItems),
+
+                      // Schedule List
+                      Column(
+                        children: schedule.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          Map<String, String> item = entry.value;
+
+                          return Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: TSizes.xs),
+                            child: Padding(
+                              padding: const EdgeInsets.all(TSizes.sm),
+                              child: Column(
+                                children: [
+                                  // Day Dropdown
+                                  DropdownButtonFormField<String>(
+                                    value: weekdays.contains(item['day']) ? item['day'] : null,
+                                    items: weekdays.map((day) {
+                                      return DropdownMenuItem(value: day, child: Text(day));
+                                    }).toList(),
+                                    decoration: InputDecoration(
+                                      labelText: appLocalizations.day,
+                                      prefixIcon: const Icon(Iconsax.calendar),
+                                      errorText: scheduleErrors.length > index ? scheduleErrors[index]['day'] : null,
+                                    ),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        if (schedule.length > index) {
+                                          schedule[index] = schedule[index] ?? {};
+                                          schedule[index]['day'] = val!;
+                                          if (scheduleErrors.length > index) {
+                                            scheduleErrors[index]['day'] = null;
+                                          }
+                                        }
+                                      });
+                                    },
+
+                                  ),
+                                  const SizedBox(height: TSizes.spaceBtwItems),
+
+                                  // Time Field
+                                  TextFormField(
+                                    controller: TextEditingController(text: item['time']),
+                                    readOnly: true,
+                                    decoration: InputDecoration(
+                                      labelText: appLocalizations.time,
+                                      prefixIcon: const Icon(Icons.access_time),
+                                      errorText: scheduleErrors.length > index ? scheduleErrors[index]['time'] : null,
+                                    ),
+                                    onTap: () async {
+                                      final TimeOfDay? pickedTime = await showTimePicker(
+                                        context: context,
+                                        initialTime: TimeOfDay.now(),
+                                        builder: (BuildContext context, Widget? child) {
+                                          return MediaQuery(
+                                            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+                                            child: child!,
+                                          );
+                                        },
+                                      );
+
+                                      if (pickedTime != null) {
+                                        final formattedTime = pickedTime.format(context);
+                                        setState(() {
+                                          schedule[index]['time'] = formattedTime;
+                                          if (scheduleErrors.length > index) {
+                                            scheduleErrors[index]['time'] = null;
+                                          }
+                                        });
+                                      }
+                                    },
+                                  ),
+                                  const SizedBox(height: TSizes.spaceBtwItems),
+
+                                  // Duration Field
+                                  TextFormField(
+                                    initialValue: item['duration'],
+                                    decoration: InputDecoration(
+                                      labelText: appLocalizations.duration,
+                                      prefixIcon: Icon(Iconsax.timer),
+                                      errorText: scheduleErrors.length > index ? scheduleErrors[index]['duration'] : null,
+                                    ),
+                                    onChanged: (val) {
+                                      if (schedule.length > index) {
+                                        schedule[index] = schedule[index] ?? {};
+                                        schedule[index]['duration'] = val;
+                                        if (scheduleErrors.length > index) {
+                                          scheduleErrors[index]['duration'] = null;
+                                        }
+                                      }
+                                    },
+                                  ),
+
+                                  // Remove button
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: IconButton(
+                                      icon: const Icon(Iconsax.trash, color: Color(0xFFDF1E42)),
+                                      onPressed: () {
+                                        setState(() => schedule.removeAt(index));
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: TSizes.spaceBtwItems),
+
+                      // Add Schedule Entry Button
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            schedule.add({});
+                          });
+                        },
+                        icon: const Icon(Iconsax.calendar_add),
+                        label: Text(appLocalizations.addSchedule),
+                      ),
                       const SizedBox(height: TSizes.defaultSpace),
 
                       // Save button
@@ -208,19 +362,20 @@ class _AddClassScreenState extends State<AddClassScreen> {
                           onPressed: _isSaving
                               ? null
                               : () async {
-                            if (createClassKey.currentState?.validate() ?? false) {
+                            if (createClassKey.currentState!.validate() && validateSchedule()) {
                               setState(() {
                                 _isSaving = true;
                               });
 
                               final String qrCode = const Uuid().v4();
                               Class cl = Class(
-                                  ownerId: FirebaseAuth.instance.currentUser?.uid,
-                                  className: nameCtrl.text.trim(),
-                                  classType: selectedType,
-                                  country: countryCtrl.text.trim(),
-                                  location: locationCtrl.text.trim(),
-                                  qrCode: qrCode
+                                ownerId: FirebaseAuth.instance.currentUser?.uid,
+                                className: nameCtrl.text.trim(),
+                                classType: selectedType,
+                                country: countryCtrl.text.trim(),
+                                location: locationCtrl.text.trim(),
+                                qrCode: qrCode,
+                                schedule: schedule
                               );
 
                               final success = await classService.createClass(cl);

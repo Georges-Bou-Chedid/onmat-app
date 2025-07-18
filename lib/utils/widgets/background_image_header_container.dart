@@ -17,7 +17,6 @@ class TBackgroundImageHeaderContainer extends StatelessWidget {
     return TCurvedEdgesWidget(
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor,
           image: DecorationImage(
             image: AssetImage(image),
             fit: BoxFit.cover,

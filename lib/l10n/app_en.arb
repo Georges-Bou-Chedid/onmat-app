@@ -114,5 +114,16 @@
   "create": "Create",
   "classCreatedMessage": "Class Created",
   "searchClasses": "Search classes...",
-  "noClassesFound": "No Classes Found"
+  "noClassesFound": "No Classes Found",
+  "monday": "Monday",
+  "tuesday": "Tuesday",
+  "wednesday": "Wednesday",
+  "thursday": "Thursday",
+  "friday": "Friday",
+  "saturday": "Saturday",
+  "sunday": "Sunday",
+  "day": "Day",
+  "time": "Time (e.g., 2:00 PM)",
+  "duration": "Duration (e.g., 2h)",
+  "addSchedule": "Add Schedule"
 }

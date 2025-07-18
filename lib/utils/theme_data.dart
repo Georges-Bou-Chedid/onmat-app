@@ -140,7 +140,19 @@ ThemeData darkTheme() {
         backgroundColor: Colors.white10.withOpacity(0.05),
         elevation: 30,
         selectedIconTheme: const IconThemeData(color: Color(0xFFDF1E42)),
-    )
+    ),
+    timePickerTheme: TimePickerThemeData(
+      dayPeriodTextColor: WidgetStateColor.resolveWith((states) {
+        return states.contains(WidgetState.selected) ? Colors.white : Color(0xFF1E1E1E);
+      }),
+      dayPeriodColor: WidgetStateColor.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return Color(0xFFDF1E42);
+        } else {
+          return Colors.white;
+        }
+      }),
+    ),
   );
 }
 
@@ -290,6 +302,19 @@ ThemeData lightTheme() {
       elevation: 30,
       selectedItemColor: Color(0xFF1E1E1E),
       selectedIconTheme: const IconThemeData(color: Color(0xFFDF1E42)),
-    )
+    ),
+    timePickerTheme: TimePickerThemeData(
+      dayPeriodTextColor: WidgetStateColor.resolveWith((states) {
+        return states.contains(WidgetState.selected) ? Colors.white : Color(0xFF1E1E1E);
+      }),
+      dayPeriodColor: WidgetStateColor.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return Color(0xFFDF1E42);
+        } else {
+          return Colors.white;
+        }
+      }),
+    ),
+
   );
 }
