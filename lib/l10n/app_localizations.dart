@@ -856,6 +856,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add Schedule'**
   String get addSchedule;
+
+  /// No description provided for @acceptTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Please accept the terms'**
+  String get acceptTerms;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

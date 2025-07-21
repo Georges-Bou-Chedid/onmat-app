@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:onmat/models/Class.dart';
 
-class ClassService with ChangeNotifier {
+class InstructorClassService with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   List<Class> _myClasses = [];

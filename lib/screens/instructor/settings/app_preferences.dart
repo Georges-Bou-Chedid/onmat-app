@@ -4,7 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 
 import '../../../controllers/auth.dart';
-import '../../../controllers/user.dart';
+import '../../../controllers/instructor.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/settings_menu_tile.dart';
@@ -20,8 +20,8 @@ class _AppPreferencesPageState extends State<AppPreferencesPage> {
   @override
   Widget build(BuildContext context) {
     final AuthService authService = AuthService();
-    final UserAccountService userAccountService = Provider.of<UserAccountService>(context);
-    final userAccount = userAccountService.userAccount;
+    final InstructorService instructorService = Provider.of<InstructorService>(context);
+    final instructor = instructorService.instructor;
     final appLocalizations = AppLocalizations.of(context)!;
 
     void showLanguageDialog(BuildContext context) {
@@ -109,9 +109,9 @@ class _AppPreferencesPageState extends State<AppPreferencesPage> {
             trailing: Transform.scale(
               scale: 0.8,                       // 1.0 = default size → lower = smaller
               child: Switch(
-                value: userAccount!.notifications ?? false,
+                value: instructor!.notifications ?? false,
                 onChanged: (value) async {
-                  final success = await userAccountService.updateFields(userAccount.userId, {
+                  final success = await instructorService.updateFields(instructor.userId, {
                     'notifications': value
                   });
 

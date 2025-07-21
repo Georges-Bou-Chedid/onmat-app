@@ -19,8 +19,8 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
 
   @override
   Widget build(BuildContext context) {
-    final AuthService _authService = AuthService();
-    final googleUser = _authService.isGoogleUser();
+    final AuthService authService = AuthService();
+    final googleUser = authService.isGoogleUser();
     final appLocalizations = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -66,10 +66,10 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               ),
               ).then((confirmed) async {
                 if (confirmed == true) {
-                  final result = await _authService.deleteAccount();
+                  final result = await authService.deleteAccount();
 
                   if (result.success) {
-                    await _authService.signOut();
+                    await authService.signOut();
                     Get.offAll(() => const SplashScreen());
                   } else {
                     if (! mounted) return;

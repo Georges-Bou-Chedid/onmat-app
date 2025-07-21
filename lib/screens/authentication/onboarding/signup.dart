@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:onmat/controllers/user.dart';
+import 'package:onmat/models/Student.dart';
 import 'package:onmat/screens/authentication/onboarding/verify_email.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -8,7 +8,7 @@ import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import '../../../../../controllers/auth.dart';
 import '../../../common/styles/spacing_styles.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../models/UserAccount.dart';
+import '../../../models/Instructor.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/helpers/helper_functions.dart';
 import '../../splash.dart';
@@ -22,7 +22,6 @@ class SignupScreen extends StatefulWidget {
 
 class _SignUpScreenScreenState extends State<SignupScreen> {
   final AuthService _authService = AuthService();
-  final UserAccountService userAccountService = UserAccountService();
   final GlobalKey<FormState> signUpKey = GlobalKey<FormState>();
   final TextEditingController _firstNameEditingController = TextEditingController();
   final TextEditingController _lastNameEditingController = TextEditingController();
@@ -350,7 +349,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
                         child: Text(
-                          "Please accept the terms", // e.g., "Please accept the terms."
+                          appLocalizations.acceptTerms,
                           style: TextStyle(color: Color(0xFFB3261E), fontSize: 12),
                         ),
                       ),
@@ -378,22 +377,37 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                             _isLoading = true;
                           });
 
-                          UserAccount userAccount = UserAccount(
-                            firstName: _firstNameEditingController.text,
-                            lastName: _lastNameEditingController.text,
-                            username: _usernameEditingController.text,
-                            dob: _dateOfBirthEditingController.text,
-                            weight: int.tryParse(_weightEditingController.text),
-                            email: _emailEditingController.text,
-                            phoneNumber: _phoneNumberEditingController.text,
-                            role: _selectedRole,
-                            notifications: false
-                          );
+                          Instructor? instructor;
+                          Student? student;
+                          if (_selectedRole == 'instructor') {
+                            instructor = Instructor(
+                                firstName: _firstNameEditingController.text,
+                                lastName: _lastNameEditingController.text,
+                                username: _usernameEditingController.text,
+                                dob: _dateOfBirthEditingController.text,
+                                weight: int.tryParse(_weightEditingController.text),
+                                email: _emailEditingController.text,
+                                phoneNumber: _phoneNumberEditingController.text,
+                                notifications: false
+                            );
+                          } else {
+                            student = Student(
+                                firstName: _firstNameEditingController.text,
+                                lastName: _lastNameEditingController.text,
+                                username: _usernameEditingController.text,
+                                dob: _dateOfBirthEditingController.text,
+                                weight: int.tryParse(_weightEditingController.text),
+                                email: _emailEditingController.text,
+                                phoneNumber: _phoneNumberEditingController.text,
+                                notifications: false
+                            );
+                          }
 
                           final result = await _authService.signUpByEmail(
                             _emailEditingController.text.trim(),
                             _passwordEditingController.text.trim(),
-                            userAccount
+                            instructor,
+                            student
                           );
 
                           setState(() {
@@ -498,18 +512,32 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                             return;
                           }
 
-                          UserAccount userAccount = UserAccount(
-                            firstName: _firstNameEditingController.text,
-                            lastName: _lastNameEditingController.text,
-                            username: _usernameEditingController.text,
-                            dob: _dateOfBirthEditingController.text,
-                            weight: int.tryParse(_weightEditingController.text),
-                            phoneNumber: _phoneNumberEditingController.text,
-                            role: _selectedRole,
-                            notifications: false
-                          );
+                          Instructor? instructor;
+                          Student? student;
+                          if (_selectedRole == 'instructor') {
+                            instructor = Instructor(
+                                firstName: _firstNameEditingController.text,
+                                lastName: _lastNameEditingController.text,
+                                username: _usernameEditingController.text,
+                                dob: _dateOfBirthEditingController.text,
+                                weight: int.tryParse(_weightEditingController.text),
+                                phoneNumber: _phoneNumberEditingController.text,
+                                notifications: false
+                            );
+                          } else {
+                            student = Student(
+                                firstName: _firstNameEditingController.text,
+                                lastName: _lastNameEditingController.text,
+                                username: _usernameEditingController.text,
+                                dob: _dateOfBirthEditingController.text,
+                                weight: int.tryParse(_weightEditingController.text),
+                                email: _emailEditingController.text,
+                                phoneNumber: _phoneNumberEditingController.text,
+                                notifications: false
+                            );
+                          }
 
-                          final result = await _authService.signUpWithGoogleAndCreateUser(userAccount);
+                          final result = await _authService.signUpWithGoogle(instructor, student);
 
                           if (result.success) {
                             Get.offAll(() => const SplashScreen());

@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import '../controllers/user.dart';
+import '../controllers/auth.dart';
+import '../controllers/instructor.dart';
+import '../controllers/student.dart';
 import '../utils/constants/sizes.dart';
 import 'authentication/login/login.dart';
 import 'instructor/start.dart';
@@ -16,6 +18,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final AuthService _authService = AuthService();
   bool _started = false;
 
   @override
@@ -36,24 +39,35 @@ class _SplashScreenState extends State<SplashScreen> {
 
     await Future.delayed(const Duration(seconds: 3)); // splash delay
 
-    final user = FirebaseAuth.instance.currentUser;
-
     // Make sure we navigate AFTER current frame is built
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (user != null) {
-        final UserAccountService userAccountService = Provider.of<UserAccountService>(context, listen: false);
-        final success = await userAccountService.fetchAndSetUser(user.uid);
+      final user = FirebaseAuth.instance.currentUser;
 
-        if (success) {
-          if (userAccountService.userAccount!.role == 'instructor') {
-            Get.offAll(() => const StartScreen());
-          }
-        } else {
-          Get.offAll(() => const LoginScreen()); // or onboarding
-        }
-      } else {
+      if (user == null) {
         Get.offAll(() => const LoginScreen());
+        return;
       }
+
+      final instructorService = Provider.of<InstructorService>(context, listen: false);
+      final studentService = Provider.of<StudentService>(context, listen: false);
+
+      final isInstructor = await instructorService.fetchAndSetInstructor(user.uid);
+      if (isInstructor) {
+        Get.offAll(() => const StartScreen()); // Instructor dashboard
+        return;
+      }
+
+      final isStudent = await studentService.fetchAndSetStudent(user.uid);
+      if (isStudent) {
+        await _authService.signOut();
+        Get.offAll(() => const LoginScreen()); // or student dashboard
+        return;
+      }
+
+      // If user not found in either collection
+      await user.delete();
+      await _authService.signOut();
+      Get.offAll(() => const LoginScreen());
     });
   }
 

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../utils/helpers/helper_functions.dart';
 
-class UserAccount {
+class Student {
   late String? userId;
   final String? firstName;
   final String? lastName;
@@ -11,10 +11,9 @@ class UserAccount {
   final int? weight;
   late String? email;
   final String? phoneNumber;
-  final String? role;
   final bool? notifications;
 
-  UserAccount({
+  Student({
     this.userId,
     this.firstName,
     this.lastName,
@@ -23,13 +22,12 @@ class UserAccount {
     this.weight,
     this.email,
     this.phoneNumber,
-    this.role,
     this.notifications
   });
 
   // Factory method to convert data from Firebase to Account
-  factory UserAccount.fromFirestore(String id, Map<String, dynamic> map) {
-    return UserAccount(
+  factory Student.fromFirestore(String id, Map<String, dynamic> map) {
+    return Student(
       userId: id,
       firstName: map['first_name'] ?? '',
       lastName: map['last_name'] ?? '',
@@ -38,7 +36,6 @@ class UserAccount {
       weight: THelperFunctions.parseInt(map['weight']),
       email: map['email'] ?? '',
       phoneNumber: map['phone_number'] ?? '',
-      role: map['role'] ?? '',
       notifications: map['notifications'] ?? false
     );
   }
@@ -53,15 +50,14 @@ class UserAccount {
       'weight': weight,
       'email': email,
       'phone_number': phoneNumber,
-      'role': role,
       'notifications': notifications,
       'created_at': FieldValue.serverTimestamp(),
       'updated_at': FieldValue.serverTimestamp()
     };
   }
 
-  UserAccount copyWith(Map<String, dynamic> updateData) {
-    return UserAccount(
+  Student copyWith(Map<String, dynamic> updateData) {
+    return Student(
         userId: updateData['user_id'] ?? userId,
         firstName: updateData['first_name'] ?? firstName,
         lastName: updateData['last_name'] ?? lastName,
@@ -70,7 +66,6 @@ class UserAccount {
         weight: updateData['weight'] ?? weight,
         email: updateData['email'] ?? email,
         phoneNumber: updateData['phone_number'] ?? phoneNumber,
-        role: updateData['role'] ?? role,
         notifications: updateData['notifications'] ?? notifications,
     );
   }

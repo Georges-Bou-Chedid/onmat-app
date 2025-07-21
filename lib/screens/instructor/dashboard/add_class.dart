@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:onmat/controllers/class.dart';
+import 'package:onmat/controllers/i_class.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -77,7 +77,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final ClassService classService = Provider.of<ClassService>(context);
+    final InstructorClassService instructorClassService = Provider.of<InstructorClassService>(context);
     appLocalizations = AppLocalizations.of(context)!;
     final dark = THelperFunctions.isDarkMode(context);
     final List<String> weekdays = [
@@ -378,7 +378,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
                                 schedule: schedule
                               );
 
-                              final success = await classService.createClass(cl);
+                              final success = await instructorClassService.createClass(cl);
 
                               setState(() {
                                 _isSaving = false;

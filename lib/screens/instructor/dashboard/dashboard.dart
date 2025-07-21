@@ -4,7 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:onmat/screens/instructor/dashboard/add_class.dart';
 import 'package:provider/provider.dart';
 
-import '../../../controllers/class.dart';
+import '../../../controllers/i_class.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/background_image_header_container.dart';
@@ -21,15 +21,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   late AppLocalizations appLocalizations;
+  late FocusNode _searchFocusNode;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _searchFocusNode = FocusNode();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       setState(() => _isLoading = true);
 
-      final classService = Provider.of<ClassService>(context, listen: false);
+      final classService = Provider.of<InstructorClassService>(context, listen: false);
       await classService.refresh();
 
       setState(() => _isLoading = false);
@@ -39,12 +41,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final classService = Provider.of<ClassService>(context, listen: true);
+    final classService = Provider.of<InstructorClassService>(context, listen: true);
     final myClasses = classService.myClasses;
     final filteredClasses = myClasses.where((cl) {
       final query = _searchQuery.trim().toLowerCase();
@@ -55,7 +58,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     appLocalizations = AppLocalizations.of(context)!;
 
     return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
+      onTap: () => _searchFocusNode.unfocus(),
       child: Scaffold(
           body: SingleChildScrollView(
             child: Column(
@@ -86,6 +89,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         trailing: IconButton(
                             onPressed: (){
+                              _searchFocusNode.unfocus();
                               Get.to(
                                 () => const AddClassScreen(),
                                 transition: Transition.downToUp,        // comes from bottom, exits at top
@@ -109,6 +113,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       /// Search Bar
                       TextField(
                         controller: _searchController,
+                        focusNode: _searchFocusNode,
                         decoration: InputDecoration(
                           hintText: appLocalizations.searchClasses,
                           prefixIcon: const Icon(Iconsax.search_normal),
@@ -187,6 +192,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         ),
                                         trailing: Icon(Iconsax.arrow_21, size: TSizes.md),
                                         onTap: () {
+                                          _searchFocusNode.unfocus();
                                           Get.to(
                                             () => const ClassDetailsScreen(),
                                             transition: Transition.rightToLeft,

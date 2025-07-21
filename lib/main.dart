@@ -1,5 +1,5 @@
-import 'package:onmat/controllers/class.dart';
-import 'package:onmat/controllers/user.dart';
+import 'package:onmat/controllers/i_class.dart';
+import 'package:onmat/controllers/instructor.dart';
 import 'package:onmat/screens/splash.dart';
 import 'package:onmat/utils/theme_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'controllers/auth.dart';
+import 'controllers/student.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 
@@ -26,8 +27,9 @@ void main() async {
   runApp(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => UserAccountService()),
-          ChangeNotifierProvider(create: (_) => ClassService()),
+          ChangeNotifierProvider(create: (_) => InstructorService()),
+          ChangeNotifierProvider(create: (_) => StudentService()),
+          ChangeNotifierProvider(create: (_) => InstructorClassService()),
         ],
         child: MyApp(startLocale),
       )

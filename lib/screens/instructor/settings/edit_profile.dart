@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:onmat/controllers/user.dart';
+import 'package:onmat/controllers/instructor.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -32,15 +32,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    final userAccount = Provider.of<UserAccountService>(context, listen: false).userAccount;
+    final instructor = Provider.of<InstructorService>(context, listen: false).instructor;
 
-    if (userAccount != null) {
-      _firstNameEditingController.text   = userAccount.firstName ?? '';
-      _lastNameEditingController.text    = userAccount.lastName ?? '';
-      _usernameEditingController.text    = userAccount.username ?? '';
-      _dateOfBirthEditingController.text = userAccount.dob ?? '';
-      _weightEditingController.text      = userAccount.weight?.toString() ?? '';
-      _phoneNumberEditingController.text = userAccount.phoneNumber ?? '';
+    if (instructor != null) {
+      _firstNameEditingController.text   = instructor.firstName ?? '';
+      _lastNameEditingController.text    = instructor.lastName ?? '';
+      _usernameEditingController.text    = instructor.username ?? '';
+      _dateOfBirthEditingController.text = instructor.dob ?? '';
+      _weightEditingController.text      = instructor.weight?.toString() ?? '';
+      _phoneNumberEditingController.text = instructor.phoneNumber ?? '';
     }
     _isInitialized = true;
   }
@@ -213,8 +213,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                           setState(() => _isLoading = true);
 
-                          final userAccountService = context.read<UserAccountService>();
-                          final userAccount = userAccountService.userAccount;
+                          final instructorService = context.read<InstructorService>();
+                          final instructor = instructorService.instructor;
 
                           final changes = <String, dynamic>{};
 
@@ -222,11 +222,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             if (newVal != null && newVal != oldVal) changes[key] = newVal;
                           }
 
-                          addIfChanged('first_name', _firstNameEditingController.text.trim(), userAccount?.firstName);
-                          addIfChanged('last_name', _lastNameEditingController.text.trim(), userAccount?.lastName);
-                          addIfChanged('dob', _dateOfBirthEditingController.text.trim(), userAccount?.dob);
-                          addIfChanged('weight', int.tryParse(_weightEditingController.text), userAccount?.weight);
-                          addIfChanged('phone_number', _phoneNumberEditingController.text.trim(), userAccount?.phoneNumber);
+                          addIfChanged('first_name', _firstNameEditingController.text.trim(), instructor?.firstName);
+                          addIfChanged('last_name', _lastNameEditingController.text.trim(), instructor?.lastName);
+                          addIfChanged('dob', _dateOfBirthEditingController.text.trim(), instructor?.dob);
+                          addIfChanged('weight', int.tryParse(_weightEditingController.text), instructor?.weight);
+                          addIfChanged('phone_number', _phoneNumberEditingController.text.trim(), instructor?.phoneNumber);
 
                           // Nothing to update?
                           if (changes.isEmpty) {
@@ -235,7 +235,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           }
 
                           // 3. call service
-                          final success = await userAccountService.updateFields(userAccount!.userId, changes);
+                          final success = await instructorService.updateFields(instructor!.userId, changes);
 
                           if (success) {
                             Get.back();

@@ -1,11 +1,13 @@
 import "package:cloud_firestore/cloud_firestore.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:google_sign_in/google_sign_in.dart";
-import "package:onmat/models/UserAccount.dart";
+import "package:onmat/models/Instructor.dart";
 import "package:shared_preferences/shared_preferences.dart";
 import "../models/AuthResult.dart";
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+
+import "../models/Student.dart";
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -45,7 +47,12 @@ class AuthService {
     }
   }
 
-  Future<AuthResult> signUpByEmail(String email, String password, UserAccount userAccount) async {
+  Future<AuthResult> signUpByEmail(
+      String email,
+      String password,
+      Instructor? instructor,
+      Student? student
+  ) async {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -58,27 +65,37 @@ class AuthService {
         return AuthResult(success: false, errorMessage: 'auth-user-creation-failed');
       }
 
-      final existing = await FirebaseFirestore.instance
-          .collection('user_accounts')
-          .where('username', isEqualTo: userAccount.username)
-          .limit(1)
-          .get();
-
-      if (existing.docs.isNotEmpty) {
-        await user.delete(); // Rollback user creation
-        return AuthResult(success: false, errorMessage: 'username-already-taken');
+      dynamic model;
+      var modelString = '';
+      if (instructor != null) {
+        model = instructor;
+        modelString = 'instructors';
+      } else {
+        model = student;
+        modelString = 'students';
       }
 
-      if (! user.emailVerified) {
-        await user.sendEmailVerification();
-      }
+    final existing = await FirebaseFirestore.instance
+        .collection(modelString)
+        .where('username', isEqualTo: model.username)
+        .limit(1)
+        .get();
 
-      userAccount.userId = user.uid;
-      // 4. Create Firestore user account
-      await FirebaseFirestore.instance
-          .collection('user_accounts')
-          .doc(user.uid)
-          .set(userAccount.toMap());
+    if (existing.docs.isNotEmpty) {
+      await user.delete(); // Rollback user creation
+      return AuthResult(success: false, errorMessage: 'username-already-taken');
+    }
+
+    if (! user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+
+    model.userId = user.uid;
+    // 4. Create Firestore user account
+    await FirebaseFirestore.instance
+        .collection(modelString)
+        .doc(user.uid)
+        .set(model.toMap());
 
       return AuthResult(success: true);
     } on FirebaseAuthException catch (e) {
@@ -111,15 +128,10 @@ class AuthService {
         return AuthResult(success: false, errorMessage: 'auth-failed');
       }
 
-      final doc = await FirebaseFirestore.instance
-          .collection('user_accounts')
-          .doc(user.uid)
-          .get();
-
-      if (! doc.exists) {
+      final role = await getUserRole(user.uid);
+      if (role == null) {
         await user.delete();
-        await FirebaseAuth.instance.signOut();
-        await GoogleSignIn().signOut();
+        await signOut();
         return AuthResult(success: false, errorMessage: 'user-not-found');
       }
 
@@ -130,7 +142,10 @@ class AuthService {
     }
   }
 
-  Future<AuthResult> signUpWithGoogleAndCreateUser(UserAccount userAccount) async {
+  Future<AuthResult> signUpWithGoogle(
+      Instructor? instructor,
+      Student? student
+  ) async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
@@ -151,37 +166,45 @@ class AuthService {
 
       final uid = user.uid;
 
+      dynamic model;
+      var modelString = '';
+      if (instructor != null) {
+        model = instructor;
+        modelString = 'instructors';
+      } else {
+        model = student;
+        modelString = 'students';
+      }
+
       // 🔒 Check if a user_account already exists for this UID
       final existingAccountDoc = await FirebaseFirestore.instance
-          .collection('user_accounts')
+          .collection(modelString)
           .doc(uid)
           .get();
 
       if (existingAccountDoc.exists) {
-        await FirebaseAuth.instance.signOut();
-        await GoogleSignIn().signOut();
+        await signOut();
         return AuthResult(success: false, errorMessage: 'user-already-exists');
       }
 
       // Check username uniqueness
       final existing = await FirebaseFirestore.instance
-          .collection('user_accounts')
-          .where('username', isEqualTo: userAccount.username)
+          .collection(modelString)
+          .where('username', isEqualTo: model.username)
           .limit(1)
           .get();
 
       if (existing.docs.isNotEmpty) {
-        await FirebaseAuth.instance.signOut();
-        await GoogleSignIn().signOut();
+        await signOut();
         return AuthResult(success: false, errorMessage: 'username-already-taken');
       }
 
-      userAccount.userId = uid;
-      userAccount.email = user.email;
+      model.userId = uid;
+      model.email = user.email;
       await FirebaseFirestore.instance
-          .collection('user_accounts')
+          .collection(modelString)
           .doc(uid)
-          .set(userAccount.toMap());
+          .set(model.toMap());
 
       return AuthResult(success: true);
     } catch (e) {
@@ -199,14 +222,17 @@ class AuthService {
         return AuthResult(success: false, errorMessage: 'user-not-found');
       }
 
-      // 🔴 1. Delete FirebaseAuth user
-      await user!.delete();
+      final role = await getUserRole(uid);
 
-      // 🔴 2. Delete Firestore user document
-      await FirebaseFirestore.instance
-          .collection('user_accounts')
-          .doc(uid)
-          .delete();
+      // 1. Delete Firestore user document
+      if (role == 'instructor') {
+        await FirebaseFirestore.instance.collection('instructors').doc(uid).delete();
+      } else if (role == 'student') {
+        await FirebaseFirestore.instance.collection('students').doc(uid).delete();
+      }
+
+      // 2. Delete FirebaseAuth user
+      await user?.delete();
 
       return AuthResult(success: true);
     } on FirebaseAuthException catch (e) {
@@ -220,5 +246,21 @@ class AuthService {
     Get.updateLocale(Locale(code));
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('lang', code);      // persists the choice
+  }
+
+  Future<String?> getUserRole(String uid) async {
+    final instructorDoc = await FirebaseFirestore.instance
+        .collection('instructors')
+        .doc(uid)
+        .get();
+    if (instructorDoc.exists) return 'instructor';
+
+    final studentDoc = await FirebaseFirestore.instance
+        .collection('students')
+        .doc(uid)
+        .get();
+    if (studentDoc.exists) return 'student';
+
+    return null;
   }
 }

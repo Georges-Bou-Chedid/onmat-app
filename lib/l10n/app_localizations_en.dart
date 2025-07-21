@@ -388,4 +388,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addSchedule => 'Add Schedule';
+
+  @override
+  String get acceptTerms => 'Please accept the terms';
 }

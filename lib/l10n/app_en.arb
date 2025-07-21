@@ -125,5 +125,6 @@
   "day": "Day",
   "time": "Time (e.g., 2:00 PM)",
   "duration": "Duration (e.g., 2h)",
-  "addSchedule": "Add Schedule"
+  "addSchedule": "Add Schedule",
+  "acceptTerms": "Please accept the terms"
 }

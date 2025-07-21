@@ -9,7 +9,7 @@ import 'package:onmat/utils/widgets/primary_header_container.dart';
 import 'package:onmat/utils/widgets/settings_menu_tile.dart';
 import 'package:provider/provider.dart';
 
-import '../../../controllers/user.dart';
+import '../../../controllers/instructor.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/widgets/circular_image.dart';
 import '../../../utils/widgets/section_header.dart';
@@ -30,8 +30,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final AuthService authService = AuthService();
-    final UserAccountService userAccountService = Provider.of<UserAccountService>(context);
-    final userAccount = userAccountService.userAccount;
+    final InstructorService instructorService = Provider.of<InstructorService>(context);
+    final instructor = instructorService.instructor;
     appLocalizations = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -64,13 +64,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         padding: 0,
                       ),
                       title: Text(
-                        userAccount != null
-                          ? "${userAccount.firstName} ${userAccount.lastName}"
+                          instructor != null
+                          ? "${instructor.firstName} ${instructor.lastName}"
                           : '',
                         style: Theme.of(context).textTheme.headlineSmall!.apply(color: Colors.white)
                       ),
                       subtitle: Text(
-                        userAccount!.email ?? '',
+                        instructor!.email ?? '',
                         style: Theme.of(context).textTheme.bodyMedium!.apply(color: Colors.white)
                       ),
                       trailing: IconButton(
