@@ -24,7 +24,7 @@ class InstructorClassService with ChangeNotifier {
           .where('owner_id', isEqualTo: ownerId)
           .get();
 
-      _myClasses = snapshot.docs.map((doc) => Class.fromFirestore(ownerId, doc.data())).toList();
+      _myClasses = snapshot.docs.map((doc) => Class.fromFirestore(doc.id, doc.data())).toList();
       notifyListeners();
     } catch (e) {
       print("🔥 Error fetching classes: $e");
@@ -35,15 +35,44 @@ class InstructorClassService with ChangeNotifier {
 
   Future<bool> createClass(Class cl) async {
     try {
-      await _firestore
-          .collection('classes')
-          .add(cl.toMap());
+      final docRef = _firestore.collection('classes').doc();
+      final classId = docRef.id;
+      cl.id = classId;
+
+      await docRef.set(cl.toMap());
 
       _myClasses.add(cl);
       notifyListeners();
       return true;
     } catch (e) {
       print("🔥 Failed to create class: $e");
+      return false;
+    }
+  }
+
+  Future<bool> updateFields(String? uid, Map<String, dynamic> changes) async {
+    try {
+      if (uid == null) {
+        return false;
+      }
+      changes.removeWhere((_, value) => value == null);
+      changes['updated_at'] = FieldValue.serverTimestamp();
+
+      await FirebaseFirestore.instance
+          .collection('classes')
+          .doc(uid)
+          .set(changes, SetOptions(merge: true));
+
+      final idx = _myClasses.indexWhere((c) => c.id == uid);
+      if (idx != -1) {
+        final updated = _myClasses[idx].copyWith(changes);
+        _myClasses[idx] = updated;
+        notifyListeners();
+      }
+
+      return true;
+    } catch (e) {
+      print("🔥 Failed to update class: $e");
       return false;
     }
   }

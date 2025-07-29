@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
+import 'package:country_picker/country_picker.dart';
 
+import '../../../controllers/i_class.dart';
+import '../../../controllers/instructor.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/background_image_header_container.dart';
 import '../start.dart';
+import 'edit_class.dart';
 
 class ClassDetailsScreen extends StatefulWidget {
-  const ClassDetailsScreen({super.key});
+  final String? classId;
+  const ClassDetailsScreen({super.key, required this.classId});
 
   @override
   _ClassDetailsScreenState createState() => _ClassDetailsScreenState();
@@ -19,18 +25,18 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final InstructorService instructorService = Provider.of<InstructorService>(context, listen: true);
+    final instructor = instructorService.instructor;
+    final classService = Provider.of<InstructorClassService>(context, listen: true);
+    final classItem = classService.myClasses.firstWhereOrNull((cl) => cl.id == widget.classId);
     appLocalizations = AppLocalizations.of(context)!;
 
-    // You can replace these with real data models
-    final className = "Advanced Taekwondo";
-    final classType = "Martial Arts";
-    final location = "Beirut";
-    final country = "Lebanon";
-    final schedule = [
-      {"day": "Monday", "time": "2:00 PM", "duration": "2h"},
-      {"day": "Wednesday", "time": "2:00 PM", "duration": "2h"},
-      {"day": "Friday", "time": "2:00 PM", "duration": "2h"},
-    ];
+    if (classItem == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(child: Text(appLocalizations.classNotFound)),
+      );
+    }
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -68,7 +74,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                   /// Classes Card
                   ListTile(
                     title: Text(
-                        className,
+                        classItem.className ?? '',
                         style: Theme.of(context).textTheme.headlineSmall!.apply(color: Colors.white)
                     ),
                   ),
@@ -82,7 +88,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
               padding: const EdgeInsets.all(TSizes.spaceBtwItems),
               child: Column(
                 children: [
-                  _buildSectionTitle(context, "Class Information"),
+                  _buildSectionTitle(context, appLocalizations.classInfo),
                   Card(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     child: Padding(
@@ -90,8 +96,9 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _infoRow("Type", classType),
-                          _infoRow("Location", "$location, $country"),
+                          _infoRow(appLocalizations.instructor, "${instructor!.firstName} ${instructor.lastName}"),
+                          _infoRow(appLocalizations.type, classItem.classType!),
+                          _infoRow(appLocalizations.location, "${classItem.location}, ${Country.parse(classItem.country ?? "LB").name}"),
                         ],
                       ),
                     ),
@@ -99,8 +106,8 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                   const SizedBox(height: 20),
 
                   /// CLASS SCHEDULE
-                  _buildSectionTitle(context, "Weekly Schedule"),
-                  ...schedule.map((s) => ListTile(
+                  _buildSectionTitle(context, appLocalizations.weeklySchedule),
+                  ...classItem.schedule!.map((s) => ListTile(
                     leading: Icon(Iconsax.clock, color: Theme.of(context).primaryColor),
                     title: Text("${s['day']}"),
                     subtitle: Text("${s['time']} • ${s['duration']}"),
@@ -108,23 +115,30 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                   const SizedBox(height: 20),
 
                   /// ACTIONS
-                  _buildSectionTitle(context, "Actions"),
+                  _buildSectionTitle(context, appLocalizations.actions),
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,
                     children: [
-                      _actionButton(context, Iconsax.edit, "Edit Class", onTap: () {}),
-                      _actionButton(context, Iconsax.calendar, "Reschedule", onTap: () {}),
-                      _actionButton(context, Iconsax.user_add, "Assign Assistants", onTap: () {}),
+                      _actionButton(context, Iconsax.edit, appLocalizations.editClass, onTap: () {
+                        Get.to(
+                          () => EditClassScreen(classItem: classItem),
+                          transition: Transition.downToUp,        // comes from bottom, exits at top
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,               // optional: smoother easing
+                        );
+                      }),
+                      _actionButton(context, Iconsax.calendar, appLocalizations.reschedule, onTap: () {}),
+                      _actionButton(context, Iconsax.user_add, appLocalizations.assignAssistant, onTap: () {}),
                     ],
                   ),
                   const SizedBox(height: 30),
 
                   /// STUDENT LIST
-                  _buildSectionTitle(context, "Students"),
+                  _buildSectionTitle(context, appLocalizations.students),
                   TextField(
                     decoration: InputDecoration(
-                      hintText: "Search students...",
+                      hintText: appLocalizations.searchStudents,
                       prefixIcon: Icon(Iconsax.search_normal),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
@@ -145,7 +159,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                   const SizedBox(height: 30),
 
                   /// QR CODE
-                  _buildSectionTitle(context, "Class QR Code"),
+                  _buildSectionTitle(context, appLocalizations.classQrCode),
                   Center(
                     child: Container(
                       padding: const EdgeInsets.all(20),

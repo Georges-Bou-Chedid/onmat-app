@@ -36,7 +36,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedCountry = Country.parse('LB');   // Lebanon 🇱🇧
+    _selectedCountry = Country.parse('LB');
     countryCtrl.text = _selectedCountry!.name;
     schedule = [];
     scheduleErrors = List.generate(schedule.length, (_) => {'day': null, 'time': null, 'duration': null});
@@ -133,7 +133,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
               Form(
                 key: createClassKey,
                 child: Padding(
-                  padding: const EdgeInsets.all(TSizes.spaceBtwItems),
+                  padding: const EdgeInsets.all(TSizes.defaultSpace),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -369,10 +369,11 @@ class _AddClassScreenState extends State<AddClassScreen> {
 
                               final String qrCode = const Uuid().v4();
                               Class cl = Class(
+                                id: '',
                                 ownerId: FirebaseAuth.instance.currentUser?.uid,
                                 className: nameCtrl.text.trim(),
                                 classType: selectedType,
-                                country: countryCtrl.text.trim(),
+                                country: _selectedCountry?.countryCode,
                                 location: locationCtrl.text.trim(),
                                 qrCode: qrCode,
                                 schedule: schedule

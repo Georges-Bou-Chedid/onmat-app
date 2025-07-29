@@ -237,6 +237,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           // 3. call service
                           final success = await instructorService.updateFields(instructor!.userId, changes);
 
+                          setState(() {
+                            _isLoading = false;
+                          });
+
                           if (success) {
                             Get.back();
                             Get.snackbar(

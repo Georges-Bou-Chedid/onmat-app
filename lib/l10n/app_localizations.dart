@@ -862,6 +862,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please accept the terms'**
   String get acceptTerms;
+
+  /// No description provided for @classNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Class Not Found'**
+  String get classNotFound;
+
+  /// No description provided for @classInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Class Information'**
+  String get classInfo;
+
+  /// No description provided for @type.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get type;
+
+  /// No description provided for @weeklySchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Schedule'**
+  String get weeklySchedule;
+
+  /// No description provided for @actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get actions;
+
+  /// No description provided for @editClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Class'**
+  String get editClass;
+
+  /// No description provided for @reschedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Reschedule'**
+  String get reschedule;
+
+  /// No description provided for @assignAssistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign Assistant'**
+  String get assignAssistant;
+
+  /// No description provided for @students.
+  ///
+  /// In en, this message translates to:
+  /// **'Students'**
+  String get students;
+
+  /// No description provided for @searchStudents.
+  ///
+  /// In en, this message translates to:
+  /// **'Search students...'**
+  String get searchStudents;
+
+  /// No description provided for @classQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Class QR Code'**
+  String get classQrCode;
+
+  /// No description provided for @classUpdatedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Class Updated'**
+  String get classUpdatedMessage;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

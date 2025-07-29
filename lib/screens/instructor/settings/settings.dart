@@ -30,7 +30,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final AuthService authService = AuthService();
-    final InstructorService instructorService = Provider.of<InstructorService>(context);
+    final InstructorService instructorService = Provider.of<InstructorService>(context, listen: true);
     final instructor = instructorService.instructor;
     appLocalizations = AppLocalizations.of(context)!;
 

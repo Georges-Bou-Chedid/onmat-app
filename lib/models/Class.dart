@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Class {
+  late String id;
   final String? ownerId;
   final String? className;
   final String? classType;
@@ -10,6 +11,7 @@ class Class {
   final List<Map<String, String>>? schedule;
 
   Class({
+    required this.id,
     this.ownerId,
     this.className,
     this.classType,
@@ -29,7 +31,8 @@ class Class {
     }
 
     return Class(
-      ownerId: id,
+      id: id,
+      ownerId: data['owner_id'] ?? '',
       className: data['class_name'] ?? '',
       classType: data['class_type'] ?? '',
       country: data['country'] ?? '',
@@ -55,6 +58,7 @@ class Class {
 
   Class copyWith(Map<String, dynamic> updateData) {
     return Class(
+      id: id,
       ownerId: updateData['owner_id'] ?? ownerId,
       className: updateData['class_name'] ?? className,
       classType: updateData['class_type'] ?? classType,

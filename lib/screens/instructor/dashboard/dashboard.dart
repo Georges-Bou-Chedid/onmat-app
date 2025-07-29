@@ -194,7 +194,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         onTap: () {
                                           _searchFocusNode.unfocus();
                                           Get.to(
-                                            () => const ClassDetailsScreen(),
+                                            () => ClassDetailsScreen(classId: classItem.id),
                                             transition: Transition.rightToLeft,
                                             duration: const Duration(milliseconds: 300),
                                             curve: Curves.easeInOut,

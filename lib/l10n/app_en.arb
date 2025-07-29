@@ -126,5 +126,18 @@
   "time": "Time (e.g., 2:00 PM)",
   "duration": "Duration (e.g., 2h)",
   "addSchedule": "Add Schedule",
-  "acceptTerms": "Please accept the terms"
+  "acceptTerms": "Please accept the terms",
+  "classNotFound": "Class Not Found",
+  "classInfo": "Class Information",
+  "type": "Type",
+  "weeklySchedule": "Weekly Schedule",
+  "actions": "Actions",
+  "editClass": "Edit Class",
+  "reschedule": "Reschedule",
+  "assignAssistant": "Assign Assistant",
+  "students": "Students",
+  "searchStudents": "Search students...",
+  "classQrCode": "Class QR Code",
+  "classUpdatedMessage": "Class Updated",
+  "saveChanges": "Save Changes"
 }

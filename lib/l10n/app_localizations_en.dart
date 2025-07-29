@@ -391,4 +391,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get acceptTerms => 'Please accept the terms';
+
+  @override
+  String get classNotFound => 'Class Not Found';
+
+  @override
+  String get classInfo => 'Class Information';
+
+  @override
+  String get type => 'Type';
+
+  @override
+  String get weeklySchedule => 'Weekly Schedule';
+
+  @override
+  String get actions => 'Actions';
+
+  @override
+  String get editClass => 'Edit Class';
+
+  @override
+  String get reschedule => 'Reschedule';
+
+  @override
+  String get assignAssistant => 'Assign Assistant';
+
+  @override
+  String get students => 'Students';
+
+  @override
+  String get searchStudents => 'Search students...';
+
+  @override
+  String get classQrCode => 'Class QR Code';
+
+  @override
+  String get classUpdatedMessage => 'Class Updated';
+
+  @override
+  String get saveChanges => 'Save Changes';
 }
