@@ -50,20 +50,20 @@ class InstructorClassService with ChangeNotifier {
     }
   }
 
-  Future<bool> updateFields(String? uid, Map<String, dynamic> changes) async {
+  Future<bool> updateFields(String? classId, Map<String, dynamic> changes) async {
     try {
-      if (uid == null) {
+      if (classId == null) {
         return false;
       }
       changes.removeWhere((_, value) => value == null);
       changes['updated_at'] = FieldValue.serverTimestamp();
 
-      await FirebaseFirestore.instance
+      await _firestore
           .collection('classes')
-          .doc(uid)
+          .doc(classId)
           .set(changes, SetOptions(merge: true));
 
-      final idx = _myClasses.indexWhere((c) => c.id == uid);
+      final idx = _myClasses.indexWhere((c) => c.id == classId);
       if (idx != -1) {
         final updated = _myClasses[idx].copyWith(changes);
         _myClasses[idx] = updated;

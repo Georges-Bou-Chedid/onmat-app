@@ -940,6 +940,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save Changes'**
   String get saveChanges;
+
+  /// No description provided for @assign.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign'**
+  String get assign;
+
+  /// No description provided for @assistantIdentifier.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistant Identifier'**
+  String get assistantIdentifier;
+
+  /// No description provided for @assistantHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Email or username'**
+  String get assistantHint;
+
+  /// No description provided for @assistantAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistant Added'**
+  String get assistantAdded;
+
+  /// No description provided for @assistantNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistant not found by email or username'**
+  String get assistantNotFound;
+
+  /// No description provided for @assistants.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistants'**
+  String get assistants;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -4,7 +4,8 @@ import 'package:iconsax/iconsax.dart';
 import 'package:onmat/screens/instructor/dashboard/add_class.dart';
 import 'package:provider/provider.dart';
 
-import '../../../controllers/i_class.dart';
+import '../../../controllers/class_assistant.dart';
+import '../../../controllers/instructor_class.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/background_image_header_container.dart';
@@ -191,8 +192,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           ],
                                         ),
                                         trailing: Icon(Iconsax.arrow_21, size: TSizes.md),
-                                        onTap: () {
+                                        onTap: () async {
                                           _searchFocusNode.unfocus();
+
+                                          // Show loading indicator
+                                          showDialog(
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (_) => const Center(child: SizedBox(
+                                              height: TSizes.lg,
+                                              width: TSizes.lg,
+                                              child: CircularProgressIndicator(),
+                                            )),
+                                          );
+
+                                          // Fetch assistants before navigating
+                                          final classAssistantService = Provider.of<ClassAssistantService>(context, listen: false);
+                                          await classAssistantService.fetchAssistantProfiles(classItem.id);
+
+                                          // Dismiss loading
+                                          Get.back();
+
                                           Get.to(
                                             () => ClassDetailsScreen(classId: classItem.id),
                                             transition: Transition.rightToLeft,

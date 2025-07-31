@@ -1,4 +1,4 @@
-import 'package:onmat/controllers/i_class.dart';
+import 'package:onmat/controllers/instructor_class.dart';
 import 'package:onmat/controllers/instructor.dart';
 import 'package:onmat/screens/splash.dart';
 import 'package:onmat/utils/theme_data.dart';
@@ -9,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'controllers/class_assistant.dart';
 import 'controllers/auth.dart';
 import 'controllers/student.dart';
 import 'firebase_options.dart';
@@ -30,6 +31,7 @@ void main() async {
           ChangeNotifierProvider(create: (_) => InstructorService()),
           ChangeNotifierProvider(create: (_) => StudentService()),
           ChangeNotifierProvider(create: (_) => InstructorClassService()),
+          ChangeNotifierProvider(create: (_) => ClassAssistantService()),
         ],
         child: MyApp(startLocale),
       )

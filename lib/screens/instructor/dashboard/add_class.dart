@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:onmat/controllers/i_class.dart';
+import 'package:onmat/controllers/instructor_class.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 

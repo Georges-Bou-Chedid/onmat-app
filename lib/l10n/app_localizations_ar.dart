@@ -430,4 +430,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get saveChanges => 'Save Changes';
+
+  @override
+  String get assign => 'Assign';
+
+  @override
+  String get assistantIdentifier => 'Assistant Identifier';
+
+  @override
+  String get assistantHint => 'Email or username';
+
+  @override
+  String get assistantAdded => 'Assistant Added';
+
+  @override
+  String get assistantNotFound => 'Assistant not found by email or username';
+
+  @override
+  String get assistants => 'Assistants';
 }

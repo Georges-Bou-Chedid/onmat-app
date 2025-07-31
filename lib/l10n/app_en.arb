@@ -139,5 +139,11 @@
   "searchStudents": "Search students...",
   "classQrCode": "Class QR Code",
   "classUpdatedMessage": "Class Updated",
-  "saveChanges": "Save Changes"
+  "saveChanges": "Save Changes",
+  "assign": "Assign",
+  "assistantIdentifier": "Assistant Identifier",
+  "assistantHint": "Email or username",
+  "assistantAdded": "Assistant Added",
+  "assistantNotFound": "Assistant not found by email or username",
+  "assistants": "Assistants"
 }

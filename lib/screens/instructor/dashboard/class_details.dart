@@ -4,16 +4,19 @@ import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:country_picker/country_picker.dart';
 
-import '../../../controllers/i_class.dart';
+import '../../../controllers/class_assistant.dart';
+import '../../../controllers/instructor_class.dart';
 import '../../../controllers/instructor.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
+import '../../../utils/widgets/assign_assistant_dialog.dart';
 import '../../../utils/widgets/background_image_header_container.dart';
+import '../../../utils/widgets/edit_class_dialog.dart';
+import '../../../utils/widgets/reschedule_dialog.dart';
 import '../start.dart';
-import 'edit_class.dart';
 
 class ClassDetailsScreen extends StatefulWidget {
-  final String? classId;
+  final String classId;
   const ClassDetailsScreen({super.key, required this.classId});
 
   @override
@@ -21,7 +24,10 @@ class ClassDetailsScreen extends StatefulWidget {
 }
 
 class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
-  late AppLocalizations appLocalizations;
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +35,9 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
     final instructor = instructorService.instructor;
     final classService = Provider.of<InstructorClassService>(context, listen: true);
     final classItem = classService.myClasses.firstWhereOrNull((cl) => cl.id == widget.classId);
-    appLocalizations = AppLocalizations.of(context)!;
+    final classAssistantService = Provider.of<ClassAssistantService>(context, listen: true);
+    final myAssistants = classAssistantService.myAssistants;
+    final appLocalizations = AppLocalizations.of(context)!;
 
     if (classItem == null) {
       return Scaffold(
@@ -99,6 +107,11 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                           _infoRow(appLocalizations.instructor, "${instructor!.firstName} ${instructor.lastName}"),
                           _infoRow(appLocalizations.type, classItem.classType!),
                           _infoRow(appLocalizations.location, "${classItem.location}, ${Country.parse(classItem.country ?? "LB").name}"),
+                          if (myAssistants.isNotEmpty)
+                          _infoRow(
+                            appLocalizations.assistants,
+                            myAssistants.map((a) => "${a.firstName} ${a.lastName}").join(', ')
+                          ),
                         ],
                       ),
                     ),
@@ -117,19 +130,30 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                   /// ACTIONS
                   _buildSectionTitle(context, appLocalizations.actions),
                   Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
+                    spacing: TSizes.borderRadiusLg,
+                    runSpacing: TSizes.borderRadiusLg,
                     children: [
                       _actionButton(context, Iconsax.edit, appLocalizations.editClass, onTap: () {
-                        Get.to(
-                          () => EditClassScreen(classItem: classItem),
-                          transition: Transition.downToUp,        // comes from bottom, exits at top
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,               // optional: smoother easing
+                        showDialog(
+                          context: context,
+                          builder: (_) => EditClassDialog(classItem: classItem),
                         );
                       }),
-                      _actionButton(context, Iconsax.calendar, appLocalizations.reschedule, onTap: () {}),
-                      _actionButton(context, Iconsax.user_add, appLocalizations.assignAssistant, onTap: () {}),
+                      _actionButton(context, Iconsax.calendar, appLocalizations.reschedule, onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => RescheduleDialog(
+                            classId: classItem.id,
+                            initialSchedule: List<Map<String, String>>.from(classItem.schedule ?? [])
+                          ),
+                        );
+                      }),
+                      _actionButton(context, Iconsax.user_add, appLocalizations.assignAssistant, onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => AssignAssistantDialog(classId: classItem.id, assistants: myAssistants),
+                        );
+                      }),
                     ],
                   ),
                   const SizedBox(height: 30),

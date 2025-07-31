@@ -7,15 +7,15 @@ class InstructorService with ChangeNotifier {
 
   Instructor? get instructor => _instructor;
 
-  Future<bool> fetchAndSetInstructor(String uid) async {
+  Future<bool> fetchAndSetInstructor(String instructorId) async {
     try {
       final doc = await FirebaseFirestore.instance
           .collection('instructors')
-          .doc(uid)
+          .doc(instructorId)
           .get();
 
       if (doc.exists) {
-        _instructor = Instructor.fromFirestore(uid, doc.data()!);
+        _instructor = Instructor.fromFirestore(instructorId, doc.data()!);
         notifyListeners();
         return true;
       } else {
@@ -27,9 +27,9 @@ class InstructorService with ChangeNotifier {
     }
   }
 
-  Future<bool> updateFields(String? uid, Map<String, dynamic> changes) async {
+  Future<bool> updateFields(String? instructorId, Map<String, dynamic> changes) async {
     try {
-      if (uid == null) {
+      if (instructorId == null) {
         return false;
       }
       changes.removeWhere((_, value) => value == null);
@@ -37,7 +37,7 @@ class InstructorService with ChangeNotifier {
 
       await FirebaseFirestore.instance
           .collection('instructors')
-          .doc(uid)
+          .doc(instructorId)
           .set(changes, SetOptions(merge: true));
 
       _instructor = _instructor?.copyWith(changes);
