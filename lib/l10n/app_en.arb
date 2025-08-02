@@ -145,5 +145,7 @@
   "assistantHint": "Email or username",
   "assistantAdded": "Assistant Added",
   "assistantNotFound": "Assistant not found by email or username",
-  "assistants": "Assistants"
+  "assistants": "Assistants",
+  "owner": "Owner",
+  "assistant": "Assistant"
 }

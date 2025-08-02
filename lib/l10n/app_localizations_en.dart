@@ -448,4 +448,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get assistants => 'Assistants';
+
+  @override
+  String get owner => 'Owner';
+
+  @override
+  String get assistant => 'Assistant';
 }

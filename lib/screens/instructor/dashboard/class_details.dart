@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:onmat/models/Instructor.dart';
 import 'package:provider/provider.dart';
 import 'package:country_picker/country_picker.dart';
 
 import '../../../controllers/class_assistant.dart';
-import '../../../controllers/instructor_class.dart';
 import '../../../controllers/instructor.dart';
+import '../../../controllers/instructor_class.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/assign_assistant_dialog.dart';
@@ -17,13 +18,16 @@ import '../start.dart';
 
 class ClassDetailsScreen extends StatefulWidget {
   final String classId;
-  const ClassDetailsScreen({super.key, required this.classId});
+  final bool isAssistant;
+  const ClassDetailsScreen({super.key, required this.classId, required this.isAssistant});
 
   @override
   _ClassDetailsScreenState createState() => _ClassDetailsScreenState();
 }
 
 class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
+  late Instructor? instructor;
+
   @override
   void initState() {
     super.initState();
@@ -31,12 +35,24 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final InstructorService instructorService = Provider.of<InstructorService>(context, listen: true);
-    final instructor = instructorService.instructor;
-    final classService = Provider.of<InstructorClassService>(context, listen: true);
-    final classItem = classService.myClasses.firstWhereOrNull((cl) => cl.id == widget.classId);
+    /// Fetch classes
+    final instructorClassService = Provider.of<InstructorClassService>(context, listen: true);
+    final classItem = widget.isAssistant
+        ? instructorClassService.assistantClasses.firstWhereOrNull((cl) => cl.id == widget.classId)
+        : instructorClassService.ownerClasses.firstWhereOrNull((cl) => cl.id == widget.classId);
+
+    /// Fetch Assistants
     final classAssistantService = Provider.of<ClassAssistantService>(context, listen: true);
     final myAssistants = classAssistantService.myAssistants;
+
+    /// Fetch Owner
+    if (widget.isAssistant) {
+      instructor = instructorClassService.classOwner;
+    } else {
+      InstructorService instructorService = Provider.of<InstructorService>(context, listen: true);
+      instructor = instructorService.instructor;
+    }
+
     final appLocalizations = AppLocalizations.of(context)!;
 
     if (classItem == null) {
@@ -104,7 +120,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _infoRow(appLocalizations.instructor, "${instructor!.firstName} ${instructor.lastName}"),
+                          _infoRow(appLocalizations.instructor, "${instructor!.firstName} ${instructor!.lastName}"),
                           _infoRow(appLocalizations.type, classItem.classType!),
                           _infoRow(appLocalizations.location, "${classItem.location}, ${Country.parse(classItem.country ?? "LB").name}"),
                           if (myAssistants.isNotEmpty)
@@ -148,6 +164,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                           ),
                         );
                       }),
+                      if (! widget.isAssistant)
                       _actionButton(context, Iconsax.user_add, appLocalizations.assignAssistant, onTap: () {
                         showDialog(
                           context: context,
