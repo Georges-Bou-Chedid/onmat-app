@@ -153,6 +153,12 @@ ThemeData darkTheme() {
         }
       }),
     ),
+    tabBarTheme: TabBarThemeData(
+      labelColor: Colors.white,
+      unselectedLabelColor: Colors.white.withOpacity(0.6),
+      indicatorColor: Colors.transparent,
+      dividerColor: Colors.transparent,
+    )
   );
 }
 
@@ -315,6 +321,11 @@ ThemeData lightTheme() {
         }
       }),
     ),
-
+    tabBarTheme: TabBarThemeData(
+      labelColor: Color(0xFF1E1E1E).withOpacity(1),
+      unselectedLabelColor: Color(0xFF1E1E1E).withOpacity(0.6),
+      indicatorColor: Colors.transparent,
+      dividerColor: Colors.transparent,
+    )
   );
 }

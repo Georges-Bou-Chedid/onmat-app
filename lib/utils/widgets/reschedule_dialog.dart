@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 
-import '../../controllers/instructor_class.dart';
+import '../../controllers/instructor/instructor_class.dart';
 import '../../l10n/app_localizations.dart';
 import '../constants/sizes.dart';
 
@@ -59,7 +59,7 @@ class _RescheduleDialogState extends State<RescheduleDialog> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = AppLocalizations.of(context)!;
-    final classService = context.read<InstructorClassService>();
+    final instructorClassService = context.read<InstructorClassService>();
     final List<String> weekdays = [
       appLocalizations.monday, appLocalizations.tuesday, appLocalizations.wednesday, appLocalizations.thursday, appLocalizations.friday, appLocalizations.saturday, appLocalizations.sunday
     ];
@@ -192,7 +192,7 @@ class _RescheduleDialogState extends State<RescheduleDialog> {
                       if (_validate()) {
                         setState(() => _isSaving = true);
 
-                        final success = await classService.updateFields(
+                        final success = await instructorClassService.updateFields(
                           widget.classId,
                           {'schedule': schedule},
                         );

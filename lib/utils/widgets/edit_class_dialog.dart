@@ -4,10 +4,10 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 
-import '../../../controllers/instructor_class.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/Class.dart';
 import '../../../utils/helpers/helper_functions.dart';
+import '../../controllers/instructor/instructor_class.dart';
 import '../constants/sizes.dart';
 
 class EditClassDialog extends StatefulWidget {
@@ -49,7 +49,7 @@ class _EditClassDialogState extends State<EditClassDialog> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = AppLocalizations.of(context)!;
-    final classService = context.read<InstructorClassService>();
+    final instructorClassService = context.read<InstructorClassService>();
     final dark = THelperFunctions.isDarkMode(context);
 
     return Dialog(
@@ -197,7 +197,7 @@ class _EditClassDialogState extends State<EditClassDialog> {
                             return;
                           }
 
-                          final success = await classService.updateFields(widget.classItem.id, changes);
+                          final success = await instructorClassService.updateFields(widget.classItem.id, changes);
 
                           if (success) {
                             Get.back();

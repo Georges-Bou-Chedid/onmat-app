@@ -1,4 +1,3 @@
-import 'package:onmat/screens/authentication/onboarding/signup.dart';
 import 'package:onmat/screens/authentication/onboarding/verify_email.dart';
 import 'package:onmat/screens/splash.dart';
 import 'package:onmat/utils/constants/sizes.dart';
@@ -9,6 +8,7 @@ import 'package:iconsax/iconsax.dart';
 import '../../../common/styles/spacing_styles.dart';
 import '../../../controllers/auth.dart';
 import '../../../l10n/app_localizations.dart';
+import '../onboarding/select_role.dart';
 import '../password_configuration/forgot_password.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -288,7 +288,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     fontWeight: FontWeight.bold
                                 ),
                               ),
-                              onPressed: () => Get.to(() => SignupScreen()),
+                              onPressed: () => Get.to(() => SelectRoleScreen()),
                             ),
                           ),
                         ],

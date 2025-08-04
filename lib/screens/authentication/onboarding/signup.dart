@@ -14,7 +14,9 @@ import '../../../utils/helpers/helper_functions.dart';
 import '../../splash.dart';
 
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+  final String selectedRole;
+
+  const SignupScreen({super.key, required this.selectedRole});
 
   @override
   _SignUpScreenScreenState createState() => _SignUpScreenScreenState();
@@ -28,6 +30,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
   final TextEditingController _usernameEditingController = TextEditingController();
   final TextEditingController _dateOfBirthEditingController = TextEditingController();
   final TextEditingController _weightEditingController = TextEditingController();
+  final TextEditingController _heightEditingController = TextEditingController();
   final TextEditingController _emailEditingController = TextEditingController();
   final TextEditingController _passwordEditingController = TextEditingController();
   final TextEditingController _phoneNumberEditingController = TextEditingController();
@@ -42,6 +45,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedRole = widget.selectedRole;
   }
 
   @override
@@ -134,6 +138,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: TSizes.spaceBtwInputFields),
 
+                    /// Date Of Birth
                     TextFormField(
                       controller: _dateOfBirthEditingController,
                       keyboardType: TextInputType.datetime,
@@ -164,53 +169,45 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: TSizes.spaceBtwInputFields),
 
-                    TextFormField(
-                      controller: _weightEditingController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: appLocalizations.weight,
-                        suffixText: 'kg',
-                        prefixIcon: Icon(Iconsax.weight), // Or any icon of your choice
-                      ),
-                      validator: (value) {
-                        if (_selectedRole == "student") {
+                    /// Weight
+                    if (_selectedRole == 'student')
+                      TextFormField(
+                        controller: _weightEditingController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: appLocalizations.weight,
+                          suffixText: 'kg',
+                          prefixIcon: Icon(Iconsax.weight), // Or any icon of your choice
+                        ),
+                        validator: (value) {
                           if (value == null || value.isEmpty) return appLocalizations.selectWeight;
-                        } else {
-                          if (value == null || value.isEmpty) return null;
-                        }
-                        final weight = double.tryParse(value);
-                        if (weight == null || weight <= 0) return appLocalizations.weightValidation;
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: TSizes.spaceBtwInputFields),
-
-                    /// Role Dropdown
-                    DropdownButtonFormField<String>(
-                      value: _selectedRole,
-                      decoration: InputDecoration(
-                        labelText: appLocalizations.registerAs, // "Register as"
-                        prefixIcon: Icon(Iconsax.user_cirlce_add),
+                          final weight = double.tryParse(value);
+                          if (weight == null || weight <= 0) return appLocalizations.weightValidation;
+                          return null;
+                        },
                       ),
-                      dropdownColor: dark ? Color(0xFF1E1E1E) : Colors.white,
-                      borderRadius: BorderRadius.circular(20.0),
-                      items: [
-                        DropdownMenuItem(value: 'instructor', child: Text(appLocalizations.instructor)), // "Student"
-                        DropdownMenuItem(value: 'student', child: Text(appLocalizations.student)),     // "Coach"
-                      ],
-                      onChanged: (String? value) {
-                        setState(() {
-                          _selectedRole = value;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return appLocalizations.pleaseSelectRole; // "Please select your role"
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: TSizes.spaceBtwInputFields),
+                    if (_selectedRole == 'student')
+                      const SizedBox(height: TSizes.spaceBtwInputFields),
+
+                    /// Height
+                    if (_selectedRole == 'student')
+                      TextFormField(
+                        controller: _heightEditingController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: appLocalizations.height,
+                          suffixText: 'cm',
+                          prefixIcon: Icon(Icons.height), // Or any icon of your choice
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return appLocalizations.selectHeight;
+                          final weight = double.tryParse(value);
+                          if (weight == null || weight <= 0) return appLocalizations.heightValidation;
+                          return null;
+                        },
+                      ),
+                    if (_selectedRole == 'student')
+                      const SizedBox(height: TSizes.spaceBtwInputFields),
 
                     /// Email
                     TextFormField(
@@ -347,10 +344,10 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                     ),
                     if (termsError)
                       Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
+                        padding: const EdgeInsets.only(top: TSizes.sm),
                         child: Text(
                           appLocalizations.acceptTerms,
-                          style: TextStyle(color: Color(0xFFB3261E), fontSize: 12),
+                          style: TextStyle(color: Color(0xFFB3261E), fontSize: TSizes.iconXs),
                         ),
                       ),
                     const SizedBox(height: TSizes.spaceBtwSections),
@@ -385,7 +382,6 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                                 lastName: _lastNameEditingController.text,
                                 username: _usernameEditingController.text,
                                 dob: _dateOfBirthEditingController.text,
-                                weight: int.tryParse(_weightEditingController.text),
                                 email: _emailEditingController.text,
                                 phoneNumber: _phoneNumberEditingController.text,
                                 notifications: false
@@ -397,6 +393,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                                 username: _usernameEditingController.text,
                                 dob: _dateOfBirthEditingController.text,
                                 weight: int.tryParse(_weightEditingController.text),
+                                height: int.tryParse(_heightEditingController.text),
                                 email: _emailEditingController.text,
                                 phoneNumber: _phoneNumberEditingController.text,
                                 notifications: false
@@ -520,7 +517,6 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                                 lastName: _lastNameEditingController.text,
                                 username: _usernameEditingController.text,
                                 dob: _dateOfBirthEditingController.text,
-                                weight: int.tryParse(_weightEditingController.text),
                                 phoneNumber: _phoneNumberEditingController.text,
                                 notifications: false
                             );
@@ -531,7 +527,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                                 username: _usernameEditingController.text,
                                 dob: _dateOfBirthEditingController.text,
                                 weight: int.tryParse(_weightEditingController.text),
-                                email: _emailEditingController.text,
+                                height: int.tryParse(_heightEditingController.text),
                                 phoneNumber: _phoneNumberEditingController.text,
                                 notifications: false
                             );

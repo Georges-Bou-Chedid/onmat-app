@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../models/Instructor.dart';
+import '../../models/Instructor.dart';
 
 class InstructorService with ChangeNotifier {
   Instructor? _instructor;

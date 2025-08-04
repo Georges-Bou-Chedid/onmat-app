@@ -4,7 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 
 import '../../../controllers/auth.dart';
-import '../../../controllers/instructor.dart';
+import '../../../controllers/instructor/instructor.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/settings_menu_tile.dart';

@@ -3,10 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:onmat/controllers/instructor_class.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../controllers/instructor/instructor_class.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/Class.dart';
 import '../../../utils/constants/sizes.dart';

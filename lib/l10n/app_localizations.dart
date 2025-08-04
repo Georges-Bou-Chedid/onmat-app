@@ -251,12 +251,6 @@ abstract class AppLocalizations {
   /// **'Or Sign Up With'**
   String get orSignUpWith;
 
-  /// No description provided for @registerAs.
-  ///
-  /// In en, this message translates to:
-  /// **'Register as'**
-  String get registerAs;
-
   /// No description provided for @instructor.
   ///
   /// In en, this message translates to:
@@ -268,12 +262,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Student'**
   String get student;
-
-  /// No description provided for @pleaseSelectRole.
-  ///
-  /// In en, this message translates to:
-  /// **'Please select your role'**
-  String get pleaseSelectRole;
 
   /// No description provided for @phoneNumber.
   ///
@@ -442,6 +430,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter a valid weight'**
   String get weightValidation;
+
+  /// No description provided for @height.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get height;
+
+  /// No description provided for @selectHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your height'**
+  String get selectHeight;
+
+  /// No description provided for @heightValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid height'**
+  String get heightValidation;
 
   /// No description provided for @usernameTaken.
   ///
@@ -988,6 +994,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Assistant'**
   String get assistant;
+
+  /// No description provided for @chooseRoleToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your role to continue'**
+  String get chooseRoleToContinue;
+
+  /// No description provided for @joinAsInstructor.
+  ///
+  /// In en, this message translates to:
+  /// **'Join as Instructor'**
+  String get joinAsInstructor;
+
+  /// No description provided for @joinAsStudent.
+  ///
+  /// In en, this message translates to:
+  /// **'Join as Student'**
+  String get joinAsStudent;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

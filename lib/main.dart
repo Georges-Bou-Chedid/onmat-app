@@ -1,5 +1,3 @@
-import 'package:onmat/controllers/instructor_class.dart';
-import 'package:onmat/controllers/instructor.dart';
 import 'package:onmat/screens/splash.dart';
 import 'package:onmat/utils/theme_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,7 +9,9 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'controllers/class_assistant.dart';
 import 'controllers/auth.dart';
-import 'controllers/student.dart';
+import 'controllers/instructor/instructor.dart';
+import 'controllers/instructor/instructor_class.dart';
+import 'controllers/student/student.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 

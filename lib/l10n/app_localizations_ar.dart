@@ -87,16 +87,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get orSignUpWith => 'أو قم بالتسجيل باستخدام';
 
   @override
-  String get registerAs => 'سجل باسم';
-
-  @override
   String get instructor => 'مدرب';
 
   @override
   String get student => 'طالب';
-
-  @override
-  String get pleaseSelectRole => 'الرجاء تحديد دورك';
 
   @override
   String get phoneNumber => 'رقم التليفون';
@@ -181,6 +175,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get weightValidation => 'أدخل وزنًا صالحًا';
+
+  @override
+  String get height => 'Height';
+
+  @override
+  String get selectHeight => 'Please enter your height';
+
+  @override
+  String get heightValidation => 'Enter a valid height';
 
   @override
   String get usernameTaken => 'اسم المستخدم مستخدم بالفعل';
@@ -454,4 +457,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get assistant => 'Assistant';
+
+  @override
+  String get chooseRoleToContinue => 'Choose your role to continue';
+
+  @override
+  String get joinAsInstructor => 'Join as Instructor';
+
+  @override
+  String get joinAsStudent => 'Join as Student';
 }

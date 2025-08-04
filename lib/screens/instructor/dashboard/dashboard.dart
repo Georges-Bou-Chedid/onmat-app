@@ -5,10 +5,11 @@ import 'package:onmat/screens/instructor/dashboard/add_class.dart';
 import 'package:provider/provider.dart';
 
 import '../../../controllers/class_assistant.dart';
-import '../../../controllers/instructor_class.dart';
+import '../../../controllers/instructor/instructor_class.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/Class.dart';
 import '../../../utils/constants/sizes.dart';
+import '../../../utils/helpers/helper_functions.dart';
 import '../../../utils/widgets/background_image_header_container.dart';
 import 'class_details.dart';
 
@@ -54,6 +55,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   Widget build(BuildContext context) {
     final instructorClassService = Provider.of<InstructorClassService>(context, listen: true);
     appLocalizations = AppLocalizations.of(context)!;
+    final dark = THelperFunctions.isDarkMode(context);
 
     return GestureDetector(
       onTap: () => _searchFocusNode.unfocus(),
@@ -124,13 +126,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     /// TabBar
                     Material(
                       elevation: 2, // adjust for desired shadow depth
-                      color: Colors.white, // match your app background or scaffold
+                      color: dark ? Color(0xFF1E1E1E) : Colors.white, // match your app background or scaffold
                       child: TabBar(
                         controller: _tabController,
-                        labelColor: Theme.of(context).primaryColor,
-                        unselectedLabelColor: Color(0xFF1E1E1E).withOpacity(0.6),
-                        indicatorColor: Colors.transparent,
-                        dividerColor: Colors.transparent,
                         tabs: [
                           Tab(text: appLocalizations.owner),
                           Tab(text: appLocalizations.assistant),

@@ -9,7 +9,7 @@ import 'package:onmat/utils/widgets/primary_header_container.dart';
 import 'package:onmat/utils/widgets/settings_menu_tile.dart';
 import 'package:provider/provider.dart';
 
-import '../../../controllers/instructor.dart';
+import '../../../controllers/instructor/instructor.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/widgets/circular_image.dart';
 import '../../../utils/widgets/section_header.dart';

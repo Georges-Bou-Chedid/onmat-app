@@ -6,8 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:country_picker/country_picker.dart';
 
 import '../../../controllers/class_assistant.dart';
-import '../../../controllers/instructor.dart';
-import '../../../controllers/instructor_class.dart';
+import '../../../controllers/instructor/instructor.dart';
+import '../../../controllers/instructor/instructor_class.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/assign_assistant_dialog.dart';
