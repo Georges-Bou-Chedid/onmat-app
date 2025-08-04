@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:onmat/controllers/class_assistant.dart';
+import 'package:onmat/controllers/instructor/class_assistant.dart';
 import 'package:onmat/models/Instructor.dart';
 import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';

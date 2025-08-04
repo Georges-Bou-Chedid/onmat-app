@@ -5,9 +5,10 @@ import 'package:onmat/models/Instructor.dart';
 import 'package:provider/provider.dart';
 import 'package:country_picker/country_picker.dart';
 
-import '../../../controllers/class_assistant.dart';
+import '../../../controllers/instructor/class_assistant.dart';
 import '../../../controllers/instructor/instructor.dart';
 import '../../../controllers/instructor/instructor_class.dart';
+import '../../../controllers/student/class_student.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/assign_assistant_dialog.dart';
@@ -19,6 +20,7 @@ import '../start.dart';
 class ClassDetailsScreen extends StatefulWidget {
   final String classId;
   final bool isAssistant;
+
   const ClassDetailsScreen({super.key, required this.classId, required this.isAssistant});
 
   @override
@@ -26,32 +28,55 @@ class ClassDetailsScreen extends StatefulWidget {
 }
 
 class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
+  final TextEditingController _searchController = TextEditingController();
   late Instructor? instructor;
+  late FocusNode _searchFocusNode;
+
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
+    _searchFocusNode = FocusNode();
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+
+  @override
   Widget build(BuildContext context) {
-    /// Fetch classes
+    /// Save class
     final instructorClassService = Provider.of<InstructorClassService>(context, listen: true);
     final classItem = widget.isAssistant
         ? instructorClassService.assistantClasses.firstWhereOrNull((cl) => cl.id == widget.classId)
         : instructorClassService.ownerClasses.firstWhereOrNull((cl) => cl.id == widget.classId);
 
-    /// Fetch Assistants
+    /// Save Assistants
     final classAssistantService = Provider.of<ClassAssistantService>(context, listen: true);
     final myAssistants = classAssistantService.myAssistants;
 
-    /// Fetch Owner
+    /// Save Owner
     if (widget.isAssistant) {
       instructor = instructorClassService.classOwner;
     } else {
       InstructorService instructorService = Provider.of<InstructorService>(context, listen: true);
       instructor = instructorService.instructor;
     }
+
+    /// Save Students
+    final classStudentService = Provider.of<ClassStudentService>(context, listen: true);
+    final myStudents = classStudentService.myStudents;
+    final filteredStudents = myStudents.where((cs) {
+      final query = _searchQuery.trim().toLowerCase();
+      return cs.firstName?.toLowerCase().contains(query) == true ||
+          cs.lastName?.toLowerCase().contains(query) == true ||
+          cs.email?.toLowerCase().contains(query) == true;
+    }).toList();
 
     final appLocalizations = AppLocalizations.of(context)!;
 
@@ -114,9 +139,9 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                 children: [
                   _buildSectionTitle(context, appLocalizations.classInfo),
                   Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.iconXs)),
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(TSizes.md),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -132,7 +157,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.defaultSpace),
 
                   /// CLASS SCHEDULE
                   _buildSectionTitle(context, appLocalizations.weeklySchedule),
@@ -141,7 +166,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                     title: Text("${s['day']}"),
                     subtitle: Text("${s['time']} • ${s['duration']}"),
                   )),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: TSizes.defaultSpace),
 
                   /// ACTIONS
                   _buildSectionTitle(context, appLocalizations.actions),
@@ -173,31 +198,80 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                       }),
                     ],
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: TSizes.spaceBtwSections),
 
                   /// STUDENT LIST
                   _buildSectionTitle(context, appLocalizations.students),
                   TextField(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
                     decoration: InputDecoration(
                       hintText: appLocalizations.searchStudents,
                       prefixIcon: Icon(Iconsax.search_normal),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
                   ),
-                  const SizedBox(height: 12),
                   ListView.separated(
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
-                    itemCount: 5, // replace with studentList.length
+                    itemCount: filteredStudents.length,
                     separatorBuilder: (_, __) => Divider(),
-                    itemBuilder: (_, index) => ListTile(
-                      leading: CircleAvatar(child: Text("S${index + 1}")),
-                      title: Text("Student Name $index"),
-                      subtitle: Text("student$index@email.com"),
-                      trailing: Icon(Iconsax.arrow_right_3),
-                    ),
+                    itemBuilder: (context, index) {
+                      final studentItem = filteredStudents[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: TSizes.spaceBtwItems),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.md)),
+                        elevation: 4,
+                        child: ListTile(
+                          leading: CircleAvatar(child: Text("S${index + 1}")),
+                          title: Text(
+                            "${studentItem.firstName ?? ''} ${studentItem.lastName ?? ''}",
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          subtitle: Text(
+                            studentItem.email ?? '',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          trailing: studentItem.isActive
+                              ? const Icon(Iconsax.arrow_21, size: TSizes.md)
+                              : SizedBox(
+                                  width: 100, // max width for both buttons
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Row(
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.close, color: Colors.red),
+                                          tooltip: 'Ignore',
+                                          onPressed: () async {
+                                            // await ignoreStudent(classId, studentItem.userId);
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.check, color: Colors.green),
+                                          tooltip: 'Accept',
+                                          onPressed: () async {
+                                            // await activateStudent(classId, studentItem.userId);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ),
+                          onTap: studentItem.isActive
+                              ? () async {
+
+                              }
+                              : null
+                        ),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: TSizes.spaceBtwSections),
 
                   /// QR CODE
                   _buildSectionTitle(context, appLocalizations.classQrCode),
@@ -209,7 +283,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Image.network(
-                        'https://api.qrserver.com/v1/create-qr-code/?data=class_id_123&size=200x200',
+                        'https://api.qrserver.com/v1/create-qr-code/?data=${Uri.encodeComponent(classItem.qrCode!)}&size=200x200',
                         height: 200,
                         width: 200,
                         fit: BoxFit.cover,
@@ -253,7 +327,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
   Widget _actionButton(BuildContext context, IconData icon, String label, {required VoidCallback onTap}) {
     return ElevatedButton.icon(
       onPressed: onTap,
-      icon: Icon(icon, size: 18),
+      icon: Icon(icon, size: TSizes.iconSm),
       label: Text(label),
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

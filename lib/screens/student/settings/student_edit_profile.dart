@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+import 'package:onmat/controllers/student/student.dart';
 import 'package:provider/provider.dart';
 import '../../../common/styles/spacing_styles.dart';
 import '../../../controllers/instructor/instructor.dart';
@@ -10,19 +11,21 @@ import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/helpers/helper_functions.dart';
 
-class EditProfilePage extends StatefulWidget {
-  const EditProfilePage({super.key});
+class StudentEditProfilePage extends StatefulWidget {
+  const StudentEditProfilePage({super.key});
 
   @override
-  _EditProfilePageState createState() => _EditProfilePageState();
+  _StudentEditProfilePageState createState() => _StudentEditProfilePageState();
 }
 
-class _EditProfilePageState extends State<EditProfilePage> {
+class _StudentEditProfilePageState extends State<StudentEditProfilePage> {
   final GlobalKey<FormState> editProfileKey = GlobalKey<FormState>();
   final TextEditingController _firstNameEditingController = TextEditingController();
   final TextEditingController _lastNameEditingController = TextEditingController();
   final TextEditingController _usernameEditingController = TextEditingController();
   final TextEditingController _dateOfBirthEditingController = TextEditingController();
+  final TextEditingController _weightEditingController = TextEditingController();
+  final TextEditingController _heightEditingController = TextEditingController();
   final TextEditingController _phoneNumberEditingController = TextEditingController();
   late AppLocalizations appLocalizations;
   bool _isLoading = false;
@@ -31,14 +34,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    final instructor = Provider.of<InstructorService>(context, listen: false).instructor;
+    final student = Provider.of<StudentService>(context, listen: false).student;
 
-    if (instructor != null) {
-      _firstNameEditingController.text   = instructor.firstName ?? '';
-      _lastNameEditingController.text    = instructor.lastName ?? '';
-      _usernameEditingController.text    = instructor.username ?? '';
-      _dateOfBirthEditingController.text = instructor.dob ?? '';
-      _phoneNumberEditingController.text = instructor.phoneNumber ?? '';
+    if (student != null) {
+      _firstNameEditingController.text   = student.firstName ?? '';
+      _lastNameEditingController.text    = student.lastName ?? '';
+      _usernameEditingController.text    = student.username ?? '';
+      _dateOfBirthEditingController.text = student.dob ?? '';
+      _weightEditingController.text      = student.weight?.toString() ?? '';
+      _heightEditingController.text      = student.height?.toString() ?? '';
+      _phoneNumberEditingController.text = student.phoneNumber ?? '';
     }
     _isInitialized = true;
   }
@@ -49,6 +54,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _lastNameEditingController.dispose();
     _usernameEditingController.dispose();
     _dateOfBirthEditingController.dispose();
+    _weightEditingController.dispose();
+    _heightEditingController.dispose();
     _phoneNumberEditingController.dispose();
     super.dispose();
   }
@@ -149,7 +156,42 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         _DateInputFormatter(), // custom formatter to add slashes
                       ],
                       validator: (value) {
-                        if (! RegExp(r'^\d{2}/\d{2}/\d{4}$').hasMatch(value!)) return appLocalizations.dateOfBirthValidation;
+                        if (value == null || value.isEmpty) return appLocalizations.selectDateOfBirth;
+                        if (! RegExp(r'^\d{2}/\d{2}/\d{4}$').hasMatch(value)) return appLocalizations.dateOfBirthValidation;
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: TSizes.spaceBtwInputFields),
+
+                    TextFormField(
+                      controller: _weightEditingController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: appLocalizations.weight,
+                        suffixText: 'kg',
+                        prefixIcon: Icon(Iconsax.weight), // Or any icon of your choice
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return appLocalizations.selectWeight;
+                        final weight = double.tryParse(value);
+                        if (weight == null || weight <= 0) return appLocalizations.weightValidation;
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: TSizes.spaceBtwInputFields),
+
+                    TextFormField(
+                      controller: _heightEditingController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: appLocalizations.height,
+                        suffixText: 'cm',
+                        prefixIcon: Icon(Icons.height), // Or any icon of your choice
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return appLocalizations.selectHeight;
+                        final height = double.tryParse(value);
+                        if (height == null || height <= 0) return appLocalizations.heightValidation;
                         return null;
                       },
                     ),
@@ -203,8 +245,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                           setState(() => _isLoading = true);
 
-                          final instructorService = context.read<InstructorService>();
-                          final instructor = instructorService.instructor;
+                          final studentService = context.read<StudentService>();
+                          final student = studentService.student;
 
                           final changes = <String, dynamic>{};
 
@@ -212,10 +254,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             if (newVal != null && newVal != oldVal) changes[key] = newVal;
                           }
 
-                          addIfChanged('first_name', _firstNameEditingController.text.trim(), instructor?.firstName);
-                          addIfChanged('last_name', _lastNameEditingController.text.trim(), instructor?.lastName);
-                          addIfChanged('dob', _dateOfBirthEditingController.text.trim(), instructor?.dob);
-                          addIfChanged('phone_number', _phoneNumberEditingController.text.trim(), instructor?.phoneNumber);
+                          addIfChanged('first_name', _firstNameEditingController.text.trim(), student?.firstName);
+                          addIfChanged('last_name', _lastNameEditingController.text.trim(), student?.lastName);
+                          addIfChanged('dob', _dateOfBirthEditingController.text.trim(), student?.dob);
+                          addIfChanged('weight', int.tryParse(_weightEditingController.text), student?.weight);
+                          addIfChanged('height', int.tryParse(_heightEditingController.text), student?.height);
+                          addIfChanged('phone_number', _phoneNumberEditingController.text.trim(), student?.phoneNumber);
 
                           // Nothing to update?
                           if (changes.isEmpty) {
@@ -224,7 +268,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           }
 
                           // 3. call service
-                          final success = await instructorService.updateFields(instructor!.userId, changes);
+                          final success = await studentService.updateFields(student!.userId, changes);
 
                           setState(() {
                             _isLoading = false;

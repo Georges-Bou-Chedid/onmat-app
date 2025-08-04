@@ -89,6 +89,7 @@ class InstructorClassService with ChangeNotifier {
       final docRef = _firestore.collection('classes').doc();
       final classId = docRef.id;
       cl.id = classId;
+      cl.qrCode = 'join:$classId';
 
       await docRef.set(cl.toMap());
 

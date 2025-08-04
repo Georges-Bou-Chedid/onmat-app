@@ -7,10 +7,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'controllers/class_assistant.dart';
+import 'controllers/instructor/class_assistant.dart';
 import 'controllers/auth.dart';
 import 'controllers/instructor/instructor.dart';
 import 'controllers/instructor/instructor_class.dart';
+import 'controllers/student/class_student.dart';
 import 'controllers/student/student.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
@@ -29,9 +30,10 @@ void main() async {
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => InstructorService()),
-          ChangeNotifierProvider(create: (_) => StudentService()),
           ChangeNotifierProvider(create: (_) => InstructorClassService()),
           ChangeNotifierProvider(create: (_) => ClassAssistantService()),
+          ChangeNotifierProvider(create: (_) => StudentService()),
+          ChangeNotifierProvider(create: (_) => ClassStudentService()),
         ],
         child: MyApp(startLocale),
       )

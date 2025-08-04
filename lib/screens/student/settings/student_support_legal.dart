@@ -5,13 +5,13 @@ import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/settings_menu_tile.dart';
 
-class SupportLegalPage extends StatefulWidget {
-  const SupportLegalPage({super.key});
+class StudentSupportLegalPage extends StatefulWidget {
+  const StudentSupportLegalPage({super.key});
 
   @override
-  State<SupportLegalPage> createState() => _SupportLegalPageState();
+  State<StudentSupportLegalPage> createState() => _StudentSupportLegalPageState();
 }
-class _SupportLegalPageState extends State<SupportLegalPage> {
+class _StudentSupportLegalPageState extends State<StudentSupportLegalPage> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = AppLocalizations.of(context)!;

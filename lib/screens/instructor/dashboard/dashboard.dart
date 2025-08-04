@@ -4,8 +4,9 @@ import 'package:iconsax/iconsax.dart';
 import 'package:onmat/screens/instructor/dashboard/add_class.dart';
 import 'package:provider/provider.dart';
 
-import '../../../controllers/class_assistant.dart';
+import '../../../controllers/instructor/class_assistant.dart';
 import '../../../controllers/instructor/instructor_class.dart';
+import '../../../controllers/student/class_student.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/Class.dart';
 import '../../../utils/constants/sizes.dart';
@@ -88,7 +89,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                         onPressed: () {
                           _searchFocusNode.unfocus();
                           Get.to(
-                                () => const AddClassScreen(),
+                            () => const AddClassScreen(),
                             transition: Transition.downToUp,
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.easeInOut,
@@ -245,13 +246,19 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 ),
               );
 
+              /// Fetch Owner
               if (isAssistant) {
                 final instructorClassService = Provider.of<InstructorClassService>(context, listen: false);
                 await instructorClassService.getClassOwner(classItem.ownerId);
               }
 
+              /// Fetch Assistants
               final classAssistantService = Provider.of<ClassAssistantService>(context, listen: false);
               await classAssistantService.fetchAssistantProfiles(classItem.id);
+
+              /// Fetch Students
+              final classStudentService = Provider.of<ClassStudentService>(context, listen: false);
+              await classStudentService.fetchStudentProfiles(classItem.id);
 
               Get.back();
 

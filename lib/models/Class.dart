@@ -7,7 +7,7 @@ class Class {
   final String? classType;
   final String? country;
   final String? location;
-  final String? qrCode;
+  late String? qrCode;
   final List<Map<String, String>>? schedule;
 
   Class({

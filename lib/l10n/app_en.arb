@@ -151,5 +151,7 @@
   "assistant": "Assistant",
   "chooseRoleToContinue": "Choose your role to continue",
   "joinAsInstructor": "Join as Instructor",
-  "joinAsStudent": "Join as Student"
+  "joinAsStudent": "Join as Student",
+  "scanQrCode": "Scan QR Code",
+  "requestToJoinClass": "Join request sent successfully"
 }

@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSCameraUsageDescription</key>
+    <string>We need your camera to scan QR codes</string>
 	<key>CFBundleDisplayName</key>
 	<string>ONmat</string>
 	<key>CFBundleExecutable</key>

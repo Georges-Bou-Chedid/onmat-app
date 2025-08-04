@@ -1012,6 +1012,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Join as Student'**
   String get joinAsStudent;
+
+  /// No description provided for @scanQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR Code'**
+  String get scanQrCode;
+
+  /// No description provided for @requestToJoinClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Join request sent successfully'**
+  String get requestToJoinClass;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

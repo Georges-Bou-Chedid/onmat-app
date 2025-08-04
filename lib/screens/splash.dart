@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:onmat/screens/student/student_start.dart';
 import 'package:provider/provider.dart';
 import '../controllers/auth.dart';
 import '../controllers/instructor/instructor.dart';
@@ -59,8 +60,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       final isStudent = await studentService.fetchAndSetStudent(user.uid);
       if (isStudent) {
-        await _authService.signOut();
-        Get.offAll(() => const LoginScreen()); // or student dashboard
+        Get.offAll(() => const StudentStartScreen()); // or student dashboard
         return;
       }
 

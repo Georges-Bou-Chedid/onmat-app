@@ -367,7 +367,6 @@ class _AddClassScreenState extends State<AddClassScreen> {
                                 _isSaving = true;
                               });
 
-                              final String qrCode = const Uuid().v4();
                               Class cl = Class(
                                 id: '',
                                 ownerId: FirebaseAuth.instance.currentUser?.uid,
@@ -375,7 +374,6 @@ class _AddClassScreenState extends State<AddClassScreen> {
                                 classType: selectedType,
                                 country: _selectedCountry?.countryCode,
                                 location: locationCtrl.text.trim(),
-                                qrCode: qrCode,
                                 schedule: schedule
                               );
 

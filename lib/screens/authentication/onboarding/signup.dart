@@ -201,8 +201,8 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) return appLocalizations.selectHeight;
-                          final weight = double.tryParse(value);
-                          if (weight == null || weight <= 0) return appLocalizations.heightValidation;
+                          final height = double.tryParse(value);
+                          if (height == null || height <= 0) return appLocalizations.heightValidation;
                           return null;
                         },
                       ),

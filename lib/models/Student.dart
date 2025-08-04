@@ -13,6 +13,7 @@ class Student {
   late String? email;
   final String? phoneNumber;
   final bool? notifications;
+  bool isActive = false;
 
   Student({
     this.userId,
@@ -24,7 +25,8 @@ class Student {
     this.height,
     this.email,
     this.phoneNumber,
-    this.notifications
+    this.notifications,
+    this.isActive = false
   });
 
   // Factory method to convert data from Firebase to Account
@@ -68,7 +70,7 @@ class Student {
         username: updateData['username'] ?? username,
         dob: updateData['dob'] ?? dob,
         weight: updateData['weight'] ?? weight,
-      height: updateData['height'] ?? height,
+        height: updateData['height'] ?? height,
         email: updateData['email'] ?? email,
         phoneNumber: updateData['phone_number'] ?? phoneNumber,
         notifications: updateData['notifications'] ?? notifications,
