@@ -153,5 +153,8 @@
   "joinAsInstructor": "Join as Instructor",
   "joinAsStudent": "Join as Student",
   "scanQrCode": "Scan QR Code",
-  "requestToJoinClass": "Join request sent successfully"
+  "requestToJoinClass": "Join request sent successfully",
+  "accept": "Accept",
+  "ignore": "Ignore",
+  "scanQr": "Scan Qr"
 }

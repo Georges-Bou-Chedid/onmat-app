@@ -258,7 +258,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
               /// Fetch Students
               final classStudentService = Provider.of<ClassStudentService>(context, listen: false);
-              await classStudentService.fetchStudentProfiles(classItem.id);
+              classStudentService.listenToClassStudents(classItem.id);
 
               Get.back();
 

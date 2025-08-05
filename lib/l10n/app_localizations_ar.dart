@@ -472,4 +472,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get requestToJoinClass => 'Join request sent successfully';
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get ignore => 'Ignore';
+
+  @override
+  String get scanQr => 'Scan Qr';
 }

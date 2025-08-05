@@ -13,7 +13,7 @@ class Student {
   late String? email;
   final String? phoneNumber;
   final bool? notifications;
-  bool isActive = false;
+  final bool isActive;
 
   Student({
     this.userId,
@@ -30,7 +30,7 @@ class Student {
   });
 
   // Factory method to convert data from Firebase to Account
-  factory Student.fromFirestore(String id, Map<String, dynamic> map) {
+  factory Student.fromFirestore(String id, Map<String, dynamic> map, {bool isActive = false}) {
     return Student(
       userId: id,
       firstName: map['first_name'] ?? '',
@@ -41,7 +41,8 @@ class Student {
       height: THelperFunctions.parseInt(map['height']),
       email: map['email'] ?? '',
       phoneNumber: map['phone_number'] ?? '',
-      notifications: map['notifications'] ?? false
+      notifications: map['notifications'] ?? false,
+      isActive: isActive,
     );
   }
 
@@ -62,18 +63,19 @@ class Student {
     };
   }
 
-  Student copyWith(Map<String, dynamic> updateData) {
+  Student copyWith(Map<String, dynamic> updateData, bool? isActiveOverride) {
     return Student(
-        userId: updateData['user_id'] ?? userId,
-        firstName: updateData['first_name'] ?? firstName,
-        lastName: updateData['last_name'] ?? lastName,
-        username: updateData['username'] ?? username,
-        dob: updateData['dob'] ?? dob,
-        weight: updateData['weight'] ?? weight,
-        height: updateData['height'] ?? height,
-        email: updateData['email'] ?? email,
-        phoneNumber: updateData['phone_number'] ?? phoneNumber,
-        notifications: updateData['notifications'] ?? notifications,
+      userId: updateData['user_id'] ?? userId,
+      firstName: updateData['first_name'] ?? firstName,
+      lastName: updateData['last_name'] ?? lastName,
+      username: updateData['username'] ?? username,
+      dob: updateData['dob'] ?? dob,
+      weight: updateData['weight'] ?? weight,
+      height: updateData['height'] ?? height,
+      email: updateData['email'] ?? email,
+      phoneNumber: updateData['phone_number'] ?? phoneNumber,
+      notifications: updateData['notifications'] ?? notifications,
+      isActive: isActiveOverride ?? isActive,
     );
   }
 }

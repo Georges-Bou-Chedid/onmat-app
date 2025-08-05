@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../../l10n/app_localizations.dart';
+
 class StudentScanQrScreen extends StatefulWidget {
   const StudentScanQrScreen({super.key});
 
@@ -10,12 +12,15 @@ class StudentScanQrScreen extends StatefulWidget {
 }
 
 class _StudentScanQrScreenState extends State<StudentScanQrScreen> {
+  late AppLocalizations appLocalizations;
+
   @override
   Widget build(BuildContext context) {
+    appLocalizations = AppLocalizations.of(context)!;
     const scanBoxSize = 250.0;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan QR')),
+      appBar: AppBar(title: Text(appLocalizations.scanQr)),
       body: Stack(
         children: [
           // Camera preview

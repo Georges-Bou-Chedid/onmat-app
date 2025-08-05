@@ -44,6 +44,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
   void dispose() {
     _searchController.dispose();
     _searchFocusNode.dispose();
+    Provider.of<ClassStudentService>(context, listen: false).cancelListener();
     super.dispose();
   }
 
@@ -87,214 +88,223 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
       );
     }
 
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            /// -- Header
-            TBackgroundImageHeaderContainer(
-              image: 'assets/images/class_details_background.jpg',
-              child: Column(
-                children: [
-                  /// AppBar
-                  Container(
-                    height: 150, // enough height for your image
-                    padding: EdgeInsets.only(top: TSizes.defaultSpace),
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-                          onPressed: () => Get.back(),
-                        ),
-                        GestureDetector(
-                          onTap: () => Get.offAll(() => const StartScreen()),
-                          child: Image.asset(
-                            'assets/images/logo-white.png',
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  /// Classes Card
-                  ListTile(
-                    title: Text(
-                        classItem.className ?? '',
-                        style: Theme.of(context).textTheme.headlineSmall!.apply(color: Colors.white)
-                    ),
-                  ),
-                  const SizedBox(height: TSizes.appBarHeight)
-                ],
-              ),
-            ),
-
-            /// CLASS INFO
-            Padding(
-              padding: const EdgeInsets.all(TSizes.spaceBtwItems),
-              child: Column(
-                children: [
-                  _buildSectionTitle(context, appLocalizations.classInfo),
-                  Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.iconXs)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(TSizes.md),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      onTap: () => _searchFocusNode.unfocus(),
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              /// -- Header
+              TBackgroundImageHeaderContainer(
+                image: 'assets/images/class_details_background.jpg',
+                child: Column(
+                  children: [
+                    /// AppBar
+                    Container(
+                      height: 150, // enough height for your image
+                      padding: EdgeInsets.only(top: TSizes.defaultSpace),
+                      alignment: Alignment.centerLeft,
+                      child: Row(
                         children: [
-                          _infoRow(appLocalizations.instructor, "${instructor!.firstName} ${instructor!.lastName}"),
-                          _infoRow(appLocalizations.type, classItem.classType!),
-                          _infoRow(appLocalizations.location, "${classItem.location}, ${Country.parse(classItem.country ?? "LB").name}"),
-                          if (myAssistants.isNotEmpty)
-                          _infoRow(
-                            appLocalizations.assistants,
-                            myAssistants.map((a) => "${a.firstName} ${a.lastName}").join(', ')
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                            onPressed: () => Get.back(),
+                          ),
+                          GestureDetector(
+                            onTap: () => Get.offAll(() => const StartScreen()),
+                            child: Image.asset(
+                              'assets/images/logo-white.png',
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: TSizes.defaultSpace),
 
-                  /// CLASS SCHEDULE
-                  _buildSectionTitle(context, appLocalizations.weeklySchedule),
-                  ...classItem.schedule!.map((s) => ListTile(
-                    leading: Icon(Iconsax.clock, color: Theme.of(context).primaryColor),
-                    title: Text("${s['day']}"),
-                    subtitle: Text("${s['time']} • ${s['duration']}"),
-                  )),
-                  const SizedBox(height: TSizes.defaultSpace),
-
-                  /// ACTIONS
-                  _buildSectionTitle(context, appLocalizations.actions),
-                  Wrap(
-                    spacing: TSizes.borderRadiusLg,
-                    runSpacing: TSizes.borderRadiusLg,
-                    children: [
-                      _actionButton(context, Iconsax.edit, appLocalizations.editClass, onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => EditClassDialog(classItem: classItem),
-                        );
-                      }),
-                      _actionButton(context, Iconsax.calendar, appLocalizations.reschedule, onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => RescheduleDialog(
-                            classId: classItem.id,
-                            initialSchedule: List<Map<String, String>>.from(classItem.schedule ?? [])
-                          ),
-                        );
-                      }),
-                      if (! widget.isAssistant)
-                      _actionButton(context, Iconsax.user_add, appLocalizations.assignAssistant, onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => AssignAssistantDialog(classId: classItem.id, assistants: myAssistants),
-                        );
-                      }),
-                    ],
-                  ),
-                  const SizedBox(height: TSizes.spaceBtwSections),
-
-                  /// STUDENT LIST
-                  _buildSectionTitle(context, appLocalizations.students),
-                  TextField(
-                    controller: _searchController,
-                    focusNode: _searchFocusNode,
-                    decoration: InputDecoration(
-                      hintText: appLocalizations.searchStudents,
-                      prefixIcon: Icon(Iconsax.search_normal),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                  ),
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: filteredStudents.length,
-                    separatorBuilder: (_, __) => Divider(),
-                    itemBuilder: (context, index) {
-                      final studentItem = filteredStudents[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: TSizes.spaceBtwItems),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.md)),
-                        elevation: 4,
-                        child: ListTile(
-                          leading: CircleAvatar(child: Text("S${index + 1}")),
-                          title: Text(
-                            "${studentItem.firstName ?? ''} ${studentItem.lastName ?? ''}",
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          subtitle: Text(
-                            studentItem.email ?? '',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          trailing: studentItem.isActive
-                              ? const Icon(Iconsax.arrow_21, size: TSizes.md)
-                              : SizedBox(
-                                  width: 100, // max width for both buttons
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Row(
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.close, color: Colors.red),
-                                          tooltip: 'Ignore',
-                                          onPressed: () async {
-                                            // await ignoreStudent(classId, studentItem.userId);
-                                          },
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.check, color: Colors.green),
-                                          tooltip: 'Accept',
-                                          onPressed: () async {
-                                            // await activateStudent(classId, studentItem.userId);
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ),
-                          onTap: studentItem.isActive
-                              ? () async {
-
-                              }
-                              : null
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: TSizes.spaceBtwSections),
-
-                  /// QR CODE
-                  _buildSectionTitle(context, appLocalizations.classQrCode),
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Image.network(
-                        'https://api.qrserver.com/v1/create-qr-code/?data=${Uri.encodeComponent(classItem.qrCode!)}&size=200x200',
-                        height: 200,
-                        width: 200,
-                        fit: BoxFit.cover,
+                    /// Classes Card
+                    ListTile(
+                      title: Text(
+                          classItem.className ?? '',
+                          style: Theme.of(context).textTheme.headlineSmall!.apply(color: Colors.white)
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 40),
-                ],
+                    const SizedBox(height: TSizes.appBarHeight)
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              /// CLASS INFO
+              Padding(
+                padding: const EdgeInsets.all(TSizes.spaceBtwItems),
+                child: Column(
+                  children: [
+                    _buildSectionTitle(context, appLocalizations.classInfo),
+                    Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.iconXs)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(TSizes.md),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _infoRow(appLocalizations.instructor, "${instructor!.firstName} ${instructor!.lastName}"),
+                            _infoRow(appLocalizations.type, classItem.classType!),
+                            _infoRow(appLocalizations.location, "${classItem.location}, ${Country.parse(classItem.country ?? "LB").name}"),
+                            if (myAssistants.isNotEmpty)
+                            _infoRow(
+                              appLocalizations.assistants,
+                              myAssistants.map((a) => "${a.firstName} ${a.lastName}").join(', ')
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: TSizes.defaultSpace),
+
+                    /// CLASS SCHEDULE
+                    _buildSectionTitle(context, appLocalizations.weeklySchedule),
+                    ...classItem.schedule!.map((s) => ListTile(
+                      leading: Icon(Iconsax.clock, color: Theme.of(context).primaryColor),
+                      title: Text("${s['day']}"),
+                      subtitle: Text("${s['time']} • ${s['duration']}"),
+                    )),
+                    const SizedBox(height: TSizes.defaultSpace),
+
+                    /// ACTIONS
+                    _buildSectionTitle(context, appLocalizations.actions),
+                    Wrap(
+                      spacing: TSizes.borderRadiusLg,
+                      runSpacing: TSizes.borderRadiusLg,
+                      children: [
+                        _actionButton(context, Iconsax.edit, appLocalizations.editClass, onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => EditClassDialog(classItem: classItem),
+                          );
+                        }),
+                        _actionButton(context, Iconsax.calendar, appLocalizations.reschedule, onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => RescheduleDialog(
+                              classId: classItem.id,
+                              initialSchedule: List<Map<String, String>>.from(classItem.schedule ?? [])
+                            ),
+                          );
+                        }),
+                        if (! widget.isAssistant)
+                        _actionButton(context, Iconsax.user_add, appLocalizations.assignAssistant, onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => AssignAssistantDialog(classId: classItem.id, assistants: myAssistants),
+                          );
+                        }),
+                      ],
+                    ),
+                    const SizedBox(height: TSizes.spaceBtwSections),
+
+                    /// STUDENT LIST
+                    _buildSectionTitle(context, appLocalizations.students),
+                    TextField(
+                      controller: _searchController,
+                      focusNode: _searchFocusNode,
+                      decoration: InputDecoration(
+                        hintText: appLocalizations.searchStudents,
+                        prefixIcon: Icon(Iconsax.search_normal),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                    ),
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: filteredStudents.length,
+                      separatorBuilder: (_, __) => Divider(),
+                      itemBuilder: (context, index) {
+                        final studentItem = filteredStudents[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: TSizes.spaceBtwItems),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.md)),
+                          elevation: 4,
+                          child: ListTile(
+                            leading: CircleAvatar(child: Text("S${index + 1}")),
+                            title: Text(
+                              "${studentItem.firstName ?? ''} ${studentItem.lastName ?? ''}",
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            subtitle: Text(
+                              studentItem.email ?? '',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            trailing: studentItem.isActive
+                                ? const Icon(Iconsax.arrow_21, size: TSizes.md)
+                                : SizedBox(
+                                    width: 100, // max width for both buttons
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Row(
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Iconsax.close_square, color: Color(0xFFDF1E42)),
+                                            tooltip: appLocalizations.ignore,
+                                            onPressed: () async {
+                                              await classStudentService.ignoreStudent(
+                                                  widget.classId,
+                                                  studentItem.userId!
+                                              );
+                                            },
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Iconsax.tick_square, color: Colors.green),
+                                            tooltip: appLocalizations.accept,
+                                            onPressed: () async {
+                                              await classStudentService.acceptStudent(
+                                                  widget.classId,
+                                                  studentItem.userId!
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ),
+                            onTap: studentItem.isActive
+                                ? () async {
+
+                                }
+                                : null
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: TSizes.spaceBtwSections),
+
+                    /// QR CODE
+                    _buildSectionTitle(context, appLocalizations.classQrCode),
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Image.network(
+                          'https://api.qrserver.com/v1/create-qr-code/?data=${Uri.encodeComponent(classItem.qrCode!)}&size=200x200',
+                          height: 250,
+                          width: 250,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
