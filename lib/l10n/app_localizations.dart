@@ -1048,6 +1048,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Progress'**
   String get progress;
+
+  /// No description provided for @deleteClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Class'**
+  String get deleteClass;
+
+  /// No description provided for @deleteClassTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete'**
+  String get deleteClassTitle;
+
+  /// No description provided for @deleteClassWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone. All students, assistants, and progress will be permanently removed.'**
+  String get deleteClassWarning;
+
+  /// No description provided for @classDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Class Deleted Successfully'**
+  String get classDeleted;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

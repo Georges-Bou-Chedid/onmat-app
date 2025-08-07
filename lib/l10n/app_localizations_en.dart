@@ -484,4 +484,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get progress => 'Progress';
+
+  @override
+  String get deleteClass => 'Delete Class';
+
+  @override
+  String get deleteClassTitle => 'Are you sure you want to delete';
+
+  @override
+  String get deleteClassWarning => 'This action cannot be undone. All students, assistants, and progress will be permanently removed.';
+
+  @override
+  String get classDeleted => 'Class Deleted Successfully';
 }

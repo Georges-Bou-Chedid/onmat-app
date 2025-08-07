@@ -157,5 +157,9 @@
   "accept": "Accept",
   "ignore": "Ignore",
   "scanQr": "Scan Qr",
-  "progress": "Progress"
+  "progress": "Progress",
+  "deleteClass": "Delete Class",
+  "deleteClassTitle": "Are you sure you want to delete",
+  "deleteClassWarning": "This action cannot be undone. All students, assistants, and progress will be permanently removed.",
+  "classDeleted": "Class Deleted Successfully"
 }

@@ -210,6 +210,57 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                             builder: (_) => AssignAssistantDialog(classId: classItem.id),
                           );
                         }),
+                        if (! widget.isAssistant)
+                          _actionButton(context, Iconsax.trash, appLocalizations.deleteClass, onTap: () async {
+                              await showDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                builder: (context) => AlertDialog(
+                                  title: Row(
+                                    children: [
+                                      Icon(Iconsax.warning_2, color: Colors.red),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          "${appLocalizations.deleteClassTitle} ${classItem.className}",
+                                          style: const TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  content: Text(appLocalizations.deleteClassWarning),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.of(context).pop(false),
+                                      child: Text(appLocalizations.cancel),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () => Navigator.of(context).pop(true),
+                                      child: Text(appLocalizations.delete),
+                                    ),
+                                  ],
+                                ),
+                              ).then((confirmed) async {
+                                if (confirmed == true) {
+                                  final success = await instructorClassService.deleteClass(widget.classId);
+
+                                  if (success) {
+                                    Get.back();
+                                    Get.snackbar(
+                                      appLocalizations.success,
+                                      appLocalizations.classDeleted,
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                  } else {
+                                    Get.snackbar(
+                                      appLocalizations.error,
+                                      appLocalizations.errorMessage,
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                  }
+                                }
+                            });
+                          }),
                       ],
                     ),
                     const SizedBox(height: TSizes.spaceBtwSections),
@@ -229,15 +280,14 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                         });
                       },
                     ),
-                    ListView.separated(
+                    ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
                       itemCount: filteredStudents.length,
-                      separatorBuilder: (_, __) => Divider(),
                       itemBuilder: (context, index) {
                         final studentItem = filteredStudents[index];
                         return Card(
-                          margin: const EdgeInsets.only(bottom: TSizes.spaceBtwItems),
+                          margin: const EdgeInsets.only(bottom: TSizes.iconXs),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.md)),
                           elevation: 4,
                           child: ListTile(

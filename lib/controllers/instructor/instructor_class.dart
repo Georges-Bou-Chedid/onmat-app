@@ -240,4 +240,44 @@ class InstructorClassService with ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> deleteClass(String classId) async {
+    final batch = _firestore.batch();
+
+    try {
+      // 1. Delete class document
+      final classRef = _firestore.collection('classes').doc(classId);
+      batch.delete(classRef);
+
+      // 2. Delete from class_student
+      final studentSnapshot = await _firestore
+          .collection('class_student')
+          .where('class_id', isEqualTo: classId)
+          .get();
+      for (var doc in studentSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // 3. Delete from class_assistant
+      final assistantSnapshot = await _firestore
+          .collection('class_assistant')
+          .where('class_id', isEqualTo: classId)
+          .get();
+      for (var doc in assistantSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // 4. Commit
+      await batch.commit();
+
+      // 5. Remove from local list and notify
+      _ownerClasses.removeWhere((c) => c.id == classId);
+      notifyListeners();
+
+      return true;
+    } catch (e) {
+      print("🔥 Failed to delete class: $e");
+      return false;
+    }
+  }
 }
