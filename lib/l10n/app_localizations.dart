@@ -1042,6 +1042,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan Qr'**
   String get scanQr;
+
+  /// No description provided for @progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get progress;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

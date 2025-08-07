@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -26,9 +27,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   late AppLocalizations appLocalizations;
   late FocusNode _searchFocusNode;
   late TabController _tabController;
-
   bool _isLoading = false;
   String _searchQuery = '';
+
+  late InstructorClassService _instructorClassService;
 
   @override
   void initState() {
@@ -38,14 +40,26 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       setState(() => _isLoading = true);
-      final instructorClassService = Provider.of<InstructorClassService>(context, listen: false);
-      await instructorClassService.refresh();
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        _instructorClassService.listenToAssistantClasses(uid);
+        _instructorClassService.listenToOwnerClasses(uid); // Keep this for owner classes
+      }
       setState(() => _isLoading = false);
     });
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _instructorClassService = Provider.of<InstructorClassService>(context, listen: false);
+  }
+
+  @override
   void dispose() {
+    _instructorClassService.cancelAssistantListener();
+    _instructorClassService.cancelOwnerListener();
+
     _tabController.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
@@ -254,7 +268,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
               /// Fetch Assistants
               final classAssistantService = Provider.of<ClassAssistantService>(context, listen: false);
-              await classAssistantService.fetchAssistantProfiles(classItem.id);
+              classAssistantService.listenToClassAssistants(classItem.id);
 
               /// Fetch Students
               final classStudentService = Provider.of<ClassStudentService>(context, listen: false);

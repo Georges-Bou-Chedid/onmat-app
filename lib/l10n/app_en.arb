@@ -156,5 +156,6 @@
   "requestToJoinClass": "Join request sent successfully",
   "accept": "Accept",
   "ignore": "Ignore",
-  "scanQr": "Scan Qr"
+  "scanQr": "Scan Qr",
+  "progress": "Progress"
 }

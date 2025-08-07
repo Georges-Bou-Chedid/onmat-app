@@ -13,6 +13,7 @@ import 'controllers/instructor/instructor.dart';
 import 'controllers/instructor/instructor_class.dart';
 import 'controllers/student/class_student.dart';
 import 'controllers/student/student.dart';
+import 'controllers/student/student_class.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 
@@ -34,6 +35,7 @@ void main() async {
           ChangeNotifierProvider(create: (_) => ClassAssistantService()),
           ChangeNotifierProvider(create: (_) => StudentService()),
           ChangeNotifierProvider(create: (_) => ClassStudentService()),
+          ChangeNotifierProvider(create: (_) => StudentClassService()),
         ],
         child: MyApp(startLocale),
       )

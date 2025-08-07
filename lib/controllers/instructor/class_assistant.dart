@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -5,17 +7,22 @@ import 'package:onmat/models/ClassAssistant.dart';
 import 'package:onmat/models/Instructor.dart';
 
 class ClassAssistantService with ChangeNotifier {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   List<Instructor> _myAssistants = [];
   List<Instructor> get myAssistants => _myAssistants;
 
-  Future<void> fetchAssistantProfiles(String classId) async {
-    try {
-      final classAssistants = await FirebaseFirestore.instance
-          .collection('class_assistant')
-          .where('class_id', isEqualTo: classId)
-          .get();
+  StreamSubscription? _subscription;
 
-      final assistantIds = classAssistants.docs
+  void listenToClassAssistants(String classId) {
+    _subscription?.cancel();
+
+    _subscription = _firestore
+        .collection('class_assistant')
+        .where('class_id', isEqualTo: classId)
+        .snapshots()
+        .listen((snapshot) async {
+      final assistantIds = snapshot.docs
           .map((doc) => doc.data()['assistant_id'] as String)
           .toList();
 
@@ -25,18 +32,24 @@ class ClassAssistantService with ChangeNotifier {
         return;
       }
 
-      final instructors = await FirebaseFirestore.instance
+      final instructors = await _firestore
           .collection('instructors')
           .where(FieldPath.documentId, whereIn: assistantIds)
           .get();
 
-      _myAssistants = instructors.docs.map((doc) => Instructor.fromFirestore(doc.id, doc.data())).toList();
+      _myAssistants = instructors.docs
+          .map((doc) => Instructor.fromFirestore(doc.id, doc.data()))
+          .toList();
+
       notifyListeners();
-    } catch (e) {
-      print("🔥 Error: $e");
-      _myAssistants = [];
-      notifyListeners();
-    }
+    }, onError: (e) {
+      print("🔥 Error listening to assistants: $e");
+    });
+  }
+
+  void cancelListener() {
+    _subscription?.cancel();
+    _subscription = null;
   }
 
   Future<bool> assignAssistantToClass(String? classId, String assistant) async {

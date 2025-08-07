@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:onmat/controllers/student/class_student.dart';
+import 'package:onmat/screens/student/dashboard/student_class_details.dart';
 import 'package:onmat/screens/student/dashboard/student_scan_qr_code.dart';
 import 'package:provider/provider.dart';
 
 import '../../../controllers/instructor/class_assistant.dart';
+import '../../../controllers/instructor/instructor_class.dart';
 import '../../../controllers/student/student.dart';
+import '../../../controllers/student/student_class.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/background_image_header_container.dart';
@@ -23,9 +26,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> with Si
   final TextEditingController _searchController = TextEditingController();
   late AppLocalizations appLocalizations;
   late FocusNode _searchFocusNode;
-
   bool _isLoading = false;
   String _searchQuery = '';
+
+  late StudentClassService _studentClassService;
 
   @override
   void initState() {
@@ -34,14 +38,24 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> with Si
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       setState(() => _isLoading = true);
-      // final classStudentService = Provider.of<ClassStudentService>(context, listen: false);
-      // await classStudentService.refresh();
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        _studentClassService.listenToStudentClasses(uid);
+      }
       setState(() => _isLoading = false);
     });
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _studentClassService = Provider.of<StudentClassService>(context, listen: false);
+  }
+
+  @override
   void dispose() {
+    _studentClassService.cancelListener();
+
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
@@ -51,13 +65,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> with Si
   Widget build(BuildContext context) {
     final studentService = Provider.of<StudentService>(context, listen: false);
     final classStudentService = Provider.of<ClassStudentService>(context, listen: false);
-    final filtered = [];
-    // final filtered = classStudentService.studentClasses.where((cl) {
-    //   final query = _searchQuery.trim().toLowerCase();
-    //   return cl.className?.toLowerCase().contains(query) == true ||
-    //       cl.classType?.toLowerCase().contains(query) == true ||
-    //       cl.location?.toLowerCase().contains(query) == true;
-    // }).toList();
+    final studentClassService = Provider.of<StudentClassService>(context, listen: true);
+    final filtered = studentClassService.classes.where((cl) {
+      final query = _searchQuery.trim().toLowerCase();
+      return cl.className?.toLowerCase().contains(query) == true ||
+          cl.classType?.toLowerCase().contains(query) == true ||
+          cl.location?.toLowerCase().contains(query) == true;
+    }).toList();
     appLocalizations = AppLocalizations.of(context)!;
 
     return GestureDetector(
@@ -223,23 +237,23 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> with Si
                                     ),
                                   ),
                                 );
-                      
-                                // if (isAssistant) {
-                                //   final instructorClassService = Provider.of<InstructorClassService>(context, listen: false);
-                                //   await instructorClassService.getClassOwner(classItem.ownerId);
-                                // }
-                      
+
+                                /// Fetch Owner
+                                final instructorClassService = Provider.of<InstructorClassService>(context, listen: false);
+                                await instructorClassService.getClassOwner(classItem.ownerId);
+
+                                /// Fetch Assistants
                                 final classAssistantService = Provider.of<ClassAssistantService>(context, listen: false);
-                                await classAssistantService.fetchAssistantProfiles(classItem.id);
+                                classAssistantService.listenToClassAssistants(classItem.id);
                       
                                 Get.back();
                       
-                                // Get.to(
-                                //   () => ClassDetailsScreen(classId: classItem.id, isAssistant: isAssistant),
-                                //   transition: Transition.rightToLeft,
-                                //   duration: const Duration(milliseconds: 300),
-                                //   curve: Curves.easeInOut,
-                                // );
+                                Get.to(
+                                  () => StudentClassDetailsScreen(classId: classItem.id),
+                                  transition: Transition.rightToLeft,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
                               },
                             ),
                           );

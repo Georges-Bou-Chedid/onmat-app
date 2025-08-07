@@ -9,9 +9,8 @@ import '../constants/sizes.dart';
 
 class AssignAssistantDialog extends StatefulWidget {
   final String classId;
-  final List<Instructor> assistants;
 
-  const AssignAssistantDialog({super.key, required this.classId, required this.assistants});
+  const AssignAssistantDialog({super.key, required this.classId});
 
   @override
   State<AssignAssistantDialog> createState() => _AssignAssistantDialogState();
@@ -69,7 +68,7 @@ class _AssignAssistantDialogState extends State<AssignAssistantDialog> {
                 const SizedBox(height: TSizes.spaceBtwItems),
 
                 Column(
-                  children: widget.assistants.map((instructor) {
+                  children: classAssistantService.myAssistants.map((instructor) {
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

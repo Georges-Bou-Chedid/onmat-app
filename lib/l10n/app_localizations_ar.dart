@@ -481,4 +481,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get scanQr => 'Scan Qr';
+
+  @override
+  String get progress => 'Progress';
 }

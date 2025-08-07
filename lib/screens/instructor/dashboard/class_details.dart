@@ -31,8 +31,10 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
   final TextEditingController _searchController = TextEditingController();
   late Instructor? instructor;
   late FocusNode _searchFocusNode;
-
   String _searchQuery = '';
+
+  late ClassAssistantService _classAssistantService;
+  late ClassStudentService _classStudentService;
 
   @override
   void initState() {
@@ -41,13 +43,22 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
   }
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    _searchFocusNode.dispose();
-    Provider.of<ClassStudentService>(context, listen: false).cancelListener();
-    super.dispose();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Safely get providers once here, where context is stable
+    _classAssistantService = Provider.of<ClassAssistantService>(context, listen: false);
+    _classStudentService = Provider.of<ClassStudentService>(context, listen: false);
   }
 
+  @override
+  void dispose() {
+    _classAssistantService.cancelListener();
+    _classStudentService.cancelListener();
+
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -196,7 +207,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                         _actionButton(context, Iconsax.user_add, appLocalizations.assignAssistant, onTap: () {
                           showDialog(
                             context: context,
-                            builder: (_) => AssignAssistantDialog(classId: classItem.id, assistants: myAssistants),
+                            builder: (_) => AssignAssistantDialog(classId: classItem.id),
                           );
                         }),
                       ],

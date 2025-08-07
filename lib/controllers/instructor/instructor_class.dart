@@ -1,5 +1,7 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:onmat/models/Class.dart';
 
@@ -10,61 +12,167 @@ class InstructorClassService with ChangeNotifier {
 
   List<Class> _ownerClasses = [];
   List<Class> _assistantClasses = [];
+
   List<Class> get ownerClasses => _ownerClasses;
   List<Class> get assistantClasses => _assistantClasses;
+
   Instructor? _classOwner;
   Instructor? get classOwner => _classOwner;
 
-  Future<void> refresh() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null) {
-      await fetchClassesForOwnerAndAssistant(uid);
+  StreamSubscription? _ownerSubscription;
+  final Map<String, StreamSubscription> _ownerClassListeners = {};
+
+  StreamSubscription? _assistantSubscription;
+  final Map<String, StreamSubscription> _assistantClassListeners = {};
+
+  void listenToOwnerClasses(String userId) {
+    _ownerSubscription?.cancel();
+    _cancelAllOwnerClassListeners();
+
+    _ownerSubscription = _firestore
+        .collection('classes')
+        .where('owner_id', isEqualTo: userId)
+        .snapshots()
+        .listen((snapshot) {
+      final classIds = snapshot.docs.map((doc) => doc.id).toList();
+
+      if (classIds.isEmpty) {
+        _ownerClasses = [];
+        notifyListeners();
+        return;
+      }
+
+      final currentIds = _ownerClasses.map((c) => c.id).toSet();
+      final newIds = classIds.toSet();
+
+      if (! setEquals(currentIds, newIds)) {
+        _setupOwnerClassListeners(classIds);
+      }
+    });
+  }
+
+  void _setupOwnerClassListeners(List<String> classIds) {
+    _ownerClassListeners.keys
+        .where((id) => !classIds.contains(id))
+        .toList()
+        .forEach((id) {
+      _ownerClassListeners[id]?.cancel();
+      _ownerClassListeners.remove(id);
+      _ownerClasses.removeWhere((c) => c.id == id);
+    });
+
+    for (var classId in classIds) {
+      _ownerClassListeners[classId]?.cancel(); // Cancel previous if any
+
+      final subscription = _firestore
+          .collection('classes')
+          .doc(classId)
+          .snapshots()
+          .listen((doc) {
+        if (doc.exists) {
+          final updated = Class.fromFirestore(doc.id, doc.data()!);
+          final index = _ownerClasses.indexWhere((c) => c.id == classId);
+          if (index != -1) {
+            _ownerClasses[index] = updated;
+          } else {
+            _ownerClasses.add(updated);
+          }
+          notifyListeners();
+        }
+      });
+
+      _ownerClassListeners[classId] = subscription;
     }
   }
 
-  Future<void> fetchClassesForOwnerAndAssistant(String userId) async {
-    try {
-      // 1. Fetch classes owned by the user
-      final ownedSnapshot = await _firestore
-          .collection('classes')
-          .where('owner_id', isEqualTo: userId)
-          .get();
+  void _cancelAllOwnerClassListeners() {
+    for (var sub in _ownerClassListeners.values) {
+      sub.cancel();
+    }
+    _ownerClassListeners.clear();
+    _ownerClasses.clear();
+  }
 
-      _ownerClasses = ownedSnapshot.docs
-          .map((doc) => Class.fromFirestore(doc.id, doc.data()))
+  void cancelOwnerListener() {
+    _ownerSubscription?.cancel();
+    _cancelAllOwnerClassListeners();
+  }
+
+  // ✅ Real-time listener for assistant classes
+  void listenToAssistantClasses(String userId) {
+    _assistantSubscription?.cancel();
+    _cancelAllAssistantClassListeners();
+
+    _assistantSubscription = _firestore
+        .collection('class_assistant')
+        .where('assistant_id', isEqualTo: userId)
+        .snapshots()
+        .listen((snapshot) {
+      final classIds = snapshot.docs
+          .map((doc) => doc['class_id'] as String)
           .toList();
 
-      // 2. Fetch class IDs where the user is an assistant
-      final assistantSnapshot = await _firestore
-          .collection('class_assistant')
-          .where('assistant_id', isEqualTo: userId)
-          .get();
-
-      final assistantClassIds = assistantSnapshot.docs
-          .map((doc) => doc['class_id'] as String)
-          .toSet();
-
-      // 3. Fetch class documents for assistant class IDs
-      _assistantClasses = [];
-      if (assistantClassIds.isNotEmpty) {
-        final assistantClassSnapshots = await _firestore
-            .collection('classes')
-            .where(FieldPath.documentId, whereIn: assistantClassIds.toList())
-            .get();
-
-        _assistantClasses = assistantClassSnapshots.docs
-            .map((doc) => Class.fromFirestore(doc.id, doc.data()))
-            .where((classDoc) => classDoc.ownerId != userId)
-            .toList();
+      if (classIds.isEmpty) {
+        _assistantClasses = [];
+        notifyListeners();
+        return;
       }
 
-      notifyListeners();
-    } catch (e) {
-      print("🔥 Error fetching classes: $e");
-      _ownerClasses = [];
-      _assistantClasses = [];
-      notifyListeners();
+      _setupAssistantClassListeners(classIds);
+    }, onError: (e) {
+      print("🔥 Error listening to assistant classes: $e");
+    });
+  }
+
+  void _setupAssistantClassListeners(List<String> classIds) {
+    // Cancel listeners for removed classes
+    _assistantClassListeners.keys
+        .where((id) => !classIds.contains(id))
+        .toList()
+        .forEach((id) {
+      _assistantClassListeners[id]?.cancel();
+      _assistantClassListeners.remove(id);
+      _assistantClasses.removeWhere((c) => c.id == id);
+    });
+
+    for (var classId in classIds) {
+      // Always cancel and re-add to ensure fresh listener
+      _assistantClassListeners[classId]?.cancel();
+
+      final subscription = _firestore
+          .collection('classes')
+          .doc(classId)
+          .snapshots()
+          .listen((doc) {
+        if (doc.exists) {
+          final updated = Class.fromFirestore(doc.id, doc.data()!);
+          final index = _assistantClasses.indexWhere((c) => c.id == classId);
+          if (index != -1) {
+            _assistantClasses[index] = updated;
+          } else {
+            if (!_assistantClasses.any((c) => c.id == classId)) {
+              _assistantClasses.add(updated);
+            }
+          }
+          notifyListeners();
+        }
+      });
+
+      _assistantClassListeners[classId] = subscription;
     }
+  }
+
+  void _cancelAllAssistantClassListeners() {
+    for (var sub in _assistantClassListeners.values) {
+      sub.cancel();
+    }
+    _assistantClassListeners.clear();
+    _assistantClasses.clear();
+  }
+
+  void cancelAssistantListener() {
+    _assistantSubscription?.cancel();
+    _cancelAllAssistantClassListeners();
   }
 
   Future<void> getClassOwner(String? ownerId) async {
@@ -93,8 +201,6 @@ class InstructorClassService with ChangeNotifier {
 
       await docRef.set(cl.toMap());
 
-      _ownerClasses.add(cl);
-      notifyListeners();
       return true;
     } catch (e) {
       print("🔥 Failed to create class: $e");
