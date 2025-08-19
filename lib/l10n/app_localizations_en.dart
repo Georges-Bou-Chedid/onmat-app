@@ -420,9 +420,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get assignAssistant => 'Assign Assistant';
 
   @override
-  String get students => 'Students';
-
-  @override
   String get searchStudents => 'Search students...';
 
   @override
@@ -453,10 +450,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get assistants => 'Assistants';
 
   @override
-  String get owner => 'Owner';
+  String get headCoach => 'Head Coach';
 
   @override
-  String get assistant => 'Assistant';
+  String get assistantCoach => 'Assistant Coach';
 
   @override
   String get chooseRoleToContinue => 'Choose your role to continue';
@@ -496,4 +493,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get classDeleted => 'Class Deleted Successfully';
+
+  @override
+  String get details => 'Details';
+
+  @override
+  String get students => 'Students';
+
+  @override
+  String get attendance => 'Attendance';
+
+  @override
+  String get graduationSystem => 'Graduation System';
 }

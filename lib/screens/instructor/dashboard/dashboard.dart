@@ -142,11 +142,12 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     Material(
                       elevation: 2, // adjust for desired shadow depth
                       color: dark ? Color(0xFF1E1E1E) : Colors.white, // match your app background or scaffold
+                      borderRadius: BorderRadius.circular(20),
                       child: TabBar(
                         controller: _tabController,
                         tabs: [
-                          Tab(text: appLocalizations.owner),
-                          Tab(text: appLocalizations.assistant),
+                          Tab(text: appLocalizations.headCoach),
+                          Tab(text: appLocalizations.assistantCoach),
                         ],
                       ),
                     ),

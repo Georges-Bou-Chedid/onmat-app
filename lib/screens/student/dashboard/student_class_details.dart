@@ -134,7 +134,7 @@ class _StudentClassDetailsScreenState extends State<StudentClassDetailsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _infoRow(appLocalizations.instructor, "${instructor!.firstName} ${instructor!.lastName}"),
+                            _infoRow(appLocalizations.headCoach, "${instructor!.firstName} ${instructor!.lastName}"),
                             _infoRow(appLocalizations.type, classItem.classType!),
                             _infoRow(appLocalizations.location, "${classItem.location}, ${Country.parse(classItem.country ?? "LB").name}"),
                             if (myAssistants.isNotEmpty)

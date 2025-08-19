@@ -917,12 +917,6 @@ abstract class AppLocalizations {
   /// **'Assign Assistant'**
   String get assignAssistant;
 
-  /// No description provided for @students.
-  ///
-  /// In en, this message translates to:
-  /// **'Students'**
-  String get students;
-
   /// No description provided for @searchStudents.
   ///
   /// In en, this message translates to:
@@ -983,17 +977,17 @@ abstract class AppLocalizations {
   /// **'Assistants'**
   String get assistants;
 
-  /// No description provided for @owner.
+  /// No description provided for @headCoach.
   ///
   /// In en, this message translates to:
-  /// **'Owner'**
-  String get owner;
+  /// **'Head Coach'**
+  String get headCoach;
 
-  /// No description provided for @assistant.
+  /// No description provided for @assistantCoach.
   ///
   /// In en, this message translates to:
-  /// **'Assistant'**
-  String get assistant;
+  /// **'Assistant Coach'**
+  String get assistantCoach;
 
   /// No description provided for @chooseRoleToContinue.
   ///
@@ -1072,6 +1066,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Class Deleted Successfully'**
   String get classDeleted;
+
+  /// No description provided for @details.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get details;
+
+  /// No description provided for @students.
+  ///
+  /// In en, this message translates to:
+  /// **'Students'**
+  String get students;
+
+  /// No description provided for @attendance.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get attendance;
+
+  /// No description provided for @graduationSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Graduation System'**
+  String get graduationSystem;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

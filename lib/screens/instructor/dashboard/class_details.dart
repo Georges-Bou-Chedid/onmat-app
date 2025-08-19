@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:onmat/models/Instructor.dart';
+import 'package:onmat/screens/instructor/dashboard/student_profile.dart';
 import 'package:provider/provider.dart';
 import 'package:country_picker/country_picker.dart';
 
@@ -10,7 +11,9 @@ import '../../../controllers/instructor/instructor.dart';
 import '../../../controllers/instructor/instructor_class.dart';
 import '../../../controllers/student/class_student.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../models/Student.dart';
 import '../../../utils/constants/sizes.dart';
+import '../../../utils/helpers/helper_functions.dart';
 import '../../../utils/widgets/assign_assistant_dialog.dart';
 import '../../../utils/widgets/background_image_header_container.dart';
 import '../../../utils/widgets/edit_class_dialog.dart';
@@ -27,11 +30,15 @@ class ClassDetailsScreen extends StatefulWidget {
   _ClassDetailsScreenState createState() => _ClassDetailsScreenState();
 }
 
-class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
+class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   late Instructor? instructor;
   late FocusNode _searchFocusNode;
   String _searchQuery = '';
+  int currentPage = 0;
+  int studentsPerPage = 10;
+  late TabController _tabController;
+  late List<Student> myAttendanceStudents;
 
   late ClassAssistantService _classAssistantService;
   late ClassStudentService _classStudentService;
@@ -39,7 +46,9 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 4, vsync: this);
     _searchFocusNode = FocusNode();
+    myAttendanceStudents = [];
   }
 
   @override
@@ -48,6 +57,10 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
     // Safely get providers once here, where context is stable
     _classAssistantService = Provider.of<ClassAssistantService>(context, listen: false);
     _classStudentService = Provider.of<ClassStudentService>(context, listen: false);
+
+    if (myAttendanceStudents.isEmpty) {
+      myAttendanceStudents = List.from(_classStudentService.myStudents);
+    }
   }
 
   @override
@@ -89,8 +102,13 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
           cs.lastName?.toLowerCase().contains(query) == true ||
           cs.email?.toLowerCase().contains(query) == true;
     }).toList();
+    // In your build method
+    final startIndex = currentPage * studentsPerPage;
+    final endIndex = (startIndex + studentsPerPage).clamp(0, filteredStudents.length);
+    final paginatedStudents = filteredStudents.sublist(startIndex, endIndex);
 
     final appLocalizations = AppLocalizations.of(context)!;
+    final dark = THelperFunctions.isDarkMode(context);
 
     if (classItem == null) {
       return Scaffold(
@@ -146,221 +164,42 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                 ),
               ),
 
-              /// CLASS INFO
+              /// Tabs
               Padding(
-                padding: const EdgeInsets.all(TSizes.spaceBtwItems),
+                padding: const EdgeInsets.symmetric(horizontal: TSizes.md),
                 child: Column(
                   children: [
-                    _buildSectionTitle(context, appLocalizations.classInfo),
-                    Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.iconXs)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(TSizes.md),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _infoRow(appLocalizations.instructor, "${instructor!.firstName} ${instructor!.lastName}"),
-                            _infoRow(appLocalizations.type, classItem.classType!),
-                            _infoRow(appLocalizations.location, "${classItem.location}, ${Country.parse(classItem.country ?? "LB").name}"),
-                            if (myAssistants.isNotEmpty)
-                            _infoRow(
-                              appLocalizations.assistants,
-                              myAssistants.map((a) => "${a.firstName} ${a.lastName}").join(', ')
-                            ),
-                          ],
-                        ),
+                    /// TabBar
+                    Material(
+                      elevation: 2,
+                      color: dark ? Color(0xFF1E1E1E) : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      child: TabBar(
+                        controller: _tabController,
+                        isScrollable: true,
+                        tabAlignment: TabAlignment.center,
+                        tabs: [
+                          Tab(text: appLocalizations.details),
+                          Tab(text: appLocalizations.students),
+                          Tab(text: appLocalizations.attendance),
+                          Tab(text: appLocalizations.graduationSystem)
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: TSizes.defaultSpace),
-
-                    /// CLASS SCHEDULE
-                    _buildSectionTitle(context, appLocalizations.weeklySchedule),
-                    ...classItem.schedule!.map((s) => ListTile(
-                      leading: Icon(Iconsax.clock, color: Theme.of(context).primaryColor),
-                      title: Text("${s['day']}"),
-                      subtitle: Text("${s['time']} • ${s['duration']}"),
-                    )),
-                    const SizedBox(height: TSizes.defaultSpace),
-
-                    /// ACTIONS
-                    _buildSectionTitle(context, appLocalizations.actions),
-                    Wrap(
-                      spacing: TSizes.borderRadiusLg,
-                      runSpacing: TSizes.borderRadiusLg,
-                      children: [
-                        _actionButton(context, Iconsax.edit, appLocalizations.editClass, onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (_) => EditClassDialog(classItem: classItem),
-                          );
-                        }),
-                        _actionButton(context, Iconsax.calendar, appLocalizations.reschedule, onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (_) => RescheduleDialog(
-                              classId: classItem.id,
-                              initialSchedule: List<Map<String, String>>.from(classItem.schedule ?? [])
-                            ),
-                          );
-                        }),
-                        if (! widget.isAssistant)
-                        _actionButton(context, Iconsax.user_add, appLocalizations.assignAssistant, onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (_) => AssignAssistantDialog(classId: classItem.id),
-                          );
-                        }),
-                        if (! widget.isAssistant)
-                          _actionButton(context, Iconsax.trash, appLocalizations.deleteClass, onTap: () async {
-                              await showDialog(
-                                context: context,
-                                barrierDismissible: true,
-                                builder: (context) => AlertDialog(
-                                  title: Row(
-                                    children: [
-                                      Icon(Iconsax.warning_2, color: Colors.red),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          "${appLocalizations.deleteClassTitle} ${classItem.className}",
-                                          style: const TextStyle(fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  content: Text(appLocalizations.deleteClassWarning),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.of(context).pop(false),
-                                      child: Text(appLocalizations.cancel),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () => Navigator.of(context).pop(true),
-                                      child: Text(appLocalizations.delete),
-                                    ),
-                                  ],
-                                ),
-                              ).then((confirmed) async {
-                                if (confirmed == true) {
-                                  final success = await instructorClassService.deleteClass(widget.classId);
-
-                                  if (success) {
-                                    Get.back();
-                                    Get.snackbar(
-                                      appLocalizations.success,
-                                      appLocalizations.classDeleted,
-                                      snackPosition: SnackPosition.BOTTOM,
-                                    );
-                                  } else {
-                                    Get.snackbar(
-                                      appLocalizations.error,
-                                      appLocalizations.errorMessage,
-                                      snackPosition: SnackPosition.BOTTOM,
-                                    );
-                                  }
-                                }
-                            });
-                          }),
-                      ],
                     ),
                     const SizedBox(height: TSizes.spaceBtwSections),
 
-                    /// STUDENT LIST
-                    _buildSectionTitle(context, appLocalizations.students),
-                    TextField(
-                      controller: _searchController,
-                      focusNode: _searchFocusNode,
-                      decoration: InputDecoration(
-                        hintText: appLocalizations.searchStudents,
-                        prefixIcon: Icon(Iconsax.search_normal),
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _searchQuery = value;
-                        });
-                      },
-                    ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: filteredStudents.length,
-                      itemBuilder: (context, index) {
-                        final studentItem = filteredStudents[index];
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: TSizes.iconXs),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.md)),
-                          elevation: 4,
-                          child: ListTile(
-                            leading: CircleAvatar(child: Text("S${index + 1}")),
-                            title: Text(
-                              "${studentItem.firstName ?? ''} ${studentItem.lastName ?? ''}",
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            subtitle: Text(
-                              studentItem.email ?? '',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            trailing: studentItem.isActive
-                                ? const Icon(Iconsax.arrow_21, size: TSizes.md)
-                                : SizedBox(
-                                    width: 100, // max width for both buttons
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Row(
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Iconsax.close_square, color: Color(0xFFDF1E42)),
-                                            tooltip: appLocalizations.ignore,
-                                            onPressed: () async {
-                                              await classStudentService.ignoreStudent(
-                                                  widget.classId,
-                                                  studentItem.userId!
-                                              );
-                                            },
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Iconsax.tick_square, color: Colors.green),
-                                            tooltip: appLocalizations.accept,
-                                            onPressed: () async {
-                                              await classStudentService.acceptStudent(
-                                                  widget.classId,
-                                                  studentItem.userId!
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                ),
-                            onTap: studentItem.isActive
-                                ? () async {
-
-                                }
-                                : null
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: TSizes.spaceBtwSections),
-
-                    /// QR CODE
-                    _buildSectionTitle(context, appLocalizations.classQrCode),
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Image.network(
-                          'https://api.qrserver.com/v1/create-qr-code/?data=${Uri.encodeComponent(classItem.qrCode!)}&size=200x200',
-                          height: 250,
-                          width: 250,
-                          fit: BoxFit.cover,
-                        ),
+                    /// TabBarView with filtered class lists
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.6,
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildDetailsTab(appLocalizations, classItem, myAssistants, instructorClassService),
+                          _buildStudentsTab(appLocalizations, paginatedStudents, classStudentService, startIndex, endIndex, filteredStudents),
+                          _buildAttendanceTab(classItem, appLocalizations, classStudentService, myAttendanceStudents),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 40),
                   ],
                 ),
               ),
@@ -371,8 +210,375 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
     );
   }
 
-  /// --- COMPONENT HELPERS ---
+  Widget _buildDetailsTab(appLocalizations, classItem, myAssistants, instructorClassService) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildSectionTitle(context, appLocalizations.classInfo),
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.iconXs)),
+            child: Padding(
+              padding: const EdgeInsets.all(TSizes.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _infoRow(appLocalizations.headCoach, "${instructor!.firstName} ${instructor!.lastName}"),
+                  _infoRow(appLocalizations.type, classItem.classType!),
+                  _infoRow(appLocalizations.location, "${classItem.location}, ${Country.parse(classItem.country ?? "LB").name}"),
+                  if (myAssistants.isNotEmpty)
+                    _infoRow(
+                        appLocalizations.assistants,
+                        myAssistants.map((a) => "${a.firstName} ${a.lastName}").join(', ')
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: TSizes.defaultSpace),
+      
+          /// CLASS SCHEDULE
+          _buildSectionTitle(context, appLocalizations.weeklySchedule),
+          ...classItem.schedule!.map((s) => ListTile(
+            leading: Icon(Iconsax.clock, color: Theme.of(context).primaryColor),
+            title: Text("${s['day']}"),
+            subtitle: Text("${s['time']} • ${s['duration']}"),
+          )),
+          const SizedBox(height: TSizes.defaultSpace),
+      
+          /// ACTIONS
+          _buildSectionTitle(context, appLocalizations.actions),
+          Wrap(
+            spacing: TSizes.borderRadiusLg,
+            runSpacing: TSizes.borderRadiusLg,
+            children: [
+              _actionButton(context, Iconsax.edit, appLocalizations.editClass, onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => EditClassDialog(classItem: classItem),
+                );
+              }),
+              _actionButton(context, Iconsax.calendar, appLocalizations.reschedule, onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => RescheduleDialog(
+                      classId: classItem.id,
+                      initialSchedule: List<Map<String, String>>.from(classItem.schedule ?? [])
+                  ),
+                );
+              }),
+              if (! widget.isAssistant)
+                _actionButton(context, Iconsax.user_add, appLocalizations.assignAssistant, onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) => AssignAssistantDialog(classId: classItem.id),
+                  );
+                }),
+              if (! widget.isAssistant)
+                _actionButton(context, Iconsax.trash, appLocalizations.deleteClass, onTap: () async {
+                  await showDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    builder: (context) => AlertDialog(
+                      title: Row(
+                        children: [
+                          Icon(Iconsax.warning_2, color: Colors.red),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              "${appLocalizations.deleteClassTitle} ${classItem.className}",
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                      content: Text(appLocalizations.deleteClassWarning),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: Text(appLocalizations.cancel),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: Text(appLocalizations.delete),
+                        ),
+                      ],
+                    ),
+                  ).then((confirmed) async {
+                    if (confirmed == true) {
+                      final success = await instructorClassService.deleteClass(widget.classId);
+      
+                      if (success) {
+                        Get.back();
+                        Get.snackbar(
+                          appLocalizations.success,
+                          appLocalizations.classDeleted,
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                      } else {
+                        Get.snackbar(
+                          appLocalizations.error,
+                          appLocalizations.errorMessage,
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                      }
+                    }
+                  });
+                }),
+            ],
+          ),
+          const SizedBox(height: TSizes.spaceBtwSections),
+      
+          /// QR CODE
+          _buildSectionTitle(context, appLocalizations.classQrCode),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Image.network(
+                'https://api.qrserver.com/v1/create-qr-code/?data=${Uri.encodeComponent(classItem.qrCode!)}&size=200x200',
+                height: 250,
+                width: 250,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildStudentsTab(appLocalizations, paginatedStudents, classStudentService, startIndex, endIndex, filteredStudents) {
+    return Column(
+        children: [
+          TextField(
+            controller: _searchController,
+            focusNode: _searchFocusNode,
+            decoration: InputDecoration(
+              hintText: appLocalizations.searchStudents,
+              prefixIcon: Icon(Iconsax.search_normal),
+            ),
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value;
+              });
+            },
+          ),
+          Column(
+            children: [
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: paginatedStudents.length,
+                itemBuilder: (context, index) {
+                  final studentItem = paginatedStudents[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: TSizes.iconXs),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.md)),
+                    elevation: 4,
+                    child: ListTile(
+                        leading: CircleAvatar(child: Text(studentItem.firstName[0])),
+                        title: Text(
+                          "${studentItem.firstName ?? ''} ${studentItem.lastName ?? ''}",
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        subtitle: Text(
+                          studentItem.email ?? '',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        trailing: studentItem.isActive
+                            ? const Icon(Iconsax.arrow_21, size: TSizes.md)
+                            : SizedBox(
+                          width: 100, // max width for both buttons
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Iconsax.close_square, color: Color(0xFFDF1E42)),
+                                  tooltip: appLocalizations.ignore,
+                                  onPressed: () async {
+                                    await classStudentService.ignoreStudent(
+                                        widget.classId,
+                                        studentItem.userId!
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Iconsax.tick_square, color: Colors.green),
+                                  tooltip: appLocalizations.accept,
+                                  onPressed: () async {
+                                    await classStudentService.acceptStudent(
+                                        widget.classId,
+                                        studentItem.userId!
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        onTap: studentItem.isActive
+                            ? () async {
+                          Get.to(
+                                () => StudentProfileScreen(student: studentItem),
+                            transition: Transition.rightToLeft,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        }
+                            : null
+                    ),
+                  );
+                },
+              ),
+
+              // Pagination Controls
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: Icon(Iconsax.arrow_left_1, color: currentPage > 0 ? const Color(0xFFDF1E42) : Colors.grey),
+                    onPressed: currentPage > 0
+                        ? () {
+                      setState(() {
+                        currentPage--;
+                      });
+                    }
+                        : null,
+                  ),
+                  Text(
+                    "${startIndex + 1}-${endIndex} / ${filteredStudents.length}",
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  IconButton(
+                    icon: Icon(Iconsax.arrow_right_4, color: endIndex < filteredStudents.length ? const Color(0xFFDF1E42) : Colors.grey),
+                    onPressed: endIndex < filteredStudents.length
+                        ? () {
+                      setState(() {
+                        currentPage++;
+                      });
+                    }
+                        : null,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ]
+    );
+  }
+
+  Widget _buildAttendanceTab(classItem, appLocalizations, classStudentService, myAttendanceStudents) {
+    final today = DateTime.now();
+    const weekdayNames = [
+      'Monday',    // 1
+      'Tuesday',   // 2
+      'Wednesday', // 3
+      'Thursday',  // 4
+      'Friday',    // 5
+      'Saturday',  // 6
+      'Sunday',    // 7
+    ];
+
+    final todayName = weekdayNames[today.weekday - 1];
+    final todaySchedule = classItem.schedule?.firstWhere(
+          (s) => s['day'] == todayName,
+      orElse: () => <String, String>{},
+    );
+
+    if (todaySchedule == null || todaySchedule.isEmpty) {
+      return Card(
+        margin: const EdgeInsets.all(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const Text("No class scheduled today."),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.add),
+                label: const Text("Add Extra Session"),
+                onPressed: () {
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Otherwise show today’s attendance list
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(right: 16.0, left: 16.0),
+          child: ListTile(
+            leading: Icon(Iconsax.clock, color: Theme.of(context).primaryColor),
+            title: Text("${todayName}"),
+            subtitle: Text("${todaySchedule['time']} • ${todaySchedule['duration']}"),
+          )
+        ),
+
+        Expanded(
+          child: ListView.builder(
+            itemCount: myAttendanceStudents.length,
+            itemBuilder: (context, index) {
+              final student = myAttendanceStudents[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: CircleAvatar(child: Text(student.firstName[0])),
+                  title: Text(
+                    "${student.firstName} ${student.lastName}",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  subtitle: Text(
+                    student.email ?? '',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Iconsax.tick_square, color: Colors.green),
+                        tooltip: "Mark Present",
+                        onPressed: () async {
+                          setState(() {
+                            myAttendanceStudents.removeAt(index);
+                          });
+
+                          await classStudentService.incrementAttendance(
+                            widget.classId,
+                            student.userId!,
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Iconsax.close_square, color: Color(0xFFDF1E42)),
+                        tooltip: "Absent",
+                        onPressed: () {
+                          setState(() {
+                            myAttendanceStudents.removeAt(index);
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// --- COMPONENT HELPERS ---
   Widget _infoRow(String title, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),

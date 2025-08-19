@@ -155,7 +155,6 @@ class ClassStudentService with ChangeNotifier {
         return false;
       }
 
-      // Step 3: Update is_active to true
       await _firestore.collection('class_student').doc(doc.id).delete();
 
       // Step 4: Remove from in-memory list (optional)
@@ -164,6 +163,41 @@ class ClassStudentService with ChangeNotifier {
       return true;
     } catch (e) {
       print("🔥 Failed to ignore student: $e");
+      return false;
+    }
+  }
+
+  Future<bool> incrementAttendance(String classId, String uid) async {
+    try {
+      // Find existing class_student document
+      final querySnapshot = await _firestore
+          .collection('class_student')
+          .where('class_id', isEqualTo: classId)
+          .where('student_id', isEqualTo: uid)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        print("⚠️ Student not found in this class");
+        return false;
+      }
+
+      final doc = querySnapshot.docs.first;
+      final docRef = doc.reference;
+
+      await _firestore.runTransaction((transaction) async {
+        final snapshot = await transaction.get(docRef);
+
+        if (! snapshot.exists) return;
+
+        final current = snapshot.data()?['class_attended'] ?? 0;
+        transaction.update(docRef, {'class_attended': current + 1});
+      });
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print("🔥 Failed to update class attended: $e");
       return false;
     }
   }
