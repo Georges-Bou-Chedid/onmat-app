@@ -6,13 +6,15 @@ class ClassStudent {
   final String? studentId;
   final bool? isActive;
   final int? classAttended;
+  final DateTime? attendanceAt;
 
   ClassStudent({
     this.id,
     this.classId,
     this.studentId,
     this.isActive,
-    this.classAttended
+    this.classAttended,
+    this.attendanceAt,
   });
 
   factory ClassStudent.fromFirestore(String id, Map<String, dynamic> map) {
@@ -22,6 +24,9 @@ class ClassStudent {
       studentId: map['student_id'],
       isActive: map['is_active'] ?? false,
       classAttended: map['class_attended'] ?? 0,
+      attendanceAt: map['attendance_at'] != null
+          ? (map['attendance_at'] as Timestamp).toDate()
+          : null,
     );
   }
 
@@ -31,6 +36,9 @@ class ClassStudent {
       'student_id': studentId,
       'is_active': isActive ?? false,
       'class_attended': classAttended ?? 0,
+      'attendance_at': attendanceAt != null
+          ? Timestamp.fromDate(attendanceAt!)
+          : null,
       'assigned_at': FieldValue.serverTimestamp(),
     };
   }

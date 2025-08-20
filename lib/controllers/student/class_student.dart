@@ -25,7 +25,12 @@ class ClassStudentService with ChangeNotifier {
         .listen((snapshot) async {
       final studentStatusMap = {
         for (var doc in snapshot.docs)
-          doc['student_id'] as String: doc['is_active'] ?? false
+          doc['student_id'] as String: {
+            'is_active': doc['is_active'] ?? false,
+            'attendance_at': (doc.data().containsKey('attendance_at') && doc['attendance_at'] != null)
+                ? (doc['attendance_at'] as Timestamp).toDate()
+                : null,
+          }
       };
 
       final studentIds = studentStatusMap.keys.toList();
@@ -44,9 +49,11 @@ class ClassStudentService with ChangeNotifier {
       _myStudents = studentsSnapshot.docs.map((doc) {
         final studentId = doc.id;
         final data = doc.data();
-        final isActive = studentStatusMap[studentId] ?? false;
+        final status = studentStatusMap[studentId] ?? {};
+        final isActive = status['is_active'] ?? false;
+        final attendanceAt = status['attendance_at'];
 
-        return Student.fromFirestore(studentId, data, isActive: isActive);
+        return Student.fromFirestore(studentId, data, isActive: isActive, attendanceAt: attendanceAt);
       }).toList();
 
       notifyListeners();
@@ -122,7 +129,7 @@ class ClassStudentService with ChangeNotifier {
       // Optional: update in-memory student if needed
       final idx = _myStudents.indexWhere((s) => s.userId == uid);
       if (idx != -1) {
-        _myStudents[idx] = _myStudents[idx].copyWith({}, true);
+        _myStudents[idx] = _myStudents[idx].copyWith({}, isActiveOverride: true);
       }
       notifyListeners();
       return true;
@@ -167,7 +174,7 @@ class ClassStudentService with ChangeNotifier {
     }
   }
 
-  Future<bool> incrementAttendance(String classId, String uid) async {
+  Future<bool> updateAttendance(String classId, String uid, bool increment) async {
     try {
       // Find existing class_student document
       final querySnapshot = await _firestore
@@ -190,14 +197,27 @@ class ClassStudentService with ChangeNotifier {
 
         if (! snapshot.exists) return;
 
-        final current = snapshot.data()?['class_attended'] ?? 0;
-        transaction.update(docRef, {'class_attended': current + 1});
+        var current = snapshot.data()?['class_attended'] ?? 0;
+        if (increment) {
+          current = current + 1;
+        }
+        transaction.update(docRef, {
+          'class_attended': current,
+          'attendance_at': FieldValue.serverTimestamp(),
+        });
       });
 
-      notifyListeners();
+      final idx = _myStudents.indexWhere((s) => s.userId == uid);
+      if (idx != -1) {
+        _myStudents[idx] = _myStudents[idx].copyWith(
+          {},
+          hasAttendanceTodayOverride: true,
+        );
+        notifyListeners();
+      }
       return true;
     } catch (e) {
-      print("🔥 Failed to update class attended: $e");
+      print("🔥 Failed to update attendance: $e");
       return false;
     }
   }

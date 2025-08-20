@@ -505,4 +505,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get graduationSystem => 'Graduation System';
+
+  @override
+  String get noClassScheduledToday => 'No class scheduled today.';
+
+  @override
+  String get addExtraSession => 'Add Extra Session';
 }

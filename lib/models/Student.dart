@@ -13,7 +13,10 @@ class Student {
   late String? email;
   final String? phoneNumber;
   final bool? notifications;
+
+  // from class_student table
   final bool isActive;
+  final bool hasAttendanceToday;
 
   Student({
     this.userId,
@@ -26,11 +29,18 @@ class Student {
     this.email,
     this.phoneNumber,
     this.notifications,
-    this.isActive = false
+    this.isActive = false,
+    this.hasAttendanceToday = false,
   });
 
   // Factory method to convert data from Firebase to Account
-  factory Student.fromFirestore(String id, Map<String, dynamic> map, {bool isActive = false}) {
+  factory Student.fromFirestore(String id, Map<String, dynamic> map, {bool isActive = false, DateTime? attendanceAt}) {
+    final now = DateTime.now();
+    final attendanceToday = attendanceAt != null &&
+        attendanceAt.year == now.year &&
+        attendanceAt.month == now.month &&
+        attendanceAt.day == now.day;
+
     return Student(
       userId: id,
       firstName: map['first_name'] ?? '',
@@ -43,6 +53,7 @@ class Student {
       phoneNumber: map['phone_number'] ?? '',
       notifications: map['notifications'] ?? false,
       isActive: isActive,
+      hasAttendanceToday: attendanceToday,
     );
   }
 
@@ -63,7 +74,7 @@ class Student {
     };
   }
 
-  Student copyWith(Map<String, dynamic> updateData, bool? isActiveOverride) {
+  Student copyWith(Map<String, dynamic> updateData, {bool? isActiveOverride, bool? hasAttendanceTodayOverride}) {
     return Student(
       userId: updateData['user_id'] ?? userId,
       firstName: updateData['first_name'] ?? firstName,
@@ -76,6 +87,7 @@ class Student {
       phoneNumber: updateData['phone_number'] ?? phoneNumber,
       notifications: updateData['notifications'] ?? notifications,
       isActive: isActiveOverride ?? isActive,
+      hasAttendanceToday: hasAttendanceTodayOverride ?? hasAttendanceToday,
     );
   }
 }

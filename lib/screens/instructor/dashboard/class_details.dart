@@ -59,7 +59,9 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
     _classStudentService = Provider.of<ClassStudentService>(context, listen: false);
 
     if (myAttendanceStudents.isEmpty) {
-      myAttendanceStudents = List.from(_classStudentService.myStudents);
+      myAttendanceStudents = _classStudentService.myStudents
+          .where((s) => !s.hasAttendanceToday)
+          .toList();
     }
   }
 
@@ -106,6 +108,28 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
     final startIndex = currentPage * studentsPerPage;
     final endIndex = (startIndex + studentsPerPage).clamp(0, filteredStudents.length);
     final paginatedStudents = filteredStudents.sublist(startIndex, endIndex);
+
+    /// Save Attendance Students
+    final today = DateTime.now();
+    const weekdayNames = [
+      'Monday',    // 1
+      'Tuesday',   // 2
+      'Wednesday', // 3
+      'Thursday',  // 4
+      'Friday',    // 5
+      'Saturday',  // 6
+      'Sunday',    // 7
+    ];
+    final todayName = weekdayNames[today.weekday - 1];
+    final todaySchedule = classItem?.schedule?.firstWhere(
+          (s) => s['day'] == todayName,
+      orElse: () => <String, String>{},
+    );
+    if (todaySchedule == null || todaySchedule.isEmpty) {
+      setState(() {
+        myAttendanceStudents = [];
+      });
+    }
 
     final appLocalizations = AppLocalizations.of(context)!;
     final dark = THelperFunctions.isDarkMode(context);
@@ -180,8 +204,8 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                         tabAlignment: TabAlignment.center,
                         tabs: [
                           Tab(text: appLocalizations.details),
-                          Tab(text: appLocalizations.students),
-                          Tab(text: appLocalizations.attendance),
+                          Tab(text: "${appLocalizations.students} (${myStudents.length})"),
+                          Tab(text: "${appLocalizations.attendance} (${myAttendanceStudents.length})"),
                           Tab(text: appLocalizations.graduationSystem)
                         ],
                       ),
@@ -196,7 +220,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                         children: [
                           _buildDetailsTab(appLocalizations, classItem, myAssistants, instructorClassService),
                           _buildStudentsTab(appLocalizations, paginatedStudents, classStudentService, startIndex, endIndex, filteredStudents),
-                          _buildAttendanceTab(classItem, appLocalizations, classStudentService, myAttendanceStudents),
+                          _buildAttendanceTab(classItem, appLocalizations, classStudentService, todayName, todaySchedule, myAttendanceStudents),
                         ],
                       ),
                     ),
@@ -472,24 +496,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
     );
   }
 
-  Widget _buildAttendanceTab(classItem, appLocalizations, classStudentService, myAttendanceStudents) {
-    final today = DateTime.now();
-    const weekdayNames = [
-      'Monday',    // 1
-      'Tuesday',   // 2
-      'Wednesday', // 3
-      'Thursday',  // 4
-      'Friday',    // 5
-      'Saturday',  // 6
-      'Sunday',    // 7
-    ];
-
-    final todayName = weekdayNames[today.weekday - 1];
-    final todaySchedule = classItem.schedule?.firstWhere(
-          (s) => s['day'] == todayName,
-      orElse: () => <String, String>{},
-    );
-
+  Widget _buildAttendanceTab(classItem, appLocalizations, classStudentService, todayName, todaySchedule, myAttendanceStudents) {
     if (todaySchedule == null || todaySchedule.isEmpty) {
       return Card(
         margin: const EdgeInsets.all(16),
@@ -497,13 +504,12 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              const Text("No class scheduled today."),
+              Text(appLocalizations.noClassScheduledToday),
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 icon: const Icon(Icons.add),
-                label: const Text("Add Extra Session"),
-                onPressed: () {
-                },
+                label: Text(appLocalizations.addExtraSession),
+                onPressed: () {},
               ),
             ],
           ),
@@ -541,33 +547,22 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                     student.email ?? '',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Iconsax.tick_square, color: Colors.green),
-                        tooltip: "Mark Present",
-                        onPressed: () async {
-                          setState(() {
-                            myAttendanceStudents.removeAt(index);
-                          });
+                  trailing: IconButton(
+                    icon: Icon(
+                      Iconsax.tick_square,
+                      color: Colors.green,
+                    ),
+                    onPressed: () async {
+                      setState(() {
+                        myAttendanceStudents.removeAt(index);
+                      });
 
-                          await classStudentService.incrementAttendance(
-                            widget.classId,
-                            student.userId!,
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Iconsax.close_square, color: Color(0xFFDF1E42)),
-                        tooltip: "Absent",
-                        onPressed: () {
-                          setState(() {
-                            myAttendanceStudents.removeAt(index);
-                          });
-                        },
-                      ),
-                    ],
+                      await classStudentService.updateAttendance(
+                        widget.classId,
+                        student.userId!,
+                        true,
+                      );
+                    },
                   ),
                 ),
               );

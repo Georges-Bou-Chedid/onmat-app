@@ -1090,6 +1090,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Graduation System'**
   String get graduationSystem;
+
+  /// No description provided for @noClassScheduledToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No class scheduled today.'**
+  String get noClassScheduledToday;
+
+  /// No description provided for @addExtraSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Extra Session'**
+  String get addExtraSession;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

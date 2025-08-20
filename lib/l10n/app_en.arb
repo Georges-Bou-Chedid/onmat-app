@@ -164,5 +164,7 @@
   "details": "Details",
   "students": "Students",
   "attendance": "Attendance",
-  "graduationSystem": "Graduation System"
+  "graduationSystem": "Graduation System",
+  "noClassScheduledToday": "No class scheduled today.",
+  "addExtraSession": "Add Extra Session"
 }

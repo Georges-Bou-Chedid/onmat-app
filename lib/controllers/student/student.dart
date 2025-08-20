@@ -40,7 +40,7 @@ class StudentService with ChangeNotifier {
           .doc(studentId)
           .set(changes, SetOptions(merge: true));
 
-      _student = _student?.copyWith(changes, null);
+      _student = _student?.copyWith(changes);
       notifyListeners();
       return true;
     } catch (e) {
