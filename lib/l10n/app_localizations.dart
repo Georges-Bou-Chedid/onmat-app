@@ -725,11 +725,11 @@ abstract class AppLocalizations {
   /// **'My Classes'**
   String get myClasses;
 
-  /// No description provided for @createClass.
+  /// No description provided for @addClass.
   ///
   /// In en, this message translates to:
-  /// **'Create Class'**
-  String get createClass;
+  /// **'Add Class'**
+  String get addClass;
 
   /// No description provided for @className.
   ///
@@ -1102,6 +1102,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add Extra Session'**
   String get addExtraSession;
+
+  /// No description provided for @jiujitsu.
+  ///
+  /// In en, this message translates to:
+  /// **'Jiu‑Jitsu'**
+  String get jiujitsu;
+
+  /// No description provided for @addBelt.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Belt / Level'**
+  String get addBelt;
+
+  /// No description provided for @ageRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Age Range'**
+  String get ageRange;
+
+  /// No description provided for @classesPerStripe.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes per Stripe'**
+  String get classesPerStripe;
+
+  /// No description provided for @beltColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Belt Color: '**
+  String get beltColor;
+
+  /// No description provided for @pickBeltColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick Belt Color'**
+  String get pickBeltColor;
+
+  /// No description provided for @stripeColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Stripe Color (optional): '**
+  String get stripeColor;
+
+  /// No description provided for @pickStripeColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick Stripe Color'**
+  String get pickStripeColor;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

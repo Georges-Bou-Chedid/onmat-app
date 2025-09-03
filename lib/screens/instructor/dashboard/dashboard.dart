@@ -99,7 +99,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                         appLocalizations.myClasses,
                         style: Theme.of(context).textTheme.headlineSmall!.apply(color: Colors.white),
                       ),
-                      trailing: IconButton(
+                      trailing: ElevatedButton.icon(
                         onPressed: () {
                           _searchFocusNode.unfocus();
                           Get.to(
@@ -109,8 +109,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                             curve: Curves.easeInOut,
                           );
                         },
-                        icon: const Icon(Iconsax.additem, color: Colors.white),
-                      ),
+                        icon: const Icon(Iconsax.additem),
+                        label: Text(
+                          appLocalizations.addClass,
+                          style: Theme.of(context).textTheme.bodyMedium!.apply(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      )
                     ),
                     const SizedBox(height: TSizes.appBarHeight),
                   ],

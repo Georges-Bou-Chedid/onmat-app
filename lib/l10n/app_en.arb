@@ -104,7 +104,7 @@
   "myAccount": "My Account",
   "dashboard": "Dashboard",
   "myClasses": "My Classes",
-  "createClass": "Create Class",
+  "addClass": "Add Class",
   "className": "Class Name",
   "required": "Required",
   "classType": "Class Type",
@@ -166,5 +166,13 @@
   "attendance": "Attendance",
   "graduationSystem": "Graduation System",
   "noClassScheduledToday": "No class scheduled today.",
-  "addExtraSession": "Add Extra Session"
+  "addExtraSession": "Add Extra Session",
+  "jiujitsu": "Jiu‑Jitsu",
+  "addBelt": "Add Belt / Level",
+  "ageRange": "Age Range",
+  "classesPerStripe": "Classes per Stripe",
+  "beltColor": "Belt Color: ",
+  "pickBeltColor": "Pick Belt Color",
+  "stripeColor": "Stripe Color (optional): ",
+  "pickStripeColor": "Pick Stripe Color"
 }

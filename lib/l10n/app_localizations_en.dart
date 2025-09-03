@@ -324,7 +324,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myClasses => 'My Classes';
 
   @override
-  String get createClass => 'Create Class';
+  String get addClass => 'Add Class';
 
   @override
   String get className => 'Class Name';
@@ -511,4 +511,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addExtraSession => 'Add Extra Session';
+
+  @override
+  String get jiujitsu => 'Jiu‑Jitsu';
+
+  @override
+  String get addBelt => 'Add Belt / Level';
+
+  @override
+  String get ageRange => 'Age Range';
+
+  @override
+  String get classesPerStripe => 'Classes per Stripe';
+
+  @override
+  String get beltColor => 'Belt Color: ';
+
+  @override
+  String get pickBeltColor => 'Pick Belt Color';
+
+  @override
+  String get stripeColor => 'Stripe Color (optional): ';
+
+  @override
+  String get pickStripeColor => 'Pick Stripe Color';
 }
