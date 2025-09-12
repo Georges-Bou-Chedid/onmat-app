@@ -1115,23 +1115,35 @@ abstract class AppLocalizations {
   /// **'Add Belt / Level'**
   String get addBelt;
 
+  /// No description provided for @addBeltPerOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Belt / Level Per Order'**
+  String get addBeltPerOrder;
+
   /// No description provided for @ageRange.
   ///
   /// In en, this message translates to:
   /// **'Age Range'**
   String get ageRange;
 
-  /// No description provided for @classesPerStripe.
+  /// No description provided for @classesPerBeltOrStripe.
   ///
   /// In en, this message translates to:
-  /// **'Classes per Stripe'**
-  String get classesPerStripe;
+  /// **'Classes per Belt/Stripe'**
+  String get classesPerBeltOrStripe;
 
   /// No description provided for @beltColor.
   ///
   /// In en, this message translates to:
   /// **'Belt Color: '**
   String get beltColor;
+
+  /// No description provided for @beltColor2.
+  ///
+  /// In en, this message translates to:
+  /// **'Belt Color 2 (optional): '**
+  String get beltColor2;
 
   /// No description provided for @pickBeltColor.
   ///
@@ -1150,6 +1162,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pick Stripe Color'**
   String get pickStripeColor;
+
+  /// No description provided for @ageRangeOverlaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Age range overlaps with another belt.'**
+  String get ageRangeOverlaps;
+
+  /// No description provided for @years.
+  ///
+  /// In en, this message translates to:
+  /// **'yrs'**
+  String get years;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

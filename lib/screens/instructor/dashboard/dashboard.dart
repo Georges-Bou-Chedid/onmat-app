@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:onmat/controllers/classItem/class_graduation.dart';
 import 'package:onmat/screens/instructor/dashboard/add_class.dart';
 import 'package:provider/provider.dart';
 
@@ -284,6 +285,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               /// Fetch Students
               final classStudentService = Provider.of<ClassStudentService>(context, listen: false);
               classStudentService.listenToClassStudents(classItem.id);
+
+              /// Fetch Graduation Belts
+              final classGraduationService = Provider.of<ClassGraduationService>(context, listen: false);
+              classGraduationService.listenToClassBelts(classItem.id);
 
               Get.back();
 

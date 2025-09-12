@@ -169,10 +169,15 @@
   "addExtraSession": "Add Extra Session",
   "jiujitsu": "Jiu‑Jitsu",
   "addBelt": "Add Belt / Level",
+  "addBeltPerOrder": "Add Belt / Level Per Order",
   "ageRange": "Age Range",
-  "classesPerStripe": "Classes per Stripe",
+  "classesPerBeltOrStripe": "Classes per Belt/Stripe",
   "beltColor": "Belt Color: ",
+  "beltColor2": "Belt Color 2 (optional): ",
   "pickBeltColor": "Pick Belt Color",
   "stripeColor": "Stripe Color (optional): ",
-  "pickStripeColor": "Pick Stripe Color"
+  "pickStripeColor": "Pick Stripe Color",
+  "ageRangeOverlaps": "Age range overlaps with another belt.",
+  "years": "yrs",
+  "edit": "Edit"
 }

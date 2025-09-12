@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:onmat/controllers/classItem/class_graduation.dart';
 import 'package:onmat/models/Instructor.dart';
 import 'package:onmat/screens/instructor/dashboard/student_profile.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +12,7 @@ import '../../../controllers/instructor/instructor.dart';
 import '../../../controllers/instructor/instructor_class.dart';
 import '../../../controllers/student/class_student.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../models/Belt.dart';
 import '../../../models/Student.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/helpers/helper_functions.dart';
@@ -39,9 +41,11 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
   int studentsPerPage = 10;
   late TabController _tabController;
   late List<Student> myAttendanceStudents;
+  bool isEditing = false;
 
   late ClassAssistantService _classAssistantService;
   late ClassStudentService _classStudentService;
+  late ClassGraduationService _classGraduationService;
 
   @override
   void initState() {
@@ -57,6 +61,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
     // Safely get providers once here, where context is stable
     _classAssistantService = Provider.of<ClassAssistantService>(context, listen: false);
     _classStudentService = Provider.of<ClassStudentService>(context, listen: false);
+    _classGraduationService = Provider.of<ClassGraduationService>(context, listen: false);
 
     if (myAttendanceStudents.isEmpty) {
       myAttendanceStudents = _classStudentService.myStudents
@@ -69,6 +74,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
   void dispose() {
     _classAssistantService.cancelListener();
     _classStudentService.cancelListener();
+    _classGraduationService.cancelListener();
 
     _searchController.dispose();
     _searchFocusNode.dispose();
@@ -130,6 +136,10 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
         myAttendanceStudents = [];
       });
     }
+
+    /// Save Graduation Belts
+    final classGraduationService = Provider.of<ClassGraduationService>(context, listen: true);
+    final myGraduationBelts = classGraduationService.myGradutationBelts;
 
     final appLocalizations = AppLocalizations.of(context)!;
     final dark = THelperFunctions.isDarkMode(context);
@@ -221,6 +231,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                           _buildDetailsTab(appLocalizations, classItem, myAssistants, instructorClassService),
                           _buildStudentsTab(appLocalizations, paginatedStudents, classStudentService, startIndex, endIndex, filteredStudents),
                           _buildAttendanceTab(classItem, appLocalizations, classStudentService, todayName, todaySchedule, myAttendanceStudents),
+                          _buildGraduationTab(classItem, classGraduationService, appLocalizations),
                         ],
                       ),
                     ),
@@ -570,6 +581,167 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildGraduationTab(classItem, classGraduationService, AppLocalizations appLocalizations) {
+    final myGraduationBelts = classGraduationService.myGradutationBelts;
+
+    return Column(
+      children: [
+        Expanded(
+          child: ReorderableListView.builder(
+            padding: EdgeInsets.zero,
+            itemCount: myGraduationBelts.length,
+            onReorder: isEditing
+                ? (oldIndex, newIndex) {
+                  classGraduationService.updateBeltOrder(oldIndex, newIndex);
+                }
+                : (oldIndex, newIndex) {},
+            itemBuilder: (context, index) {
+              final belt = myGraduationBelts[index];
+              return Card(
+                key: ValueKey(belt.id),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                child: Padding(
+                  padding: const EdgeInsets.all(TSizes.md),
+                  child: Row(
+                    children: [
+                      // Belt colors
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildBeltBox(belt.beltColor1),
+                          if (belt.beltColor2 != null) ...[
+                            const SizedBox(width: 4),
+                            _buildBeltBox(belt.beltColor2!),
+                          ],
+                        ],
+                      ),
+
+                      const SizedBox(width: 16),
+
+                      // Belt details
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              children: [
+                                Chip(
+                                  label: Text(
+                                    "${belt.minAge}–${belt.maxAge} ${appLocalizations.years}",
+                                    style: const TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                                Chip(
+                                  label: belt.beltColor2 == null
+                                      ? Text(Belt.getColorName(belt.beltColor1))
+                                      : Text(
+                                    "${Belt.getColorName(belt.beltColor1)}/${Belt.getColorName(belt.beltColor2!)}",
+                                    style: const TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                                Chip(
+                                  label: Text(
+                                    "${belt.classesPerBeltOrStripe} ${appLocalizations.classesPerBeltOrStripe}",
+                                    style: const TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      if (isEditing)
+                      Column(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Iconsax.edit, color: Color(0xFFDF1E42)),
+                            onPressed: () {
+                              // Call your edit dialog
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Iconsax.trash, color: Color(0xFFDF1E42)),
+                            onPressed: () {
+                              classGraduationService.removeBelt(index);
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+
+        /// ACTIONS
+        _buildSectionTitle(context, appLocalizations.actions),
+        Wrap(
+          spacing: TSizes.borderRadiusLg,
+          runSpacing: TSizes.borderRadiusLg,
+          children: [
+            if (! isEditing)
+            _actionButton(context, Iconsax.edit, appLocalizations.edit, onTap: () {
+              setState(() {
+                isEditing = true;
+              });
+            }),
+            if (isEditing) ...[
+              _actionButton(context, Iconsax.additem, appLocalizations.addBelt, onTap: () {
+
+              }),
+              _actionButton(context, Iconsax.save_2, appLocalizations.saveChanges, onTap: () async {
+                final success = await classGraduationService.setBeltsForClass(widget.classId, myGraduationBelts);
+                if (success) {
+                  Get.snackbar(
+                    appLocalizations.success,
+                    "",
+                    snackPosition: SnackPosition.BOTTOM,
+                  );
+                } else {
+                  classGraduationService.cancelChanges();
+                  Get.snackbar(
+                    appLocalizations.error,
+                    appLocalizations.errorMessage,
+                    snackPosition: SnackPosition.BOTTOM,
+                  );
+                }
+                setState(() {
+                  isEditing = false;
+                });
+              }),
+              _actionButton(context, Iconsax.pen_close, appLocalizations.cancel, onTap: () {
+                classGraduationService.cancelChanges();
+                setState(() {
+                  isEditing = false;
+                });
+              }),
+            ]
+          ]),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildBeltBox(Color color) {
+    return Container(
+      width: 24,
+      height: 35,
+      decoration: BoxDecoration(
+        color: color,
+        border: Border.all(color: Colors.black, width: 1.5),
+        borderRadius: BorderRadius.circular(4),
+      ),
     );
   }
 

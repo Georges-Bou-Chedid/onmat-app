@@ -192,7 +192,7 @@ class InstructorClassService with ChangeNotifier {
     }
   }
 
-  Future<bool> createClass(Class cl) async {
+  Future<String?> createClass(Class cl) async {
     try {
       final docRef = _firestore.collection('classes').doc();
       final classId = docRef.id;
@@ -201,10 +201,10 @@ class InstructorClassService with ChangeNotifier {
 
       await docRef.set(cl.toMap());
 
-      return true;
+      return classId;
     } catch (e) {
       print("🔥 Failed to create class: $e");
-      return false;
+      return null;
     }
   }
 
@@ -264,6 +264,15 @@ class InstructorClassService with ChangeNotifier {
           .where('class_id', isEqualTo: classId)
           .get();
       for (var doc in assistantSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // 4. Delete from class_belt
+      final beltSnapshot = await _firestore
+          .collection('class_belt')
+          .where('class_id', isEqualTo: classId)
+          .get();
+      for (var doc in beltSnapshot.docs) {
         batch.delete(doc.reference);
       }
 

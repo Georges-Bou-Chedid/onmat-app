@@ -5,7 +5,9 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../../controllers/classItem/class_graduation.dart';
 import '../../../controllers/instructor/instructor_class.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/Belt.dart';
@@ -50,6 +52,21 @@ class _AddClassScreenState extends State<AddClassScreen> {
     locationCtrl.dispose();
     countryCtrl.dispose();
     super.dispose();
+  }
+
+  bool hasOverlap(Belt newBelt, List<Belt> existingBelts) {
+    for (final b in existingBelts) {
+      final sameBeltColor =
+              b.beltColor1.value == newBelt.beltColor1.value &&
+              (b.beltColor2?.value ?? -1) == (newBelt.beltColor2?.value ?? -1);
+
+      if (sameBeltColor) {
+        if (!(newBelt.maxAge < b.minAge || newBelt.minAge > b.maxAge)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   bool validateSchedule() {
@@ -266,16 +283,16 @@ class _AddClassScreenState extends State<AddClassScreen> {
                       Center(
                         child: ElevatedButton.icon(
                           icon: Icon(Iconsax.additem),
-                          label: Text(appLocalizations.addBelt),
+                          label: Text(appLocalizations.addBeltPerOrder),
                           onPressed: () async {
                             final belt = await showDialog<Belt>(
                               context: context,
                               builder: (context) {
-                                final ageRangeController = TextEditingController();
+                                RangeValues ageRange = const RangeValues(5, 15);
                                 final classesController = TextEditingController();
 
                                 Color selectedColor = Colors.white;
-                                Color? stripeColor;
+                                Color? selectedColor2;
 
                                 return StatefulBuilder(
                                   builder: (context, setState) => AlertDialog(
@@ -284,10 +301,25 @@ class _AddClassScreenState extends State<AddClassScreen> {
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          /// Age Range
-                                          TextField(
-                                            controller: ageRangeController,
-                                            decoration: InputDecoration(labelText: "${appLocalizations.ageRange} (e.g. 7–15)"),
+                                          /// Age Range with  Slider
+                                          Text(
+                                            "${appLocalizations.ageRange}: ${ageRange.start.round()} – ${ageRange.end.round()}",
+                                            style: Theme.of(context).textTheme.bodyMedium,
+                                          ),
+                                          RangeSlider(
+                                            values: ageRange,
+                                            min: 1,
+                                            max: 100,
+                                            divisions: 99,
+                                            labels: RangeLabels(
+                                              ageRange.start.round().toString(),
+                                              ageRange.end.round().toString(),
+                                            ),
+                                            onChanged: (RangeValues values) {
+                                              setState(() {
+                                                ageRange = values;
+                                              });
+                                            },
                                           ),
 
                                           const SizedBox(height: TSizes.inputFieldRadius),
@@ -296,12 +328,12 @@ class _AddClassScreenState extends State<AddClassScreen> {
                                           TextField(
                                             controller: classesController,
                                             keyboardType: TextInputType.number,
-                                            decoration: InputDecoration(labelText: appLocalizations.classesPerStripe),
+                                            decoration: InputDecoration(labelText: appLocalizations.classesPerBeltOrStripe),
                                           ),
 
                                           const SizedBox(height: TSizes.inputFieldRadius),
 
-                                          /// Belt Color Picker
+                                          /// Belt Color 1 Picker
                                           Row(
                                             children: [
                                               Text(appLocalizations.beltColor),
@@ -315,7 +347,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
                                                       content: Container(
                                                         padding: EdgeInsets.all(TSizes.sm),
                                                         decoration: BoxDecoration(
-                                                          color: Colors.grey[400],
+                                                          color: Colors.grey[300],
                                                           borderRadius: BorderRadius.circular(TSizes.inputFieldRadius),
                                                         ),
                                                         child: BlockPicker(
@@ -341,44 +373,38 @@ class _AddClassScreenState extends State<AddClassScreen> {
                                                   }
                                                 },
                                                 child: Container(
+                                                  width: 24,
+                                                  height: 35,
                                                   decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    border: Border.all(
-                                                      color: (selectedColor.computeLuminance() ?? 0) > 0.8
-                                                          ? Colors.black
-                                                          : Colors.transparent,
-                                                      width: 1,
-                                                    ),
+                                                    color: selectedColor,
+                                                    border: Border.all(color: Colors.black, width: 1.5),
+                                                    borderRadius: BorderRadius.circular(4),
                                                   ),
-                                                  child: CircleAvatar(
-                                                    backgroundColor: selectedColor
-                                                  ),
-                                                ),
+                                                )
                                               ),
                                             ],
                                           ),
-
                                           const SizedBox(height: TSizes.inputFieldRadius),
 
-                                          /// Stripe Color Picker
+                                          /// Belt Color 2 Picker
                                           Row(
                                             children: [
-                                              Text(appLocalizations.stripeColor),
+                                              Text(appLocalizations.beltColor2),
                                               const SizedBox(width: TSizes.sm),
                                               GestureDetector(
                                                 onTap: () async {
                                                   final color = await showDialog<Color>(
                                                     context: context,
                                                     builder: (context) => AlertDialog(
-                                                      title: Text(appLocalizations.pickStripeColor),
+                                                      title: Text(appLocalizations.pickBeltColor),
                                                       content: Container(
                                                         padding: EdgeInsets.all(TSizes.sm),
                                                         decoration: BoxDecoration(
-                                                          color: Colors.grey[400],
+                                                          color: Colors.grey[300],
                                                           borderRadius: BorderRadius.circular(TSizes.inputFieldRadius),
                                                         ),
                                                         child: BlockPicker(
-                                                          pickerColor: stripeColor ?? Colors.transparent,
+                                                          pickerColor: selectedColor2 ?? Colors.transparent,
                                                           onColorChanged: (c) => Navigator.pop(context, c),
                                                           availableColors: [
                                                             Colors.white,
@@ -396,29 +422,36 @@ class _AddClassScreenState extends State<AddClassScreen> {
                                                     ),
                                                   );
                                                   if (color != null) {
-                                                    setState(() => stripeColor = color);
+                                                    setState(() => selectedColor2 = color);
                                                   }
                                                 },
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    border: Border.all(
-                                                      color: (stripeColor?.computeLuminance() ?? 0) > 0.8
-                                                          ? Colors.black
-                                                          : Colors.transparent,
-                                                      width: 1,
-                                                    ),
-                                                  ),
-                                                  child: CircleAvatar(
-                                                    backgroundColor: stripeColor ?? Colors.grey.shade300,
-                                                    child: stripeColor == null
-                                                        ? Icon(Iconsax.add, color: Colors.black54)
-                                                        : null,
-                                                  ),
-                                                ),
+                                                child: selectedColor2 != null
+                                                    ? Container(
+                                                      width: 24,
+                                                      height: 35,
+                                                      decoration: BoxDecoration(
+                                                        color: selectedColor2,
+                                                        border: Border.all(color: Colors.black, width: 1.5),
+                                                        borderRadius: BorderRadius.circular(4),
+                                                      ),
+                                                    )
+                                                    : Container(
+                                                        decoration: BoxDecoration(
+                                                          shape: BoxShape.circle,
+                                                          border: Border.all(
+                                                            color: Colors.black,
+                                                            width: 1,
+                                                          ),
+                                                        ),
+                                                        child: CircleAvatar(
+                                                          backgroundColor: Colors.grey.shade300,
+                                                          child: Icon(Iconsax.add, color: Colors.black54)
+                                                        ),
+                                                      ),
                                               ),
                                             ],
                                           ),
+                                          const SizedBox(height: TSizes.inputFieldRadius),
                                         ],
                                       ),
                                     ),
@@ -429,17 +462,28 @@ class _AddClassScreenState extends State<AddClassScreen> {
                                       ),
                                       ElevatedButton(
                                         onPressed: () {
-                                          if (ageRangeController.text.isNotEmpty &&
-                                              classesController.text.isNotEmpty) {
-                                            Navigator.pop(
-                                              context,
-                                              Belt(
-                                                color: selectedColor,
-                                                stripeColor: stripeColor,
-                                                ageRange: ageRangeController.text.trim(),
-                                                classesPerStripe: int.parse(classesController.text.trim()),
-                                              ),
+                                          final minAge = ageRange.start.round();
+                                          final maxAge = ageRange.end.round();
+                                          final classes = int.tryParse(classesController.text.trim());
+
+                                          if (classes != null) {
+                                            final newBelt = Belt(
+                                              id: Uuid().v4(),
+                                              minAge: minAge,
+                                              maxAge: maxAge,
+                                              beltColor1: selectedColor,
+                                              beltColor2: selectedColor2,
+                                              classesPerBeltOrStripe: classes,
+                                              priority: graduationBelts.length + 1,
                                             );
+
+                                            if (hasOverlap(newBelt, graduationBelts)) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text(appLocalizations.ageRangeOverlaps)),
+                                              );
+                                            } else {
+                                              Navigator.pop(context, newBelt);
+                                            }
                                           }
                                         },
                                         child: Text(appLocalizations.save),
@@ -460,50 +504,108 @@ class _AddClassScreenState extends State<AddClassScreen> {
                       if (graduationBelts.isNotEmpty)
                         ListView.builder(
                           shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
+                          physics: const NeverScrollableScrollPhysics(),
                           itemCount: graduationBelts.length,
                           itemBuilder: (context, index) {
                             final belt = graduationBelts[index];
                             return Card(
-                              margin: EdgeInsets.symmetric(vertical: TSizes.xs),
-                              child: ListTile(
-                                leading: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: (belt.color.computeLuminance() ?? 0) > 0.8
-                                          ? Colors.black
-                                          : Colors.transparent,
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: CircleAvatar(
-                                    backgroundColor: belt.color,
-                                    child: belt.stripeColor != null
-                                        ? Container(
-                                      width: TSizes.md,
-                                      height: TSizes.md,
-                                      decoration: BoxDecoration(
-                                        color: belt.stripeColor,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: Colors.black, width: 1),
-                                      ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  children: [
+                                    belt.beltColor2 != null
+                                        ? Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: 24,
+                                          height: 35,
+                                          decoration: BoxDecoration(
+                                            color: belt.beltColor1,
+                                            border: Border.all(color: Colors.black, width: 1.5),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Container(
+                                          width: 24,
+                                          height: 35,
+                                          decoration: BoxDecoration(
+                                            color: belt.beltColor2,
+                                            border: Border.all(color: Colors.black, width: 1.5),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                        ),
+                                      ],
                                     )
-                                        : null,
-                                  ),
-                                ),
-                                title: Text("${appLocalizations.ageRange} ${belt.ageRange}"),
-                                subtitle: Text("${appLocalizations.classesPerStripe}: ${belt.classesPerStripe}"),
-                                trailing: IconButton(
-                                  icon: const Icon(Iconsax.trash, color: Color(0xFFDF1E42)),
-                                  onPressed: () {
-                                    setState(() => graduationBelts.removeAt(index));
-                                  },
+                                    : Container(
+                                      width: 24,
+                                      height: 35,
+                                      decoration: BoxDecoration(
+                                        color: belt.beltColor1,
+                                        border: Border.all(color: Colors.black, width: 1.5),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+
+                                    const SizedBox(width: 16),
+
+                                    // Details
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Wrap(
+                                            spacing: 8,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Chip(
+                                                    label: Text(
+                                                      "${belt.minAge}–${belt.maxAge} ${appLocalizations.years}",
+                                                      style: const TextStyle(fontWeight: FontWeight.w500),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Chip(
+                                                    label: belt.beltColor2 == null
+                                                        ? Text(Belt.getColorName(belt.beltColor1))
+                                                        : Text("${Belt.getColorName(belt.beltColor1)}/${Belt.getColorName(belt.beltColor2!)}",
+                                                      style: const TextStyle(fontWeight: FontWeight.w500),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Chip(
+                                                label: Text(
+                                                  "${belt.classesPerBeltOrStripe} ${appLocalizations.classesPerBeltOrStripe}",
+                                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Delete button
+                                    IconButton(
+                                      icon: const Icon(Iconsax.trash, color: Color(0xFFDF1E42)),
+                                      onPressed: () {
+                                        setState(() => graduationBelts.removeAt(index));
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
                           },
                         ),
+
 
                       const SizedBox(height: TSizes.defaultSpace),
                     ],
@@ -668,19 +770,30 @@ class _AddClassScreenState extends State<AddClassScreen> {
                                 schedule: schedule
                               );
 
-                              final success = await instructorClassService.createClass(cl);
+                              final classId = await instructorClassService.createClass(cl);
 
                               setState(() {
                                 _isSaving = false;
                               });
 
-                              if (success) {
-                                Get.back();
-                                Get.snackbar(
-                                  appLocalizations.success,
-                                  appLocalizations.classCreatedMessage,
-                                  snackPosition: SnackPosition.BOTTOM,
-                                );
+                              if (classId != null) {
+                                final graduationService = ClassGraduationService();
+                                final success = await graduationService.setBeltsForClass(classId, graduationBelts);
+
+                                if (success) {
+                                  Get.back();
+                                  Get.snackbar(
+                                    appLocalizations.success,
+                                    appLocalizations.classCreatedMessage,
+                                    snackPosition: SnackPosition.BOTTOM,
+                                  );
+                                } else {
+                                  Get.snackbar(
+                                    appLocalizations.error,
+                                    appLocalizations.errorMessage,
+                                    snackPosition: SnackPosition.BOTTOM,
+                                  );
+                                }
                               } else {
                                 Get.snackbar(
                                   appLocalizations.error,

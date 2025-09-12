@@ -519,13 +519,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addBelt => 'Add Belt / Level';
 
   @override
+  String get addBeltPerOrder => 'Add Belt / Level Per Order';
+
+  @override
   String get ageRange => 'Age Range';
 
   @override
-  String get classesPerStripe => 'Classes per Stripe';
+  String get classesPerBeltOrStripe => 'Classes per Belt/Stripe';
 
   @override
   String get beltColor => 'Belt Color: ';
+
+  @override
+  String get beltColor2 => 'Belt Color 2 (optional): ';
 
   @override
   String get pickBeltColor => 'Pick Belt Color';
@@ -535,4 +541,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pickStripeColor => 'Pick Stripe Color';
+
+  @override
+  String get ageRangeOverlaps => 'Age range overlaps with another belt.';
+
+  @override
+  String get years => 'yrs';
+
+  @override
+  String get edit => 'Edit';
 }

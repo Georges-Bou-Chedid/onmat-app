@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'controllers/classItem/class_graduation.dart';
 import 'controllers/instructor/class_assistant.dart';
 import 'controllers/auth.dart';
 import 'controllers/instructor/instructor.dart';
@@ -36,6 +37,7 @@ void main() async {
           ChangeNotifierProvider(create: (_) => StudentService()),
           ChangeNotifierProvider(create: (_) => ClassStudentService()),
           ChangeNotifierProvider(create: (_) => StudentClassService()),
+          ChangeNotifierProvider(create: (_) => ClassGraduationService()),
         ],
         child: MyApp(startLocale),
       )
