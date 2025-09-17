@@ -1180,6 +1180,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit'**
   String get edit;
+
+  /// No description provided for @noBeltsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No Belts Found'**
+  String get noBeltsFound;
+
+  /// No description provided for @editBelt.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Belt / Level'**
+  String get editBelt;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

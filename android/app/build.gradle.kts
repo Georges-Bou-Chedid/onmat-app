@@ -27,14 +27,27 @@ android {
         minSdk = 23
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.1"
+    }
+
+    signingConfigs {
+        create("release") {
+            keyAlias = "my-key-alias"
+            keyPassword = "1212@Forever"
+            storeFile = file("/home/boush/my-release-key.jks")
+            storePassword = "1212@Forever"
+        }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

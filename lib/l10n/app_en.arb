@@ -179,5 +179,7 @@
   "pickStripeColor": "Pick Stripe Color",
   "ageRangeOverlaps": "Age range overlaps with another belt.",
   "years": "yrs",
-  "edit": "Edit"
+  "edit": "Edit",
+  "noBeltsFound": "No Belts Found",
+  "editBelt": "Edit Belt / Level"
 }

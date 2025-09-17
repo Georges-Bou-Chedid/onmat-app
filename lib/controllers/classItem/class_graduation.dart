@@ -68,6 +68,11 @@ class ClassGraduationService with ChangeNotifier {
     notifyListeners();
   }
 
+  void addBelt(Belt belt) {
+    _myGradutationBelts.add(belt);
+    notifyListeners();
+  }
+
   void cancelChanges() {
     // Revert the list to the original stored copy
     _myGradutationBelts = _originalBelts.map((b) => b.copy()).toList();

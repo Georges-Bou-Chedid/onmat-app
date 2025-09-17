@@ -550,4 +550,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get edit => 'Edit';
+
+  @override
+  String get noBeltsFound => 'No Belts Found';
+
+  @override
+  String get editBelt => 'Edit Belt / Level';
 }

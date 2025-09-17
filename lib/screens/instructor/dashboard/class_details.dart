@@ -18,6 +18,7 @@ import '../../../utils/constants/sizes.dart';
 import '../../../utils/helpers/helper_functions.dart';
 import '../../../utils/widgets/assign_assistant_dialog.dart';
 import '../../../utils/widgets/background_image_header_container.dart';
+import '../../../utils/widgets/belt_dialog.dart';
 import '../../../utils/widgets/edit_class_dialog.dart';
 import '../../../utils/widgets/reschedule_dialog.dart';
 import '../start.dart';
@@ -41,7 +42,10 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
   int studentsPerPage = 10;
   late TabController _tabController;
   late List<Student> myAttendanceStudents;
+  Map<String, dynamic>? todaySchedule;
   bool isEditing = false;
+  bool hasChanges = false;
+  bool isLoading = false;
 
   late ClassAssistantService _classAssistantService;
   late ClassStudentService _classStudentService;
@@ -62,11 +66,37 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
     _classAssistantService = Provider.of<ClassAssistantService>(context, listen: false);
     _classStudentService = Provider.of<ClassStudentService>(context, listen: false);
     _classGraduationService = Provider.of<ClassGraduationService>(context, listen: false);
+    final instructorClassService = Provider.of<InstructorClassService>(context, listen: false);
+    final classItem = widget.isAssistant
+        ? instructorClassService.assistantClasses.firstWhereOrNull((cl) => cl.id == widget.classId)
+        : instructorClassService.ownerClasses.firstWhereOrNull((cl) => cl.id == widget.classId);
 
-    if (myAttendanceStudents.isEmpty) {
-      myAttendanceStudents = _classStudentService.myStudents
-          .where((s) => !s.hasAttendanceToday)
-          .toList();
+    /// Only set schedule once (don’t reset in every build)
+    if (todaySchedule == null) {
+      final today = DateTime.now();
+      const weekdayNames = [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday',
+      ];
+      final todayName = weekdayNames[today.weekday - 1];
+
+      todaySchedule = classItem?.schedule?.firstWhere(
+            (s) => s['day'] == todayName,
+        orElse: () => <String, String>{},
+      );
+
+      if (todaySchedule!.isEmpty) {
+        todaySchedule = null;
+      } else {
+        myAttendanceStudents = _classStudentService.myStudents
+            .where((s) => !s.hasAttendanceToday)
+            .toList();
+      }
     }
   }
 
@@ -79,6 +109,21 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
+  }
+
+  bool hasOverlap(Belt newBelt, List<Belt> existingBelts) {
+    for (final b in existingBelts) {
+      final sameBeltColor =
+          b.beltColor1.value == newBelt.beltColor1.value &&
+              (b.beltColor2?.value ?? -1) == (newBelt.beltColor2?.value ?? -1);
+
+      if (sameBeltColor) {
+        if (!(newBelt.maxAge < b.minAge || newBelt.minAge > b.maxAge)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @override
@@ -115,31 +160,8 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
     final endIndex = (startIndex + studentsPerPage).clamp(0, filteredStudents.length);
     final paginatedStudents = filteredStudents.sublist(startIndex, endIndex);
 
-    /// Save Attendance Students
-    final today = DateTime.now();
-    const weekdayNames = [
-      'Monday',    // 1
-      'Tuesday',   // 2
-      'Wednesday', // 3
-      'Thursday',  // 4
-      'Friday',    // 5
-      'Saturday',  // 6
-      'Sunday',    // 7
-    ];
-    final todayName = weekdayNames[today.weekday - 1];
-    final todaySchedule = classItem?.schedule?.firstWhere(
-          (s) => s['day'] == todayName,
-      orElse: () => <String, String>{},
-    );
-    if (todaySchedule == null || todaySchedule.isEmpty) {
-      setState(() {
-        myAttendanceStudents = [];
-      });
-    }
-
     /// Save Graduation Belts
     final classGraduationService = Provider.of<ClassGraduationService>(context, listen: true);
-    final myGraduationBelts = classGraduationService.myGradutationBelts;
 
     final appLocalizations = AppLocalizations.of(context)!;
     final dark = THelperFunctions.isDarkMode(context);
@@ -230,7 +252,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                         children: [
                           _buildDetailsTab(appLocalizations, classItem, myAssistants, instructorClassService),
                           _buildStudentsTab(appLocalizations, paginatedStudents, classStudentService, startIndex, endIndex, filteredStudents),
-                          _buildAttendanceTab(classItem, appLocalizations, classStudentService, todayName, todaySchedule, myAttendanceStudents),
+                          _buildAttendanceTab(classItem, appLocalizations, classStudentService),
                           _buildGraduationTab(classItem, classGraduationService, appLocalizations),
                         ],
                       ),
@@ -507,8 +529,14 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
     );
   }
 
-  Widget _buildAttendanceTab(classItem, appLocalizations, classStudentService, todayName, todaySchedule, myAttendanceStudents) {
-    if (todaySchedule == null || todaySchedule.isEmpty) {
+  Widget _buildAttendanceTab(classItem, appLocalizations, classStudentService) {
+    final today = DateTime.now();
+    const weekdayNames = [
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+    ];
+    final todayName = weekdayNames[today.weekday - 1];
+
+    if (todaySchedule == null) {
       return Card(
         margin: const EdgeInsets.all(16),
         child: Padding(
@@ -520,7 +548,61 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
               OutlinedButton.icon(
                 icon: const Icon(Icons.add),
                 label: Text(appLocalizations.addExtraSession),
-                onPressed: () {},
+                onPressed: () async {
+                  final TimeOfDay? pickedTime = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  );
+
+                  if (pickedTime != null) {
+                    String? duration = await showDialog<String>(
+                      context: context,
+                      builder: (context) {
+                        final controller = TextEditingController();
+                        return AlertDialog(
+                          title: Text(appLocalizations.duration),
+                          content: TextFormField(
+                            controller: controller,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: appLocalizations.duration,
+                              prefixIcon: const Icon(Iconsax.timer)
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text(appLocalizations.cancel),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                if (controller.text.trim().isNotEmpty) {
+                                  Navigator.pop(context, controller.text.trim());
+                                }
+                              },
+                              child: Text(appLocalizations.save),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (duration != null && duration.isNotEmpty) {
+                      final newSchedule = {
+                        'day': todayName,
+                        'time': pickedTime.format(context),
+                        'duration': duration,
+                      };
+
+                      setState(() {
+                        myAttendanceStudents = _classStudentService.myStudents
+                            .where((s) => !s.hasAttendanceToday)
+                            .toList();
+                        todaySchedule = newSchedule;
+                      });
+                    }
+                  }
+                },
               ),
             ],
           ),
@@ -537,7 +619,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
           child: ListTile(
             leading: Icon(Iconsax.clock, color: Theme.of(context).primaryColor),
             title: Text("${todayName}"),
-            subtitle: Text("${todaySchedule['time']} • ${todaySchedule['duration']}"),
+            subtitle: Text("${todaySchedule?['time']} • ${todaySchedule?['duration']}"),
           )
         ),
 
@@ -549,7 +631,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
-                  leading: CircleAvatar(child: Text(student.firstName[0])),
+                  leading: CircleAvatar(child: Text(student.firstName![0])),
                   title: Text(
                     "${student.firstName} ${student.lastName}",
                     style: Theme.of(context).textTheme.titleMedium,
@@ -589,13 +671,23 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
 
     return Column(
       children: [
-        Expanded(
+        myGraduationBelts.isEmpty
+            ? Center(
+              child: Text(
+                appLocalizations.noBeltsFound,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            )
+            : Expanded(
           child: ReorderableListView.builder(
             padding: EdgeInsets.zero,
             itemCount: myGraduationBelts.length,
             onReorder: isEditing
                 ? (oldIndex, newIndex) {
                   classGraduationService.updateBeltOrder(oldIndex, newIndex);
+                  setState(() {
+                    hasChanges = true;
+                  });
                 }
                 : (oldIndex, newIndex) {},
             itemBuilder: (context, index) {
@@ -664,14 +756,36 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                         children: [
                           IconButton(
                             icon: const Icon(Iconsax.edit, color: Color(0xFFDF1E42)),
-                            onPressed: () {
-                              // Call your edit dialog
+                            onPressed: () async {
+                              final updatedBelt = await showDialog<Belt>(
+                                context: context,
+                                builder: (context) {
+                                  return BeltDialog(
+                                    beltToEdit: belt,
+                                    existingBelts: myGraduationBelts,
+                                    hasOverlap: hasOverlap,
+                                  );
+                                },
+                              );
+
+                              if (updatedBelt != null) {
+                                setState(() {
+                                  final index = myGraduationBelts.indexWhere((b) => b.id == updatedBelt.id);
+                                  if (index != -1) {
+                                    myGraduationBelts[index] = updatedBelt;
+                                  }
+                                  hasChanges = true;
+                                });
+                              }
                             },
                           ),
                           IconButton(
                             icon: const Icon(Iconsax.trash, color: Color(0xFFDF1E42)),
                             onPressed: () {
                               classGraduationService.removeBelt(index);
+                              setState(() {
+                                hasChanges = true;
+                              });
                             },
                           ),
                         ],
@@ -685,47 +799,76 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
         ),
 
         /// ACTIONS
+        const SizedBox(height: 16),
         _buildSectionTitle(context, appLocalizations.actions),
         Wrap(
           spacing: TSizes.borderRadiusLg,
           runSpacing: TSizes.borderRadiusLg,
           children: [
-            if (! isEditing)
+            if (! isEditing && myGraduationBelts.isNotEmpty)
             _actionButton(context, Iconsax.edit, appLocalizations.edit, onTap: () {
               setState(() {
                 isEditing = true;
               });
             }),
-            if (isEditing) ...[
-              _actionButton(context, Iconsax.additem, appLocalizations.addBelt, onTap: () {
+            if (isEditing || myGraduationBelts.isEmpty) ...[
+              _actionButton(context, Iconsax.additem, appLocalizations.addBelt, onTap: () async {
+                final newBelt = await showDialog<Belt>(
+                  context: context,
+                  builder: (context) {
+                    return BeltDialog(
+                      existingBelts: myGraduationBelts,
+                      hasOverlap: hasOverlap, // Pass your overlap function
+                    );
+                  },
+                );
 
-              }),
-              _actionButton(context, Iconsax.save_2, appLocalizations.saveChanges, onTap: () async {
-                final success = await classGraduationService.setBeltsForClass(widget.classId, myGraduationBelts);
-                if (success) {
-                  Get.snackbar(
-                    appLocalizations.success,
-                    "",
-                    snackPosition: SnackPosition.BOTTOM,
-                  );
-                } else {
-                  classGraduationService.cancelChanges();
-                  Get.snackbar(
-                    appLocalizations.error,
-                    appLocalizations.errorMessage,
-                    snackPosition: SnackPosition.BOTTOM,
-                  );
+                if (newBelt != null) {
+                  classGraduationService.addBelt(newBelt);
+                  setState(() {
+                    isEditing = true;
+                    hasChanges = true;
+                  });
                 }
-                setState(() {
-                  isEditing = false;
-                });
               }),
-              _actionButton(context, Iconsax.pen_close, appLocalizations.cancel, onTap: () {
-                classGraduationService.cancelChanges();
-                setState(() {
-                  isEditing = false;
-                });
-              }),
+              if (hasChanges) ...[
+                _actionButton(context, Iconsax.save_2, appLocalizations.saveChanges,
+                    onTap: isLoading ? null : () async {
+                  setState(() {
+                    isLoading = true;
+                  });
+                  try {
+                    final success = await classGraduationService.setBeltsForClass(widget.classId, myGraduationBelts);
+                    if (success) {
+                      Get.snackbar(
+                        appLocalizations.success,
+                        appLocalizations.classUpdatedMessage,
+                        snackPosition: SnackPosition.BOTTOM,
+                      );
+                    } else {
+                      classGraduationService.cancelChanges();
+                      Get.snackbar(
+                        appLocalizations.error,
+                        appLocalizations.errorMessage,
+                        snackPosition: SnackPosition.BOTTOM,
+                      );
+                    }
+                  } finally {
+                    setState(() {
+                      isEditing = false;
+                      isLoading = false;
+                      hasChanges = false;
+                    });
+                  }
+                }),
+                _actionButton(context, Iconsax.pen_close, appLocalizations.cancel, onTap: () {
+                  classGraduationService.cancelChanges();
+                  setState(() {
+                    isEditing = false;
+                    hasChanges = false;
+                  });
+                }),
+              ]
             ]
           ]),
         const SizedBox(height: 16),
@@ -768,7 +911,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
     );
   }
 
-  Widget _actionButton(BuildContext context, IconData icon, String label, {required VoidCallback onTap}) {
+  Widget _actionButton(BuildContext context, IconData icon, String label, {required VoidCallback? onTap}) {
     return ElevatedButton.icon(
       onPressed: onTap,
       icon: Icon(icon, size: TSizes.iconSm),

@@ -15,6 +15,7 @@ import '../../../models/Class.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/helpers/helper_functions.dart';
 import '../../../utils/widgets/background_image_header_container.dart';
+import '../../../utils/widgets/belt_dialog.dart';
 import '../start.dart';
 
 class AddClassScreen extends StatefulWidget {
@@ -285,217 +286,20 @@ class _AddClassScreenState extends State<AddClassScreen> {
                           icon: Icon(Iconsax.additem),
                           label: Text(appLocalizations.addBeltPerOrder),
                           onPressed: () async {
-                            final belt = await showDialog<Belt>(
+                            final newBelt = await showDialog<Belt>(
                               context: context,
                               builder: (context) {
-                                RangeValues ageRange = const RangeValues(5, 15);
-                                final classesController = TextEditingController();
-
-                                Color selectedColor = Colors.white;
-                                Color? selectedColor2;
-
-                                return StatefulBuilder(
-                                  builder: (context, setState) => AlertDialog(
-                                    title: Text(appLocalizations.addBelt),
-                                    content: SingleChildScrollView(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          /// Age Range with  Slider
-                                          Text(
-                                            "${appLocalizations.ageRange}: ${ageRange.start.round()} – ${ageRange.end.round()}",
-                                            style: Theme.of(context).textTheme.bodyMedium,
-                                          ),
-                                          RangeSlider(
-                                            values: ageRange,
-                                            min: 1,
-                                            max: 100,
-                                            divisions: 99,
-                                            labels: RangeLabels(
-                                              ageRange.start.round().toString(),
-                                              ageRange.end.round().toString(),
-                                            ),
-                                            onChanged: (RangeValues values) {
-                                              setState(() {
-                                                ageRange = values;
-                                              });
-                                            },
-                                          ),
-
-                                          const SizedBox(height: TSizes.inputFieldRadius),
-
-                                          /// Classes per Stripe
-                                          TextField(
-                                            controller: classesController,
-                                            keyboardType: TextInputType.number,
-                                            decoration: InputDecoration(labelText: appLocalizations.classesPerBeltOrStripe),
-                                          ),
-
-                                          const SizedBox(height: TSizes.inputFieldRadius),
-
-                                          /// Belt Color 1 Picker
-                                          Row(
-                                            children: [
-                                              Text(appLocalizations.beltColor),
-                                              const SizedBox(width: TSizes.sm),
-                                              GestureDetector(
-                                                onTap: () async {
-                                                  final color = await showDialog<Color>(
-                                                    context: context,
-                                                    builder: (context) => AlertDialog(
-                                                      title: Text(appLocalizations.pickBeltColor),
-                                                      content: Container(
-                                                        padding: EdgeInsets.all(TSizes.sm),
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.grey[300],
-                                                          borderRadius: BorderRadius.circular(TSizes.inputFieldRadius),
-                                                        ),
-                                                        child: BlockPicker(
-                                                          pickerColor: selectedColor,
-                                                          onColorChanged: (c) => Navigator.pop(context, c),
-                                                          availableColors: [
-                                                            Colors.white,
-                                                            Colors.grey,
-                                                            Colors.yellow,
-                                                            Colors.orange,
-                                                            Colors.green,
-                                                            Colors.blue,
-                                                            Colors.purple,
-                                                            Colors.brown,
-                                                            Colors.black,
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                  if (color != null) {
-                                                    setState(() => selectedColor = color);
-                                                  }
-                                                },
-                                                child: Container(
-                                                  width: 24,
-                                                  height: 35,
-                                                  decoration: BoxDecoration(
-                                                    color: selectedColor,
-                                                    border: Border.all(color: Colors.black, width: 1.5),
-                                                    borderRadius: BorderRadius.circular(4),
-                                                  ),
-                                                )
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: TSizes.inputFieldRadius),
-
-                                          /// Belt Color 2 Picker
-                                          Row(
-                                            children: [
-                                              Text(appLocalizations.beltColor2),
-                                              const SizedBox(width: TSizes.sm),
-                                              GestureDetector(
-                                                onTap: () async {
-                                                  final color = await showDialog<Color>(
-                                                    context: context,
-                                                    builder: (context) => AlertDialog(
-                                                      title: Text(appLocalizations.pickBeltColor),
-                                                      content: Container(
-                                                        padding: EdgeInsets.all(TSizes.sm),
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.grey[300],
-                                                          borderRadius: BorderRadius.circular(TSizes.inputFieldRadius),
-                                                        ),
-                                                        child: BlockPicker(
-                                                          pickerColor: selectedColor2 ?? Colors.transparent,
-                                                          onColorChanged: (c) => Navigator.pop(context, c),
-                                                          availableColors: [
-                                                            Colors.white,
-                                                            Colors.grey,
-                                                            Colors.yellow,
-                                                            Colors.orange,
-                                                            Colors.green,
-                                                            Colors.blue,
-                                                            Colors.purple,
-                                                            Colors.brown,
-                                                            Colors.black,
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                  if (color != null) {
-                                                    setState(() => selectedColor2 = color);
-                                                  }
-                                                },
-                                                child: selectedColor2 != null
-                                                    ? Container(
-                                                      width: 24,
-                                                      height: 35,
-                                                      decoration: BoxDecoration(
-                                                        color: selectedColor2,
-                                                        border: Border.all(color: Colors.black, width: 1.5),
-                                                        borderRadius: BorderRadius.circular(4),
-                                                      ),
-                                                    )
-                                                    : Container(
-                                                        decoration: BoxDecoration(
-                                                          shape: BoxShape.circle,
-                                                          border: Border.all(
-                                                            color: Colors.black,
-                                                            width: 1,
-                                                          ),
-                                                        ),
-                                                        child: CircleAvatar(
-                                                          backgroundColor: Colors.grey.shade300,
-                                                          child: Icon(Iconsax.add, color: Colors.black54)
-                                                        ),
-                                                      ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: TSizes.inputFieldRadius),
-                                        ],
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: Text(appLocalizations.cancel),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          final minAge = ageRange.start.round();
-                                          final maxAge = ageRange.end.round();
-                                          final classes = int.tryParse(classesController.text.trim());
-
-                                          if (classes != null) {
-                                            final newBelt = Belt(
-                                              id: Uuid().v4(),
-                                              minAge: minAge,
-                                              maxAge: maxAge,
-                                              beltColor1: selectedColor,
-                                              beltColor2: selectedColor2,
-                                              classesPerBeltOrStripe: classes,
-                                              priority: graduationBelts.length + 1,
-                                            );
-
-                                            if (hasOverlap(newBelt, graduationBelts)) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text(appLocalizations.ageRangeOverlaps)),
-                                              );
-                                            } else {
-                                              Navigator.pop(context, newBelt);
-                                            }
-                                          }
-                                        },
-                                        child: Text(appLocalizations.save),
-                                      ),
-                                    ],
-                                  ),
+                                return BeltDialog(
+                                  existingBelts: graduationBelts,
+                                  hasOverlap: hasOverlap, // Pass your overlap function
                                 );
                               },
                             );
 
-                            if (belt != null) {
-                              setState(() => graduationBelts.add(belt));
+                            if (newBelt != null) {
+                              setState(() {
+                                graduationBelts.add(newBelt);
+                              });
                             }
                           },
                         ),
