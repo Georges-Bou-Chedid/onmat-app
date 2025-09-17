@@ -1,15 +1,101 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 
-import '../../../models/Student.dart';
+import '../../../controllers/classItem/class_graduation.dart';
+import '../../../controllers/student/class_student.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../models/Belt.dart';
 import '../../../utils/widgets/circular_image.dart';
 
-class StudentProfileScreen extends StatelessWidget {
-  final Student student;
+class StudentProfileScreen extends StatefulWidget {
+  final String studentId;
+  final String classId;
 
-  const StudentProfileScreen({Key? key, required this.student}) : super(key: key);
+  const StudentProfileScreen({super.key, required this.studentId, required this.classId});
+
+  @override
+  _StudentProfileScreenState createState() => _StudentProfileScreenState();
+}
+
+class _StudentProfileScreenState extends State<StudentProfileScreen> {
+  late ClassStudentService _classStudentService;
+  late ClassGraduationService _classGraduationService;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _classStudentService = Provider.of<ClassStudentService>(context, listen: false);
+    _classGraduationService = Provider.of<ClassGraduationService>(context, listen: false);
+  }
+
+  @override
+  void dispose() {
+    _classStudentService.cancelListener();
+    _classGraduationService.cancelListener();
+    super.dispose();
+  }
+
+  int calculateAge(String dobString) {
+    try {
+      // Parse: dd/MM/yyyy
+      final parts = dobString.split('/');
+      if (parts.length != 3) return 0;
+
+      final day = int.parse(parts[0]);
+      final month = int.parse(parts[1]);
+      final year = int.parse(parts[2]);
+
+      final birthDate = DateTime(year, month, day);
+      final today = DateTime.now();
+
+      int age = today.year - birthDate.year;
+
+      // If birthday hasn’t happened yet this year, subtract 1
+      if (today.month < birthDate.month ||
+          (today.month == birthDate.month && today.day < birthDate.day)) {
+        age--;
+      }
+
+      return age;
+    } catch (e) {
+      return 0; // fallback if parsing fails
+    }
+  }
+
+  Belt? getNextBeltForStudent(int studentAge, List<Belt> belts) {
+    // Filter belts by age range
+    final eligibleBelts = belts.where((belt) {
+      return studentAge >= belt.minAge && studentAge <= belt.maxAge;
+    }).toList();
+
+    if (eligibleBelts.isEmpty) return null;
+
+    // Sort by priority (lower number = higher rank)
+    eligibleBelts.sort((a, b) => a.priority.compareTo(b.priority));
+
+    return eligibleBelts.first;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context)!;
+
+    final classStudentService = Provider.of<ClassStudentService>(context, listen: true);
+    final student = classStudentService.myStudents.firstWhereOrNull((s) => s.userId == widget.studentId);
+
+    final studentAge = calculateAge(student!.dob!);
+
+    final classGraduationService = Provider.of<ClassGraduationService>(context, listen: true);
+    final myGraduationBelts = classGraduationService.myGradutationBelts;
+
+    final nextBelt = getNextBeltForStudent(studentAge, myGraduationBelts);
+
     final beltColors = {
       "White": Colors.white,
       "Blue": Colors.blue,
@@ -58,10 +144,31 @@ class StudentProfileScreen extends StatelessWidget {
                   crossAxisCount: 2,
                   childAspectRatio: 3.5,
                   children: [
-                    _infoTile("Age", "${student.dob}"),
-                    _infoTile("Weight", "${student.weight} kg"),
-                    _infoTile("Height", "${student.height} cm"),
-                    _infoTile("Phone", student.phoneNumber ?? ''),
+                    _infoTile(appLocalizations.age, "$studentAge"),
+                    _infoTile(appLocalizations.weight, "${student.weight} kg"),
+                    _infoTile(appLocalizations.height, "${student.height} cm"),
+                    _infoTile(appLocalizations.phoneNumber, student.phoneNumber ?? ''),
+                    _infoTile(appLocalizations.attendedToday, student.hasAttendanceToday ? "Yes" : "No"),
+                  ],
+                ),
+              ),
+            ),
+
+            // Achievements Grid
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  childAspectRatio: 3.5,
+                  children: [
+                    _infoTile("Next Belt", Belt.getColorName(nextBelt!.beltColor1)),
+                    _infoTile("Classes Left", "${student.classAttended} / ${nextBelt.classesPerBeltOrStripe}"),
+                    _infoTile("Achievements", ""),
                   ],
                 ),
               ),

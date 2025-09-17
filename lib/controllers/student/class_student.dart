@@ -30,6 +30,7 @@ class ClassStudentService with ChangeNotifier {
             'attendance_at': (doc.data().containsKey('attendance_at') && doc['attendance_at'] != null)
                 ? (doc['attendance_at'] as Timestamp).toDate()
                 : null,
+            'class_attended': doc['class_attended'] ?? 0,
           }
       };
 
@@ -52,8 +53,9 @@ class ClassStudentService with ChangeNotifier {
         final status = studentStatusMap[studentId] ?? {};
         final isActive = status['is_active'] ?? false;
         final attendanceAt = status['attendance_at'];
+        final classAttended = status['class_attended'] ?? 0;
 
-        return Student.fromFirestore(studentId, data, isActive: isActive, attendanceAt: attendanceAt);
+        return Student.fromFirestore(studentId, data, isActive: isActive, attendanceAt: attendanceAt, classAttended: classAttended);
       }).toList();
 
       notifyListeners();
@@ -209,9 +211,15 @@ class ClassStudentService with ChangeNotifier {
 
       final idx = _myStudents.indexWhere((s) => s.userId == uid);
       if (idx != -1) {
+        var currentClassAttended = _myStudents[idx].classAttended;
+        if (increment) {
+          currentClassAttended = currentClassAttended + 1;
+        }
+
         _myStudents[idx] = _myStudents[idx].copyWith(
           {},
           hasAttendanceTodayOverride: true,
+          classAttendedOverride: currentClassAttended,
         );
         notifyListeners();
       }

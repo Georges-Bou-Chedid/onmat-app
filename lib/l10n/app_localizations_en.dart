@@ -556,4 +556,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editBelt => 'Edit Belt / Level';
+
+  @override
+  String get age => 'Age';
+
+  @override
+  String get attendedToday => 'Attended Today\'s Class';
 }

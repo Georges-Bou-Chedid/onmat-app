@@ -1192,6 +1192,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit Belt / Level'**
   String get editBelt;
+
+  /// No description provided for @age.
+  ///
+  /// In en, this message translates to:
+  /// **'Age'**
+  String get age;
+
+  /// No description provided for @attendedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Attended Today\'s Class'**
+  String get attendedToday;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

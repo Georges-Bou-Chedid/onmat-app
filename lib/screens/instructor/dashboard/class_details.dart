@@ -480,8 +480,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                         ),
                         onTap: studentItem.isActive
                             ? () async {
-                          Get.to(
-                                () => StudentProfileScreen(student: studentItem),
+                          Get.to(() => StudentProfileScreen(studentId: studentItem.userId, classId: widget.classId),
                             transition: Transition.rightToLeft,
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.easeInOut,

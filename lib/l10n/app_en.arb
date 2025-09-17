@@ -181,5 +181,7 @@
   "years": "yrs",
   "edit": "Edit",
   "noBeltsFound": "No Belts Found",
-  "editBelt": "Edit Belt / Level"
+  "editBelt": "Edit Belt / Level",
+  "age": "Age",
+  "attendedToday": "Attended Today's Class"
 }
