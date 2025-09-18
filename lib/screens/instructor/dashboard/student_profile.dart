@@ -6,6 +6,7 @@ import '../../../controllers/classItem/class_graduation.dart';
 import '../../../controllers/student/class_student.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/Belt.dart';
+import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/circular_image.dart';
 
 class StudentProfileScreen extends StatefulWidget {
@@ -96,14 +97,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
 
     final nextBelt = getNextBeltForStudent(studentAge, myGraduationBelts);
 
-    final beltColors = {
-      "White": Colors.white,
-      "Blue": Colors.blue,
-      "Purple": Colors.purple,
-      "Brown": Colors.brown,
-      "Black": Colors.black,
-    };
-
     return Scaffold(
       appBar: AppBar(
         title: Text("${student.firstName} ${student.lastName}"),
@@ -123,26 +116,26 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             //   radius: 50,
             //   backgroundImage: NetworkImage(student.profilePicture ?? ''),
             // ),
-            const SizedBox(height: 12),
+            const SizedBox(height: TSizes.spaceBtwItems),
             Text(
               "${student.firstName} ${student.lastName}",
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             Text(student.email ?? '', style: Theme.of(context).textTheme.bodyMedium),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: TSizes.defaultSpace),
 
             // Info Grid
             Card(
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(TSizes.spaceBtwItems),
                 child: GridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisCount: 2,
-                  childAspectRatio: 3.5,
+                  childAspectRatio: 3,
                   children: [
                     _infoTile(appLocalizations.age, "$studentAge"),
                     _infoTile(appLocalizations.weight, "${student.weight} kg"),
@@ -159,65 +152,109 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(TSizes.spaceBtwItems),
                 child: GridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisCount: 2,
-                  childAspectRatio: 3.5,
+                  childAspectRatio: 2.2,
                   children: [
-                    _infoTile("Next Belt", Belt.getColorName(nextBelt!.beltColor1)),
-                    _infoTile("Classes Left", "${student.classAttended} / ${nextBelt.classesPerBeltOrStripe}"),
-                    _infoTile("Achievements", ""),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(appLocalizations.upcomingBelt, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 2),
+                        if (nextBelt != null) ...[
+                          Container(
+                            width: 24,
+                            height: 35,
+                            decoration: BoxDecoration(
+                              color: nextBelt.beltColor1,
+                              border: Border.all(color: Colors.black, width: 1.5),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          if (nextBelt.beltColor2 != null) ...[
+                            const SizedBox(width: 4),
+                            Container(
+                              width: 24,
+                              height: 35,
+                              decoration: BoxDecoration(
+                                color: nextBelt.beltColor2,
+                                border: Border.all(color: Colors.black, width: 1.5),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ],
+                    ),
+                    _infoTile(
+                      appLocalizations.remainingClasses,
+                      nextBelt != null
+                          ? "${student.classAttended} / ${nextBelt.classesPerBeltOrStripe}"
+                          : "",
+                    ),
+                    _infoTile(appLocalizations.stripes, "${student.stripes}"),
+                    _infoTile(appLocalizations.achievements, "")
                   ],
                 ),
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: TSizes.defaultSpace),
 
             // Belt & Upgrade
             Card(
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(TSizes.spaceBtwItems),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Container(
-                      height: 24,
-                      width: 60,
-                      color: Colors.grey,
+                    Text(
+                      appLocalizations.currentBelt,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        "Current Belt: ${'Unknown'}",
-                        style: Theme.of(context).textTheme.titleMedium,
+                    Container(
+                      width: 24,
+                      height: 35,
+                      decoration: BoxDecoration(
+                        color: student.belt,
+                        border: Border.all(color: Colors.black, width: 1.5),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     ElevatedButton(
                       onPressed: () {
                         // Show belt upgrade dialog
                       },
-                      child: const Text("Upgrade"),
+                      child: Text(appLocalizations.upgrade),
                     ),
                   ],
                 ),
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: TSizes.defaultSpace),
 
             // Progress
             Align(
               alignment: Alignment.centerLeft,
-              child: Text("Progress in This Class",
+              child: Text(appLocalizations.progressBar,
                   style: Theme.of(context).textTheme.titleMedium),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: TSizes.spaceBtwItems),
 
-            _progressTile("Classes", 0.7),
+            _progressTile(
+              appLocalizations.classesAttended,
+              student.classAttended,
+              nextBelt != null
+                  ? nextBelt.classesPerBeltOrStripe - student.classAttended
+                  : 0,
+              appLocalizations
+            ),
           ],
         ),
       ),
@@ -234,20 +271,53 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     );
   }
 
-  Widget _progressTile(String label, double value) {
+  Widget _progressTile(String label, int attended, int left, AppLocalizations appLocalization) {
+    final totalRequired = attended + left; // classes needed for current belt
+    final cappedAttended = attended > totalRequired ? totalRequired : attended;
+    final progress = totalRequired > 0 ? (cappedAttended / totalRequired) : 0.0;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label),
-          const SizedBox(height: 4),
-          LinearProgressIndicator(
-            value: value,
-            backgroundColor: Colors.grey.shade300,
-            color: Colors.green,
-            minHeight: 8,
+          // Label with progress count
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text("$attended / $totalRequired"),
+            ],
           ),
+          const SizedBox(height: 6),
+
+          // Progress bar capped at 100%
+          LinearProgressIndicator(
+            value: progress, // stays at 1.0 max
+            backgroundColor: Colors.grey.shade300,
+            color: Color(0xFFDF1E42), // 🔴 red for progress
+            minHeight: 10,
+          ),
+
+          // Show how many classes left if requirement not met
+          if (attended < totalRequired)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                "$left ${appLocalization.classesLeft}",
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+            ),
+
+          // Show extra info if they passed requirement but no upgrade yet
+          if (attended > totalRequired)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                "+${attended - totalRequired} ${appLocalization.extraClasses}",
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+            ),
         ],
       ),
     );

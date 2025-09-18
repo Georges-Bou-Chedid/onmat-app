@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ClassStudent {
@@ -7,6 +9,8 @@ class ClassStudent {
   final bool? isActive;
   final int? classAttended;
   final DateTime? attendanceAt;
+  final Color? belt;
+  final int? stripes;
 
   ClassStudent({
     this.id,
@@ -15,20 +19,9 @@ class ClassStudent {
     this.isActive,
     this.classAttended,
     this.attendanceAt,
+    this.belt,
+    this.stripes
   });
-
-  factory ClassStudent.fromFirestore(String id, Map<String, dynamic> map) {
-    return ClassStudent(
-      id: id,
-      classId: map['class_id'],
-      studentId: map['student_id'],
-      isActive: map['is_active'] ?? false,
-      classAttended: map['class_attended'] ?? 0,
-      attendanceAt: map['attendance_at'] != null
-          ? (map['attendance_at'] as Timestamp).toDate()
-          : null,
-    );
-  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -39,6 +32,8 @@ class ClassStudent {
       'attendance_at': attendanceAt != null
           ? Timestamp.fromDate(attendanceAt!)
           : null,
+      'belt': belt ?? "White",
+      'stripes': stripes ?? 0,
       'assigned_at': FieldValue.serverTimestamp(),
     };
   }

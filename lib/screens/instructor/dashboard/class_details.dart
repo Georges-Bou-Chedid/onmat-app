@@ -875,18 +875,6 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
     );
   }
 
-  Widget _buildBeltBox(Color color) {
-    return Container(
-      width: 24,
-      height: 35,
-      decoration: BoxDecoration(
-        color: color,
-        border: Border.all(color: Colors.black, width: 1.5),
-        borderRadius: BorderRadius.circular(4),
-      ),
-    );
-  }
-
   /// --- COMPONENT HELPERS ---
   Widget _infoRow(String title, String value) {
     return Padding(
@@ -918,6 +906,18 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  Widget _buildBeltBox(Color color) {
+    return Container(
+      width: 24,
+      height: 35,
+      decoration: BoxDecoration(
+        color: color,
+        border: Border.all(color: Colors.black, width: 1.5),
+        borderRadius: BorderRadius.circular(4),
       ),
     );
   }

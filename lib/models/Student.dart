@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../utils/helpers/helper_functions.dart';
@@ -18,6 +19,8 @@ class Student {
   final bool isActive;
   final bool hasAttendanceToday;
   final int classAttended;
+  final Color belt;
+  final int stripes;
 
   Student({
     this.userId,
@@ -33,10 +36,16 @@ class Student {
     this.isActive = false,
     this.hasAttendanceToday = false,
     this.classAttended = 0,
+    this.belt = Colors.white,
+    this.stripes = 0
   });
 
   // Factory method to convert data from Firebase to Account
-  factory Student.fromFirestore(String id, Map<String, dynamic> map, {bool isActive = false, DateTime? attendanceAt, int classAttended = 0}) {
+  factory Student.fromFirestore(
+      String id, Map<String,
+      dynamic> map,
+      {bool isActive = false, DateTime? attendanceAt, int classAttended = 0, Color belt = Colors.white, int stripes = 0}
+  ) {
     final now = DateTime.now();
     final attendanceToday = attendanceAt != null &&
         attendanceAt.year == now.year &&
@@ -57,6 +66,8 @@ class Student {
       isActive: isActive,
       hasAttendanceToday: attendanceToday,
       classAttended: classAttended,
+      belt: belt,
+      stripes: stripes
     );
   }
 
@@ -77,7 +88,10 @@ class Student {
     };
   }
 
-  Student copyWith(Map<String, dynamic> updateData, {bool? isActiveOverride, bool? hasAttendanceTodayOverride, int? classAttendedOverride}) {
+  Student copyWith(
+      Map<String, dynamic> updateData,
+      {bool? isActiveOverride, bool? hasAttendanceTodayOverride, int? classAttendedOverride}
+  ) {
     return Student(
       userId: updateData['user_id'] ?? userId,
       firstName: updateData['first_name'] ?? firstName,

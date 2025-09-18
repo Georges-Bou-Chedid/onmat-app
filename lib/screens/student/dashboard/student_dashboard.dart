@@ -7,6 +7,7 @@ import 'package:onmat/screens/student/dashboard/student_class_details.dart';
 import 'package:onmat/screens/student/dashboard/student_scan_qr_code.dart';
 import 'package:provider/provider.dart';
 
+import '../../../controllers/classItem/class_graduation.dart';
 import '../../../controllers/instructor/class_assistant.dart';
 import '../../../controllers/instructor/instructor_class.dart';
 import '../../../controllers/student/student.dart';
@@ -101,11 +102,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> with Si
                         appLocalizations.myClasses,
                         style: Theme.of(context).textTheme.headlineSmall!.apply(color: Colors.white),
                       ),
-                      trailing: IconButton(
+                      trailing: ElevatedButton.icon(
                         onPressed: () async {
                           _searchFocusNode.unfocus();
                           final scannedData = await Get.to(
-                            () => const StudentScanQrScreen(),
+                                () => const StudentScanQrScreen(),
                             transition: Transition.downToUp,
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.easeInOut,
@@ -113,9 +114,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> with Si
 
                           if (scannedData != null) {
                             final success = await classStudentService.addStudentToClass(
-                              scannedData,
-                              FirebaseAuth.instance.currentUser!.uid,
-                              studentService.student!
+                                scannedData,
+                                FirebaseAuth.instance.currentUser!.uid,
+                                studentService.student!
                             );
 
                             if (success) {
@@ -134,8 +135,17 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> with Si
                           }
                         },
                         icon: const Icon(Iconsax.scan_barcode, color: Colors.white),
-                        tooltip: appLocalizations.scanQrCode,
-                      ),
+                        label: Text(
+                          appLocalizations.scanQr,
+                          style: Theme.of(context).textTheme.bodyMedium!.apply(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      )
                     ),
                     const SizedBox(height: TSizes.appBarHeight),
                   ],
@@ -245,6 +255,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> with Si
                                 /// Fetch Assistants
                                 final classAssistantService = Provider.of<ClassAssistantService>(context, listen: false);
                                 classAssistantService.listenToClassAssistants(classItem.id);
+
+                                /// Fetch Graduation Belts
+                                final classGraduationService = Provider.of<ClassGraduationService>(context, listen: false);
+                                classGraduationService.listenToClassBelts(classItem.id);
                       
                                 Get.back();
                       

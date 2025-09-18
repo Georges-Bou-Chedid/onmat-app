@@ -1007,12 +1007,6 @@ abstract class AppLocalizations {
   /// **'Join as Student'**
   String get joinAsStudent;
 
-  /// No description provided for @scanQrCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan QR Code'**
-  String get scanQrCode;
-
   /// No description provided for @requestToJoinClass.
   ///
   /// In en, this message translates to:
@@ -1034,7 +1028,7 @@ abstract class AppLocalizations {
   /// No description provided for @scanQr.
   ///
   /// In en, this message translates to:
-  /// **'Scan Qr'**
+  /// **'Scan QR'**
   String get scanQr;
 
   /// No description provided for @progress.
@@ -1202,8 +1196,68 @@ abstract class AppLocalizations {
   /// No description provided for @attendedToday.
   ///
   /// In en, this message translates to:
-  /// **'Attended Today\'s Class'**
+  /// **'Attended Today'**
   String get attendedToday;
+
+  /// No description provided for @upcomingBelt.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming Belt'**
+  String get upcomingBelt;
+
+  /// No description provided for @remainingClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining Classes'**
+  String get remainingClasses;
+
+  /// No description provided for @achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get achievements;
+
+  /// No description provided for @currentBelt.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Belt'**
+  String get currentBelt;
+
+  /// No description provided for @upgrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade'**
+  String get upgrade;
+
+  /// No description provided for @progressBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress Bar'**
+  String get progressBar;
+
+  /// No description provided for @classesAttended.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes Attended'**
+  String get classesAttended;
+
+  /// No description provided for @classesLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'classes left'**
+  String get classesLeft;
+
+  /// No description provided for @extraClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'extra classes since requirement'**
+  String get extraClasses;
+
+  /// No description provided for @stripes.
+  ///
+  /// In en, this message translates to:
+  /// **'Stripes'**
+  String get stripes;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

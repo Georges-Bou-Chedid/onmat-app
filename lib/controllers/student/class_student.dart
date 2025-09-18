@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:onmat/models/Student.dart';
 
+import '../../models/Belt.dart';
 import '../../models/ClassStudent.dart';
 
 class ClassStudentService with ChangeNotifier {
@@ -31,6 +32,8 @@ class ClassStudentService with ChangeNotifier {
                 ? (doc['attendance_at'] as Timestamp).toDate()
                 : null,
             'class_attended': doc['class_attended'] ?? 0,
+            'belt': Belt.getColorFromName(doc['belt']),
+            'stripes': doc['stripes'] ?? 0
           }
       };
 
@@ -54,8 +57,18 @@ class ClassStudentService with ChangeNotifier {
         final isActive = status['is_active'] ?? false;
         final attendanceAt = status['attendance_at'];
         final classAttended = status['class_attended'] ?? 0;
+        final belt = status['belt'] ?? Colors.white;
+        final stripes = status['stripes'] ?? 0;
 
-        return Student.fromFirestore(studentId, data, isActive: isActive, attendanceAt: attendanceAt, classAttended: classAttended);
+        return Student.fromFirestore(
+          studentId,
+          data,
+          isActive: isActive,
+          attendanceAt: attendanceAt,
+          classAttended: classAttended,
+          belt: belt,
+          stripes: stripes
+        );
       }).toList();
 
       notifyListeners();

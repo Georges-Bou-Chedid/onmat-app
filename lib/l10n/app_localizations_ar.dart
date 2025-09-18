@@ -465,9 +465,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get joinAsStudent => 'Join as Student';
 
   @override
-  String get scanQrCode => 'Scan QR Code';
-
-  @override
   String get requestToJoinClass => 'Join request sent successfully';
 
   @override
@@ -477,7 +474,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get ignore => 'Ignore';
 
   @override
-  String get scanQr => 'Scan Qr';
+  String get scanQr => 'Scan QR';
 
   @override
   String get progress => 'Progress';
@@ -561,5 +558,35 @@ class AppLocalizationsAr extends AppLocalizations {
   String get age => 'Age';
 
   @override
-  String get attendedToday => 'Attended Today\'s Class';
+  String get attendedToday => 'Attended Today';
+
+  @override
+  String get upcomingBelt => 'Upcoming Belt';
+
+  @override
+  String get remainingClasses => 'Remaining Classes';
+
+  @override
+  String get achievements => 'Achievements';
+
+  @override
+  String get currentBelt => 'Current Belt';
+
+  @override
+  String get upgrade => 'Upgrade';
+
+  @override
+  String get progressBar => 'Progress Bar';
+
+  @override
+  String get classesAttended => 'Classes Attended';
+
+  @override
+  String get classesLeft => 'classes left';
+
+  @override
+  String get extraClasses => 'extra classes since requirement';
+
+  @override
+  String get stripes => 'Stripes';
 }
