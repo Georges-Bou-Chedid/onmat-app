@@ -48,22 +48,22 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             subTitle: appLocalizations.deleteAccountSub,
             onTap: () async {
               await showDialog(
-              context: context,
-              barrierDismissible: true,
-              builder: (context) => AlertDialog(
-                title: Text(appLocalizations.deleteAccount),
-                content: Text(appLocalizations.deleteAccountText),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text(appLocalizations.cancel),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: Text(appLocalizations.delete),
-                  ),
-                ],
-              ),
+                context: context,
+                barrierDismissible: true,
+                builder: (context) => AlertDialog(
+                  title: Text(appLocalizations.deleteAccount),
+                  content: Text(appLocalizations.deleteAccountText),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(appLocalizations.cancel),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: Text(appLocalizations.delete),
+                    ),
+                  ],
+                ),
               ).then((confirmed) async {
                 if (confirmed == true) {
                   final result = await authService.deleteAccount();

@@ -1258,6 +1258,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stripes'**
   String get stripes;
+
+  /// No description provided for @removeFromClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from This Class'**
+  String get removeFromClass;
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// Confirmation dialog text when removing a student
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove {studentName}? This action cannot be undone.'**
+  String removeFromClassText(String studentName);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -589,4 +589,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stripes => 'Stripes';
+
+  @override
+  String get removeFromClass => 'Remove from This Class';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String removeFromClassText(String studentName) {
+    return 'Are you sure you want to remove $studentName? This action cannot be undone.';
+  }
 }

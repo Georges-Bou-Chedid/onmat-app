@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 
 import '../../../controllers/classItem/class_graduation.dart';
@@ -8,12 +9,14 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/Belt.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/widgets/circular_image.dart';
+import 'class_details.dart';
 
 class StudentProfileScreen extends StatefulWidget {
   final String studentId;
   final String classId;
+  final bool isAssistant;
 
-  const StudentProfileScreen({super.key, required this.studentId, required this.classId});
+  const StudentProfileScreen({super.key, required this.studentId, required this.classId, required this.isAssistant});
 
   @override
   _StudentProfileScreenState createState() => _StudentProfileScreenState();
@@ -69,7 +72,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     }
   }
 
-  Belt? getNextBeltForStudent(int studentAge, List<Belt> belts) {
+  Belt? getNextBeltForStudent(int studentAge, List<Belt> belts, Color currentBelt1Color, Color? currentBelt2Color) {
     // Filter belts by age range
     final eligibleBelts = belts.where((belt) {
       return studentAge >= belt.minAge && studentAge <= belt.maxAge;
@@ -80,7 +83,17 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     // Sort by priority (lower number = higher rank)
     eligibleBelts.sort((a, b) => a.priority.compareTo(b.priority));
 
-    return eligibleBelts.first;
+    // Skip belts that match student's current belt(s)
+    for (var belt in eligibleBelts) {
+      final beltColors = [belt.beltColor1, belt.beltColor2].whereType<Color>().toList();
+      if (! beltColors.contains(currentBelt1Color) &&
+          (currentBelt2Color == null || ! beltColors.contains(currentBelt2Color))) {
+        return belt;
+      }
+    }
+
+    // No next belt found
+    return null;
   }
 
   @override
@@ -90,12 +103,22 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     final classStudentService = Provider.of<ClassStudentService>(context, listen: true);
     final student = classStudentService.myStudents.firstWhereOrNull((s) => s.userId == widget.studentId);
 
-    final studentAge = calculateAge(student!.dob!);
+    if (student == null) {
+      Future.microtask(() => Get.back());
+      return const SizedBox.shrink();
+    }
+
+    final studentAge = calculateAge(student.dob!);
 
     final classGraduationService = Provider.of<ClassGraduationService>(context, listen: true);
     final myGraduationBelts = classGraduationService.myGradutationBelts;
 
-    final nextBelt = getNextBeltForStudent(studentAge, myGraduationBelts);
+    final nextBelt = getNextBeltForStudent(
+      studentAge,
+      myGraduationBelts,
+      student.belt1,
+      student.belt2
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -194,8 +217,17 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       nextBelt != null
                           ? "${student.classAttended} / ${nextBelt.classesPerBeltOrStripe}"
                           : "",
+                      trailing: (nextBelt != null && student.classAttended >= nextBelt.classesPerBeltOrStripe)
+                          ? const Icon(Iconsax.warning_2, color: Colors.orange)
+                          : null,
                     ),
-                    _infoTile(appLocalizations.stripes, "${student.stripes}"),
+                    _infoTile(
+                      appLocalizations.stripes,
+                      "${student.stripes}",
+                      trailing: (student.stripes >= 4)
+                          ? const Icon(Iconsax.warning_2, color: Colors.orange)
+                          : null,
+                    ),
                     _infoTile(appLocalizations.achievements, "")
                   ],
                 ),
@@ -221,11 +253,22 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       width: 24,
                       height: 35,
                       decoration: BoxDecoration(
-                        color: student.belt,
+                        color: student.belt1,
                         border: Border.all(color: Colors.black, width: 1.5),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
+                    if (student.belt2 != null) ...[
+                      Container(
+                        width: 24,
+                        height: 35,
+                        decoration: BoxDecoration(
+                          color: student.belt2,
+                          border: Border.all(color: Colors.black, width: 1.5),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ],
                     ElevatedButton(
                       onPressed: () {
                         // Show belt upgrade dialog
@@ -255,18 +298,64 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   : 0,
               appLocalizations
             ),
+            const SizedBox(height: TSizes.spaceBtwItems),
+
+            ElevatedButton(
+              onPressed: () async {
+                await showDialog(
+                  context: context,
+                  barrierDismissible: true,
+                  builder: (context) => AlertDialog(
+                    title: Text(appLocalizations.removeFromClass),
+                    content: Text(appLocalizations.removeFromClassText("${student.firstName} ${student.lastName}")),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: Text(appLocalizations.cancel),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: Text(appLocalizations.remove),
+                      ),
+                    ],
+                  ),
+                ).then((confirmed) async {
+                  if (confirmed == true) {
+                    final success = await classStudentService.removeStudentFromClass(
+                        widget.classId,
+                        student.userId!
+                    );
+
+                    if (! success) {
+                      Get.snackbar(
+                        appLocalizations.error,
+                        appLocalizations.errorMessage,
+                        snackPosition: SnackPosition.BOTTOM,
+                      );
+                    }
+                  }
+                });
+              },
+              child: Text(appLocalizations.removeFromClass),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _infoTile(String label, String value) {
+  Widget _infoTile(String label, String value, {Widget? trailing}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        Text(value),
+        Row(
+          children: [
+            Text(value),
+            const SizedBox(width: TSizes.spaceBtwItems),
+            if (trailing != null) trailing,
+          ],
+        ),
       ],
     );
   }

@@ -19,7 +19,8 @@ class Student {
   final bool isActive;
   final bool hasAttendanceToday;
   final int classAttended;
-  final Color belt;
+  final Color belt1;
+  final Color? belt2;
   final int stripes;
 
   Student({
@@ -36,7 +37,8 @@ class Student {
     this.isActive = false,
     this.hasAttendanceToday = false,
     this.classAttended = 0,
-    this.belt = Colors.white,
+    this.belt1 = Colors.white,
+    this.belt2,
     this.stripes = 0
   });
 
@@ -44,7 +46,7 @@ class Student {
   factory Student.fromFirestore(
       String id, Map<String,
       dynamic> map,
-      {bool isActive = false, DateTime? attendanceAt, int classAttended = 0, Color belt = Colors.white, int stripes = 0}
+      {bool isActive = false, DateTime? attendanceAt, int classAttended = 0, Color belt1 = Colors.white, Color? belt2, int stripes = 0}
   ) {
     final now = DateTime.now();
     final attendanceToday = attendanceAt != null &&
@@ -66,7 +68,8 @@ class Student {
       isActive: isActive,
       hasAttendanceToday: attendanceToday,
       classAttended: classAttended,
-      belt: belt,
+      belt1: belt1,
+      belt2: belt2,
       stripes: stripes
     );
   }

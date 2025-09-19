@@ -32,7 +32,8 @@ class ClassStudentService with ChangeNotifier {
                 ? (doc['attendance_at'] as Timestamp).toDate()
                 : null,
             'class_attended': doc['class_attended'] ?? 0,
-            'belt': Belt.getColorFromName(doc['belt']),
+            'belt1': Belt.getColorFromName(doc['belt1']),
+            'belt2': doc['belt2'] != null ? Belt.getColorFromName(doc['belt2']) : null,
             'stripes': doc['stripes'] ?? 0
           }
       };
@@ -57,7 +58,8 @@ class ClassStudentService with ChangeNotifier {
         final isActive = status['is_active'] ?? false;
         final attendanceAt = status['attendance_at'];
         final classAttended = status['class_attended'] ?? 0;
-        final belt = status['belt'] ?? Colors.white;
+        final belt1 = status['belt1'] ?? Colors.white;
+        final belt2 = status['belt2'];
         final stripes = status['stripes'] ?? 0;
 
         return Student.fromFirestore(
@@ -66,7 +68,8 @@ class ClassStudentService with ChangeNotifier {
           isActive: isActive,
           attendanceAt: attendanceAt,
           classAttended: classAttended,
-          belt: belt,
+          belt1: belt1,
+          belt2: belt2,
           stripes: stripes
         );
       }).toList();
@@ -239,6 +242,35 @@ class ClassStudentService with ChangeNotifier {
       return true;
     } catch (e) {
       print("🔥 Failed to update attendance: $e");
+      return false;
+    }
+  }
+
+  Future<bool> removeStudentFromClass(String classId, String uid) async {
+    try {
+      // Step 1: Find existing class_student document for this student
+      final existing = await _firestore
+          .collection('class_student')
+          .where('class_id', isEqualTo: classId)
+          .where('student_id', isEqualTo: uid)
+          .limit(1)
+          .get();
+
+      if (existing.docs.isEmpty) {
+        print("⚠️ Student not found in this class");
+        return false;
+      }
+
+      final doc = existing.docs.first;
+
+      await _firestore.collection('class_student').doc(doc.id).delete();
+
+      // Step 4: Remove from in-memory list (optional)
+      _myStudents.removeWhere((s) => s.userId == uid);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print("🔥 Failed to ignore student: $e");
       return false;
     }
   }

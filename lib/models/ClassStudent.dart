@@ -9,7 +9,8 @@ class ClassStudent {
   final bool? isActive;
   final int? classAttended;
   final DateTime? attendanceAt;
-  final Color? belt;
+  final Color? belt1;
+  final Color? belt2;
   final int? stripes;
 
   ClassStudent({
@@ -19,7 +20,8 @@ class ClassStudent {
     this.isActive,
     this.classAttended,
     this.attendanceAt,
-    this.belt,
+    this.belt1,
+    this.belt2,
     this.stripes
   });
 
@@ -32,7 +34,8 @@ class ClassStudent {
       'attendance_at': attendanceAt != null
           ? Timestamp.fromDate(attendanceAt!)
           : null,
-      'belt': belt ?? "White",
+      'belt1': belt1 ?? "White",
+      'belt2': belt2,
       'stripes': stripes ?? 0,
       'assigned_at': FieldValue.serverTimestamp(),
     };

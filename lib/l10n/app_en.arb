@@ -192,5 +192,17 @@
   "classesAttended": "Classes Attended",
   "classesLeft": "classes left",
   "extraClasses": "extra classes since requirement",
-  "stripes": "Stripes"
+  "stripes": "Stripes",
+  "removeFromClass": "Remove from This Class",
+  "remove": "Remove",
+  "removeFromClassText": "Are you sure you want to remove {studentName}? This action cannot be undone.",
+  "@removeFromClassText": {
+    "description": "Confirmation dialog text when removing a student",
+    "placeholders": {
+      "studentName": {
+        "type": "String",
+        "example": "John Doe"
+      }
+    }
+  }
 }
