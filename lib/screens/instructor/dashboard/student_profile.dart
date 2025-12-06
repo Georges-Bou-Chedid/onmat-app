@@ -86,8 +86,15 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     // Skip belts that match student's current belt(s)
     for (var belt in eligibleBelts) {
       final beltColors = [belt.beltColor1, belt.beltColor2].whereType<Color>().toList();
-      if (! beltColors.contains(currentBelt1Color) &&
-          (currentBelt2Color == null || ! beltColors.contains(currentBelt2Color))) {
+      // Must contain current belt 1 color
+      final matchesFirstColor = beltColors.contains(currentBelt1Color);
+
+      // Must have a second color OR allow anything if current has none
+      final validSecondColor = currentBelt2Color == null
+          ? belt.beltColor2 != null   // next belt must introduce a new color2
+          : beltColors.contains(currentBelt2Color);
+
+      if (matchesFirstColor && validSecondColor) {
         return belt;
       }
     }
@@ -164,6 +171,12 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     _infoTile(appLocalizations.weight, "${student.weight} kg"),
                     _infoTile(appLocalizations.height, "${student.height} cm"),
                     _infoTile(appLocalizations.phoneNumber, student.phoneNumber ?? ''),
+                    _infoTile(
+                      appLocalizations.gender,
+                      (student.gender ?? '').isEmpty
+                          ? ''
+                          : '${(student.gender![0].toUpperCase())}${student.gender!.substring(1).toLowerCase()}',
+                    ),
                     _infoTile(appLocalizations.attendedToday, student.hasAttendanceToday ? "Yes" : "No"),
                   ],
                 ),
@@ -188,27 +201,31 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                         Text(appLocalizations.upcomingBelt, style: const TextStyle(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 2),
                         if (nextBelt != null) ...[
-                          Container(
-                            width: 24,
-                            height: 35,
-                            decoration: BoxDecoration(
-                              color: nextBelt.beltColor1,
-                              border: Border.all(color: Colors.black, width: 1.5),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                          if (nextBelt.beltColor2 != null) ...[
-                            const SizedBox(width: 4),
-                            Container(
-                              width: 24,
-                              height: 35,
-                              decoration: BoxDecoration(
-                                color: nextBelt.beltColor2,
-                                border: Border.all(color: Colors.black, width: 1.5),
-                                borderRadius: BorderRadius.circular(4),
+                          Row(
+                            children: [
+                              Container(
+                                width: 24,
+                                height: 35,
+                                decoration: BoxDecoration(
+                                  color: nextBelt.beltColor1,
+                                  border: Border.all(color: Colors.black, width: 1.5),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
                               ),
-                            ),
-                          ],
+                              if (nextBelt.beltColor2 != null) ...[
+                                const SizedBox(width: 4),
+                                Container(
+                                  width: 24,
+                                  height: 35,
+                                  decoration: BoxDecoration(
+                                    color: nextBelt.beltColor2,
+                                    border: Border.all(color: Colors.black, width: 1.5),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ],
                       ],
                     ),
@@ -223,8 +240,10 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     ),
                     _infoTile(
                       appLocalizations.stripes,
-                      "${student.stripes}",
-                      trailing: (student.stripes >= 4)
+                      nextBelt != null
+                          ? "${student.stripes} / ${nextBelt.maxStripes}"
+                          : "${student.stripes}",
+                      trailing: (nextBelt != null && student.stripes >= nextBelt.maxStripes)
                           ? const Icon(Iconsax.warning_2, color: Colors.orange)
                           : null,
                     ),
@@ -259,6 +278,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       ),
                     ),
                     if (student.belt2 != null) ...[
+                      const SizedBox(width: 4),
                       Container(
                         width: 24,
                         height: 35,
@@ -300,44 +320,99 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             ),
             const SizedBox(height: TSizes.spaceBtwItems),
 
-            ElevatedButton(
-              onPressed: () async {
-                await showDialog(
-                  context: context,
-                  barrierDismissible: true,
-                  builder: (context) => AlertDialog(
-                    title: Text(appLocalizations.removeFromClass),
-                    content: Text(appLocalizations.removeFromClassText("${student.firstName} ${student.lastName}")),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: Text(appLocalizations.cancel),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: Text(appLocalizations.remove),
-                      ),
-                    ],
+            Wrap(
+              spacing: TSizes.borderRadiusLg,
+              runSpacing: TSizes.borderRadiusLg,
+              children: [
+                ElevatedButton.icon(
+                  icon: Icon(Iconsax.copy_success, size: TSizes.iconSm),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                ).then((confirmed) async {
-                  if (confirmed == true) {
-                    final success = await classStudentService.removeStudentFromClass(
-                        widget.classId,
-                        student.userId!
-                    );
+                  onPressed: () async {
+                    await showDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (context) => AlertDialog(
+                        title: Text(appLocalizations.removeFromClass),
+                        content: Text(appLocalizations.removeFromClassText("${student.firstName} ${student.lastName}")),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: Text(appLocalizations.cancel),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: Text(appLocalizations.remove),
+                          ),
+                        ],
+                      ),
+                    ).then((confirmed) async {
+                      if (confirmed == true) {
+                        final success = await classStudentService.removeStudentFromClass(
+                            widget.classId,
+                            student.userId!
+                        );
 
-                    if (! success) {
-                      Get.snackbar(
-                        appLocalizations.error,
-                        appLocalizations.errorMessage,
-                        snackPosition: SnackPosition.BOTTOM,
-                      );
-                    }
-                  }
-                });
-              },
-              child: Text(appLocalizations.removeFromClass),
+                        if (! success) {
+                          Get.snackbar(
+                            appLocalizations.error,
+                            appLocalizations.errorMessage,
+                            snackPosition: SnackPosition.BOTTOM,
+                          );
+                        }
+                      }
+                    });
+                  },
+                  label: Text(appLocalizations.addAchievemnt),
+                ),
+                ElevatedButton.icon(
+                  icon: Icon(Iconsax.profile_remove, size: TSizes.iconSm),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () async {
+                    await showDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (context) => AlertDialog(
+                        title: Text(appLocalizations.removeFromClass),
+                        content: Text(appLocalizations.removeFromClassText("${student.firstName} ${student.lastName}")),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: Text(appLocalizations.cancel),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: Text(appLocalizations.remove),
+                          ),
+                        ],
+                      ),
+                    ).then((confirmed) async {
+                      if (confirmed == true) {
+                        final success = await classStudentService.removeStudentFromClass(
+                            widget.classId,
+                            student.userId!
+                        );
+
+                        if (! success) {
+                          Get.snackbar(
+                            appLocalizations.error,
+                            appLocalizations.errorMessage,
+                            snackPosition: SnackPosition.BOTTOM,
+                          );
+                        }
+                      }
+                    });
+                  },
+                  label: Text(appLocalizations.remove),
+                ),
+              ]
             ),
+            const SizedBox(height: TSizes.lg),
           ],
         ),
       ),

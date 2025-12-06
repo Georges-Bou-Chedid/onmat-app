@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'controllers/classItem/class_graduation.dart';
 import 'controllers/instructor/class_assistant.dart';
 import 'controllers/auth.dart';
+import 'controllers/instructor/global_search.dart';
 import 'controllers/instructor/instructor.dart';
 import 'controllers/instructor/instructor_class.dart';
 import 'controllers/student/class_student.dart';
@@ -38,6 +39,7 @@ void main() async {
           ChangeNotifierProvider(create: (_) => ClassStudentService()),
           ChangeNotifierProvider(create: (_) => StudentClassService()),
           ChangeNotifierProvider(create: (_) => ClassGraduationService()),
+          ChangeNotifierProvider(create: (_) => GlobalStudentSearchService()),
         ],
         child: MyApp(startLocale),
       )

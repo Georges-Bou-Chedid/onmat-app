@@ -21,6 +21,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final GlobalKey<FormState> editProfileKey = GlobalKey<FormState>();
   final TextEditingController _firstNameEditingController = TextEditingController();
   final TextEditingController _lastNameEditingController = TextEditingController();
+  final TextEditingController _genderEditingController = TextEditingController();
   final TextEditingController _usernameEditingController = TextEditingController();
   final TextEditingController _dateOfBirthEditingController = TextEditingController();
   final TextEditingController _phoneNumberEditingController = TextEditingController();
@@ -36,6 +37,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     if (instructor != null) {
       _firstNameEditingController.text   = instructor.firstName ?? '';
       _lastNameEditingController.text    = instructor.lastName ?? '';
+      _genderEditingController.text      = instructor.gender ?? '';
       _usernameEditingController.text    = instructor.username ?? '';
       _dateOfBirthEditingController.text = instructor.dob ?? '';
       _phoneNumberEditingController.text = instructor.phoneNumber ?? '';
@@ -47,6 +49,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void dispose() {
     _firstNameEditingController.dispose();
     _lastNameEditingController.dispose();
+    _genderEditingController.dispose();
     _usernameEditingController.dispose();
     _dateOfBirthEditingController.dispose();
     _phoneNumberEditingController.dispose();
@@ -109,6 +112,37 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: TSizes.spaceBtwInputFields),
+
+                    /// Gender
+                    DropdownButtonFormField<String>(
+                      value: _genderEditingController.text.isEmpty
+                          ? null
+                          : _genderEditingController.text,
+                      decoration: InputDecoration(
+                        labelText: appLocalizations.gender,
+                        prefixIcon: Icon(Iconsax.profile_circle),
+                      ),
+                      items: [
+                        DropdownMenuItem(
+                          value: 'male',
+                          child: Text(appLocalizations.male),
+                        ),
+                        DropdownMenuItem(
+                          value: 'female',
+                          child: Text(appLocalizations.female),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        _genderEditingController.text = value ?? '';
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return appLocalizations.pleaseSelectGender; // your existing message
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: TSizes.spaceBtwInputFields),
 
@@ -214,6 +248,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                           addIfChanged('first_name', _firstNameEditingController.text.trim(), instructor?.firstName);
                           addIfChanged('last_name', _lastNameEditingController.text.trim(), instructor?.lastName);
+                          addIfChanged('gender', _genderEditingController.text.trim(), instructor?.gender);
                           addIfChanged('dob', _dateOfBirthEditingController.text.trim(), instructor?.dob);
                           addIfChanged('phone_number', _phoneNumberEditingController.text.trim(), instructor?.phoneNumber);
 

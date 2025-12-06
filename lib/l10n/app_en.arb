@@ -204,5 +204,12 @@
         "example": "John Doe"
       }
     }
-  }
+  },
+  "maxStripes": "Stripes Needed",
+  "addAchievemnt": "Add Achievement",
+  "gender": "Gender",
+  "male": "Male",
+  "female": "Female",
+  "pleaseSelectGender": "Please select your gender",
+  "search": "Search"
 }

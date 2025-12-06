@@ -43,6 +43,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
   late TabController _tabController;
   late List<Student> myAttendanceStudents;
   Map<String, dynamic>? todaySchedule;
+  bool extraSession = false;
   bool isEditing = false;
   bool hasChanges = false;
   bool isLoading = false;
@@ -70,34 +71,6 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
     final classItem = widget.isAssistant
         ? instructorClassService.assistantClasses.firstWhereOrNull((cl) => cl.id == widget.classId)
         : instructorClassService.ownerClasses.firstWhereOrNull((cl) => cl.id == widget.classId);
-
-    /// Only set schedule once (don’t reset in every build)
-    if (todaySchedule == null) {
-      final today = DateTime.now();
-      const weekdayNames = [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Sunday',
-      ];
-      final todayName = weekdayNames[today.weekday - 1];
-
-      todaySchedule = classItem?.schedule?.firstWhere(
-            (s) => s['day'] == todayName,
-        orElse: () => <String, String>{},
-      );
-
-      if (todaySchedule!.isEmpty) {
-        todaySchedule = null;
-      } else {
-        myAttendanceStudents = _classStudentService.myStudents
-            .where((s) => !s.hasAttendanceToday)
-            .toList();
-      }
-    }
   }
 
   @override
@@ -535,9 +508,31 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
   Widget _buildAttendanceTab(classItem, appLocalizations, classStudentService) {
     final today = DateTime.now();
     const weekdayNames = [
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
     ];
     final todayName = weekdayNames[today.weekday - 1];
+
+    if (! extraSession) {
+      todaySchedule = classItem?.schedule?.firstWhere(
+            (s) => s['day'] == todayName,
+        orElse: () => <String, String>{},
+      );
+
+      if (todaySchedule!.isEmpty) {
+        todaySchedule = null;
+        myAttendanceStudents = [];
+      } else {
+        myAttendanceStudents = _classStudentService.myStudents
+            .where((s) => !s.hasAttendanceToday && s.isActive == true)
+            .toList();
+      }
+    }
 
     if (todaySchedule == null) {
       return Card(
@@ -598,8 +593,9 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                       };
 
                       setState(() {
+                        extraSession = true;
                         myAttendanceStudents = _classStudentService.myStudents
-                            .where((s) => !s.hasAttendanceToday)
+                            .where((s) => !s.hasAttendanceToday && s.isActive == true)
                             .toList();
                         todaySchedule = newSchedule;
                       });
@@ -743,6 +739,11 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                                   ),
                                 ),
                                 Chip(
+                                  label: Text("${belt.maxStripes} ${appLocalizations.maxStripes}",
+                                    style: const TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                                Chip(
                                   label: Text(
                                     "${belt.classesPerBeltOrStripe} ${appLocalizations.classesPerBeltOrStripe}",
                                     style: const TextStyle(fontWeight: FontWeight.w500),
@@ -874,7 +875,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
               ]
             ]
           ]),
-        const SizedBox(height: 16),
+        const SizedBox(height: TSizes.lg),
       ],
     );
   }

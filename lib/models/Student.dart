@@ -7,6 +7,7 @@ class Student {
   late String? userId;
   final String? firstName;
   final String? lastName;
+  final String? gender;
   final String? username;
   final String? dob;
   final int? weight;
@@ -27,6 +28,7 @@ class Student {
     this.userId,
     this.firstName,
     this.lastName,
+    this.gender,
     this.username,
     this.dob,
     this.weight,
@@ -58,6 +60,7 @@ class Student {
       userId: id,
       firstName: map['first_name'] ?? '',
       lastName: map['last_name'] ?? '',
+      gender: map['gender'] ?? '',
       username: map['username'] ?? '',
       dob: map['dob'] ?? '',
       weight: THelperFunctions.parseInt(map['weight']),
@@ -79,6 +82,7 @@ class Student {
       'user_id': userId,
       'first_name': firstName,
       'last_name': lastName,
+      'gender': gender,
       'username': username,
       'dob': dob,
       'weight': weight,
@@ -99,6 +103,7 @@ class Student {
       userId: updateData['user_id'] ?? userId,
       firstName: updateData['first_name'] ?? firstName,
       lastName: updateData['last_name'] ?? lastName,
+      gender: updateData['gender'] ?? gender,
       username: updateData['username'] ?? username,
       dob: updateData['dob'] ?? dob,
       weight: updateData['weight'] ?? weight,

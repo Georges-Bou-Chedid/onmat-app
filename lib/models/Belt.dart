@@ -7,6 +7,7 @@ class Belt {
   final Color beltColor1;
   final Color? beltColor2;
   final int classesPerBeltOrStripe;
+  final int maxStripes;
   late int priority;
 
   Belt({
@@ -16,6 +17,7 @@ class Belt {
     required this.beltColor1,
     this.beltColor2,
     required this.classesPerBeltOrStripe,
+    required this.maxStripes,
     required this.priority
   });
 
@@ -28,6 +30,7 @@ class Belt {
       beltColor1: beltColor1,
       beltColor2: beltColor2,
       classesPerBeltOrStripe: classesPerBeltOrStripe,
+      maxStripes: maxStripes,
       priority: priority,
     );
   }

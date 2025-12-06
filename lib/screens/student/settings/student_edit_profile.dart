@@ -6,7 +6,6 @@ import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:onmat/controllers/student/student.dart';
 import 'package:provider/provider.dart';
 import '../../../common/styles/spacing_styles.dart';
-import '../../../controllers/instructor/instructor.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/helpers/helper_functions.dart';
@@ -22,6 +21,7 @@ class _StudentEditProfilePageState extends State<StudentEditProfilePage> {
   final GlobalKey<FormState> editProfileKey = GlobalKey<FormState>();
   final TextEditingController _firstNameEditingController = TextEditingController();
   final TextEditingController _lastNameEditingController = TextEditingController();
+  final TextEditingController _genderEditingController = TextEditingController();
   final TextEditingController _usernameEditingController = TextEditingController();
   final TextEditingController _dateOfBirthEditingController = TextEditingController();
   final TextEditingController _weightEditingController = TextEditingController();
@@ -39,6 +39,7 @@ class _StudentEditProfilePageState extends State<StudentEditProfilePage> {
     if (student != null) {
       _firstNameEditingController.text   = student.firstName ?? '';
       _lastNameEditingController.text    = student.lastName ?? '';
+      _genderEditingController.text      = student.gender ?? '';
       _usernameEditingController.text    = student.username ?? '';
       _dateOfBirthEditingController.text = student.dob ?? '';
       _weightEditingController.text      = student.weight?.toString() ?? '';
@@ -52,6 +53,7 @@ class _StudentEditProfilePageState extends State<StudentEditProfilePage> {
   void dispose() {
     _firstNameEditingController.dispose();
     _lastNameEditingController.dispose();
+    _genderEditingController.dispose();
     _usernameEditingController.dispose();
     _dateOfBirthEditingController.dispose();
     _weightEditingController.dispose();
@@ -116,6 +118,37 @@ class _StudentEditProfilePageState extends State<StudentEditProfilePage> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: TSizes.spaceBtwInputFields),
+
+                    /// Gender
+                    DropdownButtonFormField<String>(
+                      value: _genderEditingController.text.isEmpty
+                          ? null
+                          : _genderEditingController.text,
+                      decoration: InputDecoration(
+                        labelText: appLocalizations.gender,
+                        prefixIcon: Icon(Iconsax.profile_circle),
+                      ),
+                      items: [
+                        DropdownMenuItem(
+                          value: 'male',
+                          child: Text(appLocalizations.male),
+                        ),
+                        DropdownMenuItem(
+                          value: 'female',
+                          child: Text(appLocalizations.female),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        _genderEditingController.text = value ?? '';
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return appLocalizations.pleaseSelectGender; // your existing message
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: TSizes.spaceBtwInputFields),
 
@@ -256,6 +289,7 @@ class _StudentEditProfilePageState extends State<StudentEditProfilePage> {
 
                           addIfChanged('first_name', _firstNameEditingController.text.trim(), student?.firstName);
                           addIfChanged('last_name', _lastNameEditingController.text.trim(), student?.lastName);
+                          addIfChanged('gender', _genderEditingController.text.trim(), student?.gender);
                           addIfChanged('dob', _dateOfBirthEditingController.text.trim(), student?.dob);
                           addIfChanged('weight', int.tryParse(_weightEditingController.text), student?.weight);
                           addIfChanged('height', int.tryParse(_heightEditingController.text), student?.height);

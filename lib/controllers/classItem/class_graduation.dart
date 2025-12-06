@@ -33,6 +33,7 @@ class ClassGraduationService with ChangeNotifier {
           beltColor1: Belt.getColorFromName(data['beltColor1']),
           beltColor2: data['beltColor2'] != null ? Belt.getColorFromName(data['beltColor2']) : null,
           classesPerBeltOrStripe: data['classesPerStripe'],
+          maxStripes: data['maxStripes'],
           priority: data['priority'] ?? 0,
         );
       }).toList();
@@ -114,6 +115,7 @@ class ClassGraduationService with ChangeNotifier {
               ? Belt.getColorName(belt.beltColor2!)
               : null,
           "classesPerStripe": belt.classesPerBeltOrStripe,
+          "maxStripes": belt.maxStripes,
           "priority": belt.priority,
           "created_at": FieldValue.serverTimestamp(),
         });

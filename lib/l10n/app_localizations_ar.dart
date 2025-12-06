@@ -600,4 +600,25 @@ class AppLocalizationsAr extends AppLocalizations {
   String removeFromClassText(String studentName) {
     return 'Are you sure you want to remove $studentName? This action cannot be undone.';
   }
+
+  @override
+  String get maxStripes => 'Stripes Needed';
+
+  @override
+  String get addAchievemnt => 'Add Achievement';
+
+  @override
+  String get gender => 'Gender';
+
+  @override
+  String get male => 'Male';
+
+  @override
+  String get female => 'Female';
+
+  @override
+  String get pleaseSelectGender => 'Please select your gender';
+
+  @override
+  String get search => 'Search';
 }

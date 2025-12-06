@@ -385,6 +385,11 @@ class _AddClassScreenState extends State<AddClassScreen> {
                                                 ],
                                               ),
                                               Chip(
+                                                label: Text("${belt.maxStripes} ${appLocalizations.maxStripes}",
+                                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                                ),
+                                              ),
+                                              Chip(
                                                 label: Text(
                                                   "${belt.classesPerBeltOrStripe} ${appLocalizations.classesPerBeltOrStripe}",
                                                   style: const TextStyle(fontWeight: FontWeight.w500),

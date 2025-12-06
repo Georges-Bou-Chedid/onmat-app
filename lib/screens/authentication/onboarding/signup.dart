@@ -27,6 +27,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
   final GlobalKey<FormState> signUpKey = GlobalKey<FormState>();
   final TextEditingController _firstNameEditingController = TextEditingController();
   final TextEditingController _lastNameEditingController = TextEditingController();
+  final TextEditingController _genderEditingController = TextEditingController();
   final TextEditingController _usernameEditingController = TextEditingController();
   final TextEditingController _dateOfBirthEditingController = TextEditingController();
   final TextEditingController _weightEditingController = TextEditingController();
@@ -118,6 +119,37 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: TSizes.spaceBtwInputFields),
+
+                    /// Gender
+                    DropdownButtonFormField<String>(
+                      value: _genderEditingController.text.isEmpty
+                          ? null
+                          : _genderEditingController.text,
+                      decoration: InputDecoration(
+                        labelText: appLocalizations.gender,
+                        prefixIcon: Icon(Iconsax.profile_circle),
+                      ),
+                      items: [
+                        DropdownMenuItem(
+                          value: 'male',
+                          child: Text(appLocalizations.male),
+                        ),
+                        DropdownMenuItem(
+                          value: 'female',
+                          child: Text(appLocalizations.female),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        _genderEditingController.text = value ?? '';
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return appLocalizations.pleaseSelectGender; // your existing message
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: TSizes.spaceBtwInputFields),
 
@@ -380,6 +412,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                             instructor = Instructor(
                                 firstName: _firstNameEditingController.text,
                                 lastName: _lastNameEditingController.text,
+                                gender: _genderEditingController.text,
                                 username: _usernameEditingController.text,
                                 dob: _dateOfBirthEditingController.text,
                                 email: _emailEditingController.text,
@@ -390,6 +423,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                             student = Student(
                                 firstName: _firstNameEditingController.text,
                                 lastName: _lastNameEditingController.text,
+                                gender: _genderEditingController.text,
                                 username: _usernameEditingController.text,
                                 dob: _dateOfBirthEditingController.text,
                                 weight: int.tryParse(_weightEditingController.text),
@@ -515,6 +549,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                             instructor = Instructor(
                                 firstName: _firstNameEditingController.text,
                                 lastName: _lastNameEditingController.text,
+                                gender: _genderEditingController.text,
                                 username: _usernameEditingController.text,
                                 dob: _dateOfBirthEditingController.text,
                                 phoneNumber: _phoneNumberEditingController.text,
@@ -524,6 +559,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                             student = Student(
                                 firstName: _firstNameEditingController.text,
                                 lastName: _lastNameEditingController.text,
+                                gender: _genderEditingController.text,
                                 username: _usernameEditingController.text,
                                 dob: _dateOfBirthEditingController.text,
                                 weight: int.tryParse(_weightEditingController.text),

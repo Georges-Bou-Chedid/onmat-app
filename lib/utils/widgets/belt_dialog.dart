@@ -26,6 +26,7 @@ class BeltDialog extends StatefulWidget {
 class _BeltDialogState extends State<BeltDialog> {
   late RangeValues ageRange;
   late TextEditingController classesController;
+  late TextEditingController maxStripesController;
   late Color selectedColor;
   Color? selectedColor2;
 
@@ -35,11 +36,13 @@ class _BeltDialogState extends State<BeltDialog> {
     if (widget.beltToEdit != null) {
       ageRange = RangeValues(widget.beltToEdit!.minAge.toDouble(), widget.beltToEdit!.maxAge.toDouble());
       classesController = TextEditingController(text: widget.beltToEdit!.classesPerBeltOrStripe.toString());
+      maxStripesController = TextEditingController(text: widget.beltToEdit!.maxStripes.toString());
       selectedColor = widget.beltToEdit!.beltColor1;
       selectedColor2 = widget.beltToEdit!.beltColor2;
     } else {
       ageRange = const RangeValues(5, 15);
       classesController = TextEditingController();
+      maxStripesController = TextEditingController(text: "0");
       selectedColor = Colors.white;
       selectedColor2 = null;
     }
@@ -49,6 +52,7 @@ class _BeltDialogState extends State<BeltDialog> {
   @override
   void dispose() {
     classesController.dispose();
+    maxStripesController.dispose();
     super.dispose();
   }
 
@@ -85,11 +89,19 @@ class _BeltDialogState extends State<BeltDialog> {
 
             const SizedBox(height: TSizes.inputFieldRadius),
 
-            /// Classes per Stripe
+            /// Classes per BeltOrStripe
             TextField(
               controller: classesController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(labelText: appLocalizations.classesPerBeltOrStripe),
+            ),
+
+            const SizedBox(height: TSizes.inputFieldRadius),
+
+            TextField(
+              controller: maxStripesController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: appLocalizations.maxStripes),
             ),
 
             const SizedBox(height: TSizes.inputFieldRadius),
@@ -226,6 +238,7 @@ class _BeltDialogState extends State<BeltDialog> {
             final minAge = ageRange.start.round();
             final maxAge = ageRange.end.round();
             final classes = int.tryParse(classesController.text.trim());
+            final maxStripes = int.tryParse(maxStripesController.text.trim());
 
             if (classes != null) {
               final newBelt = Belt(
@@ -235,6 +248,7 @@ class _BeltDialogState extends State<BeltDialog> {
                 beltColor1: selectedColor,
                 beltColor2: selectedColor2,
                 classesPerBeltOrStripe: classes,
+                maxStripes: maxStripes ?? 0,
                 priority: widget.beltToEdit != null
                     ? widget.beltToEdit!.priority
                     : widget.existingBelts.length + 1,

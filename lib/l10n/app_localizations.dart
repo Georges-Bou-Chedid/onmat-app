@@ -1276,6 +1276,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to remove {studentName}? This action cannot be undone.'**
   String removeFromClassText(String studentName);
+
+  /// No description provided for @maxStripes.
+  ///
+  /// In en, this message translates to:
+  /// **'Stripes Needed'**
+  String get maxStripes;
+
+  /// No description provided for @addAchievemnt.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Achievement'**
+  String get addAchievemnt;
+
+  /// No description provided for @gender.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get gender;
+
+  /// No description provided for @male.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get male;
+
+  /// No description provided for @female.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get female;
+
+  /// No description provided for @pleaseSelectGender.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select your gender'**
+  String get pleaseSelectGender;
+
+  /// No description provided for @search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get search;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

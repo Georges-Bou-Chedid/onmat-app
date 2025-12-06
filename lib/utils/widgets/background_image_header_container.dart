@@ -21,6 +21,10 @@ class TBackgroundImageHeaderContainer extends StatelessWidget {
             image: AssetImage(image),
             fit: BoxFit.cover,
             alignment: Alignment.center,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.5),
+              BlendMode.darken, // or BlendMode.srcATop
+            ),
           ),
         ),
         child: child,

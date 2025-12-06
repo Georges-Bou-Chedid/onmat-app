@@ -4,6 +4,7 @@ import 'package:onmat/screens/instructor/settings/settings.dart';
 
 import '../../l10n/app_localizations.dart';
 import 'dashboard/dashboard.dart';
+import 'dashboard/global_search.dart';
 
 class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
@@ -18,6 +19,7 @@ class _StartScreenState extends State<StartScreen> {
 
   final List<Widget> _pages = const [
     DashboardScreen(),
+    GlobalStudentSearchScreen(),
     SettingsScreen(),
   ];
 
@@ -39,6 +41,10 @@ class _StartScreenState extends State<StartScreen> {
           BottomNavigationBarItem(
             icon: Icon(Iconsax.home),
             label: appLocalizations.dashboard,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Iconsax.global),
+            label: appLocalizations.search,
           ),
           BottomNavigationBarItem(
             icon: Icon(Iconsax.user_octagon),
