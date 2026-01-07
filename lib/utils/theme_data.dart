@@ -118,11 +118,7 @@ ThemeData darkTheme() {
     ),
     dialogTheme: DialogThemeData(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-            color: Color(0xFF1E1E1E).withOpacity(0.7),
-            width: 2
-        ),
+        borderRadius: BorderRadius.circular(20)
       ),
       backgroundColor: Color(0xFF1E1E1E),
       elevation: 0,
@@ -286,11 +282,7 @@ ThemeData lightTheme() {
     ),
     dialogTheme: DialogThemeData(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-            color: Color(0xFF1E1E1E).withOpacity(0.7),
-            width: 2
-        ),
+        borderRadius: BorderRadius.circular(20)
       ),
       backgroundColor: Colors.white,
       elevation: 0,

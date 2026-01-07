@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/Student.dart';
+import '../../models/Belt.dart';
 
 class GlobalStudentSearchService extends ChangeNotifier {
   List<Student> allStudents = [];
@@ -28,19 +29,86 @@ class GlobalStudentSearchService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void applyFilters({String? query, String? gender, String? classType, String? belt, RangeValues? ageRange}) {
-    filtered = allStudents.where((s) {
-      if (query != null && query.isNotEmpty) {
-        final q = query.toLowerCase();
-        if (!(s.firstName!.toLowerCase().contains(q) || s.email!.toLowerCase().contains(q))) return false;
+  /// Calculate age from DOB string (format: dd/MM/yyyy)
+  int calculateAge(String? dobString) {
+    if (dobString == null || dobString.isEmpty) return 0;
+
+    try {
+      final parts = dobString.split('/');
+      if (parts.length != 3) return 0;
+
+      final day = int.parse(parts[0]);
+      final month = int.parse(parts[1]);
+      final year = int.parse(parts[2]);
+
+      final birthDate = DateTime(year, month, day);
+      final today = DateTime.now();
+
+      int age = today.year - birthDate.year;
+
+      if (today.month < birthDate.month ||
+          (today.month == birthDate.month && today.day < birthDate.day)) {
+        age--;
       }
 
-      if (gender != null && s.gender != gender) return false;
-      // if (classType != null && !s.classTypes.contains(classType)) return false;
-      // if (belt != null && s.belt != belt) return false;
+      return age;
+    } catch (e) {
+      return 0;
+    }
+  }
 
+  void applyFilters({
+    String? query,
+    String? gender,
+    String? classType,
+    Color? belt1Color,
+    Color? belt2Color,
+    RangeValues? ageRange,
+  }) {
+    filtered = allStudents.where((s) {
+      // Text search (name or email)
+      if (query != null && query.isNotEmpty) {
+        final q = query.toLowerCase();
+        final firstName = s.firstName?.toLowerCase() ?? '';
+        final lastName = s.lastName?.toLowerCase() ?? '';
+        final email = s.email?.toLowerCase() ?? '';
+
+        if (!(firstName.contains(q) || lastName.contains(q) || email.contains(q))) {
+          return false;
+        }
+      }
+
+      // Gender filter
+      if (gender != null && gender.isNotEmpty) {
+        if (s.gender?.toLowerCase() != gender.toLowerCase()) return false;
+      }
+
+      // Class type filter (assuming student has classTypes field)
+      // Adjust this based on your actual Student model structure
+      if (classType != null && classType.isNotEmpty) {
+        // If your Student has a classType field (string):
+        // if (s.classType?.toLowerCase() != classType.toLowerCase()) return false;
+
+        // If your Student has a classTypes field (list):
+        // if (s.classTypes == null || !s.classTypes!.any((ct) => ct.toLowerCase() == classType.toLowerCase())) return false;
+      }
+
+      // Belt 1 filter (primary belt color)
+      if (belt1Color != null) {
+        if (s.belt1 == null || s.belt1!.value != belt1Color.value) return false;
+      }
+
+      // Belt 2 filter (secondary belt color)
+      if (belt2Color != null) {
+        if (s.belt2 == null || s.belt2!.value != belt2Color.value) return false;
+      }
+
+      // Age range filter
       if (ageRange != null) {
-        // if (s.age < ageRange.start || s.age > ageRange.end) return false;
+        final studentAge = calculateAge(s.dob);
+        if (studentAge < ageRange.start.round() || studentAge > ageRange.end.round()) {
+          return false;
+        }
       }
 
       return true;
@@ -54,6 +122,7 @@ class GlobalStudentSearchService extends ChangeNotifier {
   List<Student> get paginatedResults {
     final start = page * pageSize;
     final end = (start + pageSize).clamp(0, filtered.length);
+    if (start >= filtered.length) return [];
     return filtered.sublist(start, end);
   }
 
@@ -62,17 +131,26 @@ class GlobalStudentSearchService extends ChangeNotifier {
   int get pageStart => filtered.isEmpty ? 0 : (page * pageSize) + 1;
   int get pageEnd => ((page + 1) * pageSize).clamp(0, total);
 
+  bool get canGoNext => (page + 1) * pageSize < filtered.length;
+  bool get canGoPrevious => page > 0;
+
   void nextPage() {
-    if ((page + 1) * pageSize < filtered.length) {
+    if (canGoNext) {
       page++;
       notifyListeners();
     }
   }
 
   void previousPage() {
-    if (page > 0) {
+    if (canGoPrevious) {
       page--;
       notifyListeners();
     }
+  }
+
+  void resetFilters() {
+    filtered = allStudents;
+    page = 0;
+    notifyListeners();
   }
 }

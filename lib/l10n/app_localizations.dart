@@ -719,11 +719,17 @@ abstract class AppLocalizations {
   /// **'Dashboard'**
   String get dashboard;
 
-  /// No description provided for @myClasses.
+  /// No description provided for @classes.
   ///
   /// In en, this message translates to:
-  /// **'My Classes'**
-  String get myClasses;
+  /// **'Classes'**
+  String get classes;
+
+  /// No description provided for @findYourClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'Find your classes'**
+  String get findYourClasses;
 
   /// No description provided for @addClass.
   ///
@@ -1318,6 +1324,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search'**
   String get search;
+
+  /// No description provided for @globalSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Global Search'**
+  String get globalSearch;
+
+  /// No description provided for @findStudents.
+  ///
+  /// In en, this message translates to:
+  /// **'Find students across all classes'**
+  String get findStudents;
+
+  /// No description provided for @searchByNameOrEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name or email'**
+  String get searchByNameOrEmail;
+
+  /// No description provided for @hide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get hide;
+
+  /// No description provided for @show.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get show;
+
+  /// No description provided for @filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filters;
+
+  /// No description provided for @found.
+  ///
+  /// In en, this message translates to:
+  /// **'Found'**
+  String get found;
+
+  /// No description provided for @st.
+  ///
+  /// In en, this message translates to:
+  /// **'student(s)'**
+  String get st;
+
+  /// No description provided for @clearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All'**
+  String get clearAll;
+
+  /// No description provided for @cl.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get cl;
+
+  /// No description provided for @primaryBelt.
+  ///
+  /// In en, this message translates to:
+  /// **'Primary Belt'**
+  String get primaryBelt;
+
+  /// No description provided for @secondaryBelt.
+  ///
+  /// In en, this message translates to:
+  /// **'Secondary Belt'**
+  String get secondaryBelt;
+
+  /// No description provided for @applyFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Filters'**
+  String get applyFilters;
+
+  /// No description provided for @select.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get select;
+
+  /// No description provided for @changePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Photo'**
+  String get changePhoto;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

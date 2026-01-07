@@ -321,7 +321,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboard => 'Dashboard';
 
   @override
-  String get myClasses => 'My Classes';
+  String get classes => 'Classes';
+
+  @override
+  String get findYourClasses => 'Find your classes';
 
   @override
   String get addClass => 'Add Class';
@@ -621,4 +624,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get search => 'Search';
+
+  @override
+  String get globalSearch => 'Global Search';
+
+  @override
+  String get findStudents => 'Find students across all classes';
+
+  @override
+  String get searchByNameOrEmail => 'Search by name or email';
+
+  @override
+  String get hide => 'Hide';
+
+  @override
+  String get show => 'Show';
+
+  @override
+  String get filters => 'Filters';
+
+  @override
+  String get found => 'Found';
+
+  @override
+  String get st => 'student(s)';
+
+  @override
+  String get clearAll => 'Clear All';
+
+  @override
+  String get cl => 'Class';
+
+  @override
+  String get primaryBelt => 'Primary Belt';
+
+  @override
+  String get secondaryBelt => 'Secondary Belt';
+
+  @override
+  String get applyFilters => 'Apply Filters';
+
+  @override
+  String get select => 'Select';
+
+  @override
+  String get changePhoto => 'Change Photo';
 }

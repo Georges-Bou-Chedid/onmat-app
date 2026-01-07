@@ -2,19 +2,24 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
+
+// Student Specific Imports
 import 'package:onmat/controllers/student/class_student.dart';
 import 'package:onmat/screens/student/dashboard/student_class_details.dart';
 import 'package:onmat/screens/student/dashboard/student_scan_qr_code.dart';
-import 'package:provider/provider.dart';
-
 import '../../../controllers/classItem/class_graduation.dart';
 import '../../../controllers/instructor/class_assistant.dart';
 import '../../../controllers/instructor/instructor_class.dart';
 import '../../../controllers/student/student.dart';
 import '../../../controllers/student/student_class.dart';
+
+// Utils & Helpers
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
+import '../../../utils/helpers/helper_functions.dart';
 import '../../../utils/widgets/background_image_header_container.dart';
+import '../settings/student_settings.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -23,12 +28,15 @@ class StudentDashboardScreen extends StatefulWidget {
   _StudentDashboardScreenState createState() => _StudentDashboardScreenState();
 }
 
-class _StudentDashboardScreenState extends State<StudentDashboardScreen> with SingleTickerProviderStateMixin {
+class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   final TextEditingController _searchController = TextEditingController();
   late AppLocalizations appLocalizations;
   late FocusNode _searchFocusNode;
   bool _isLoading = false;
   String _searchQuery = '';
+
+  // BRAND COLOR TO MATCH COACH DASHBOARD
+  final Color primaryBrandColor = const Color(0xFFDF1E42);
 
   late StudentClassService _studentClassService;
 
@@ -56,7 +64,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> with Si
   @override
   void dispose() {
     _studentClassService.cancelListener();
-
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
@@ -67,213 +74,107 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> with Si
     final studentService = Provider.of<StudentService>(context, listen: false);
     final classStudentService = Provider.of<ClassStudentService>(context, listen: false);
     final studentClassService = Provider.of<StudentClassService>(context, listen: true);
+    appLocalizations = AppLocalizations.of(context)!;
+    final dark = THelperFunctions.isDarkMode(context);
+
+    // Filtering logic matching the Coach Dashboard style
     final filtered = studentClassService.classes.where((cl) {
       final query = _searchQuery.trim().toLowerCase();
-      return cl.className?.toLowerCase().contains(query) == true ||
-          cl.classType?.toLowerCase().contains(query) == true ||
-          cl.location?.toLowerCase().contains(query) == true;
+      return (cl.className?.toLowerCase().contains(query) ?? false) ||
+          (cl.location?.toLowerCase().contains(query) ?? false) ||
+          (cl.classType?.toLowerCase().contains(query) ?? false);
     }).toList();
-    appLocalizations = AppLocalizations.of(context)!;
 
     return GestureDetector(
       onTap: () => _searchFocusNode.unfocus(),
       child: Scaffold(
+        // MODERN SCAN BUTTON: Matching the "Add Class" button style
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _handleQrScan(classStudentService, studentService),
+          backgroundColor: primaryBrandColor,
+          elevation: 4,
+          icon: const Icon(Iconsax.scan_barcode, color: Colors.white),
+          label: Text(
+            appLocalizations.scanQr,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ),
         body: SingleChildScrollView(
           child: Column(
             children: [
-              /// Header
+              /// Cleaned Header (Synced with Coach design)
               TBackgroundImageHeaderContainer(
                 image: 'assets/images/dashboard_background.jpg',
                 child: Column(
                   children: [
+                    const SizedBox(height: TSizes.sm),
                     Container(
-                      height: 150,
-                      padding: const EdgeInsets.only(top: TSizes.defaultSpace, left: 20, right: 20),
-                      alignment: Alignment.centerLeft,
-                      child: Image.asset(
-                        'assets/images/logo-white.png',
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.contain,
+                      height: 100,
+                      padding: const EdgeInsets.all(TSizes.defaultSpace),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/images/logo-white.png', height: 45),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: GestureDetector(
+                              onTap: () => Get.to(() => const StudentSettingsScreen()), // Or StudentSettingsPage
+                              child: const CircleAvatar(
+                                radius: 18,
+                                backgroundColor: Colors.white24,
+                                child: Icon(Iconsax.user, color: Colors.white, size: 20),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    ListTile(
-                      title: Text(
-                        appLocalizations.myClasses,
-                        style: Theme.of(context).textTheme.headlineSmall!.apply(color: Colors.white),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: ListTile(
+                        title: Text(
+                          appLocalizations.classes,
+                          style: Theme.of(context).textTheme.headlineSmall!.apply(color: Colors.white),
+                        ),
+                        subtitle: Text(
+                          appLocalizations.findYourClasses,
+                          style: Theme.of(context).textTheme.bodySmall!.apply(color: Colors.white70),
+                        ),
                       ),
-                      trailing: ElevatedButton.icon(
-                        onPressed: () async {
-                          _searchFocusNode.unfocus();
-                          final scannedData = await Get.to(
-                                () => const StudentScanQrScreen(),
-                            transition: Transition.downToUp,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-
-                          if (scannedData != null) {
-                            final success = await classStudentService.addStudentToClass(
-                                scannedData,
-                                FirebaseAuth.instance.currentUser!.uid,
-                                studentService.student!
-                            );
-
-                            if (success) {
-                              Get.snackbar(
-                                appLocalizations.success,
-                                appLocalizations.requestToJoinClass,
-                                snackPosition: SnackPosition.BOTTOM,
-                              );
-                            } else {
-                              Get.snackbar(
-                                appLocalizations.error,
-                                appLocalizations.errorMessage,
-                                snackPosition: SnackPosition.BOTTOM,
-                              );
-                            }
-                          }
-                        },
-                        icon: const Icon(Iconsax.scan_barcode, color: Colors.white),
-                        label: Text(
-                          appLocalizations.scanQr,
-                          style: Theme.of(context).textTheme.bodyMedium!.apply(color: Colors.white),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                      )
                     ),
                     const SizedBox(height: TSizes.appBarHeight),
                   ],
                 ),
               ),
 
-              /// Search + Tabs + Class Lists
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: TSizes.md),
                 child: Column(
                   children: [
-                    /// Search Bar
+                    /// Modern Search Bar (Synced design)
                     TextField(
                       controller: _searchController,
                       focusNode: _searchFocusNode,
                       decoration: InputDecoration(
                         hintText: appLocalizations.searchClasses,
                         prefixIcon: const Icon(Iconsax.search_normal),
+                        filled: true,
+                        fillColor: dark ? Colors.grey[900] : Colors.grey[100],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
-                      onChanged: (value) {
-                        setState(() {
-                          _searchQuery = value;
-                        });
-                      },
+                      onChanged: (value) => setState(() => _searchQuery = value),
                     ),
                     const SizedBox(height: TSizes.spaceBtwSections),
 
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.6,
-                      child: filtered.isEmpty
-                        ? Center(
-                          child: Text(
-                            appLocalizations.noClassesFound,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ) : _isLoading
-                        ? Center(
-                            child: SizedBox(
-                              height: TSizes.lg,
-                              width: TSizes.lg,
-                              child: CircularProgressIndicator(),
-                            ),
-                        )
-                        : ListView.builder(
-                          itemCount: filtered.length,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          padding: EdgeInsets.zero,
-                          itemBuilder: (context, index) {
-                          final classItem = filtered[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: TSizes.spaceBtwItems),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.md)),
-                            elevation: 4,
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                              leading: CircleAvatar(
-                                backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                                child: Icon(Icons.sports_martial_arts, color: Theme.of(context).primaryColor),
-                              ),
-                              title: Text(
-                                classItem.className ?? '',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: TSizes.xs),
-                                  Row(
-                                    children: [
-                                      Icon(Iconsax.tag, size: TSizes.md, color: Colors.grey),
-                                      const SizedBox(width: TSizes.xs),
-                                      Text(classItem.classType ?? ''),
-                                    ],
-                                  ),
-                                  const SizedBox(height: TSizes.xs),
-                                  Row(
-                                    children: [
-                                      Icon(Iconsax.location, size: TSizes.md, color: Colors.grey),
-                                      const SizedBox(width: TSizes.xs),
-                                      Text('${classItem.location}, ${classItem.country}'),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              trailing: const Icon(Iconsax.arrow_21, size: TSizes.md),
-                              onTap: () async {
-                                _searchFocusNode.unfocus();
-                      
-                                // Show loading
-                                showDialog(
-                                  context: context,
-                                  barrierDismissible: false,
-                                  builder: (_) => const Center(
-                                    child: SizedBox(
-                                      height: TSizes.lg,
-                                      width: TSizes.lg,
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  ),
-                                );
-
-                                /// Fetch Owner
-                                final instructorClassService = Provider.of<InstructorClassService>(context, listen: false);
-                                await instructorClassService.getClassOwner(classItem.ownerId);
-
-                                /// Fetch Assistants
-                                final classAssistantService = Provider.of<ClassAssistantService>(context, listen: false);
-                                classAssistantService.listenToClassAssistants(classItem.id);
-
-                                /// Fetch Graduation Belts
-                                final classGraduationService = Provider.of<ClassGraduationService>(context, listen: false);
-                                classGraduationService.listenToClassBelts(classItem.id);
-                      
-                                Get.back();
-                      
-                                Get.to(
-                                  () => StudentClassDetailsScreen(classId: classItem.id),
-                                  transition: Transition.rightToLeft,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    )
+                    /// DATA LIST
+                    _isLoading
+                        ? Center(child: CircularProgressIndicator(color: primaryBrandColor))
+                        : filtered.isEmpty
+                        ? _buildEmptyState()
+                        : _buildClassList(filtered),
                   ],
                 ),
               ),
@@ -282,5 +183,160 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> with Si
         ),
       ),
     );
+  }
+
+  /// Empty State Helper
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 80),
+      child: Column(
+        children: [
+          const Icon(Iconsax.box, size: 50, color: Colors.grey),
+          const SizedBox(height: 10),
+          Text(appLocalizations.noClassesFound, style: const TextStyle(color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+
+  /// Professional Class List with "Belt" Accent
+  Widget _buildClassList(List filtered) {
+    return ListView.builder(
+      itemCount: filtered.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 100), // Space for FAB
+      itemBuilder: (context, index) {
+        final classItem = filtered[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: TSizes.spaceBtwItems),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              )
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: IntrinsicHeight(
+              child: Row(
+                children: [
+                  // BRAND COLOR "BELT" ACCENT
+                  Container(width: 6, color: primaryBrandColor),
+                  Expanded(
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                      title: Text(
+                        classItem.className ?? '',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              const Icon(Iconsax.location, size: 14, color: Colors.grey),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${classItem.location}, ${classItem.country}',
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(Iconsax.category, size: 14, color: Colors.grey),
+                              const SizedBox(width: 4),
+                              Text(
+                                classItem.classType ?? '',
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      trailing: const Icon(Iconsax.arrow_right_3, size: 18, color: Colors.grey),
+                      onTap: () => _handleNavigation(classItem),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// QR Scan Logic with Navigation
+  Future<void> _handleQrScan(ClassStudentService classStudentService, StudentService studentService) async {
+    _searchFocusNode.unfocus();
+    final scannedData = await Get.to(
+          () => const StudentScanQrScreen(),
+      transition: Transition.downToUp,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    if (scannedData != null) {
+      final success = await classStudentService.addStudentToClass(
+          scannedData, FirebaseAuth.instance.currentUser!.uid, studentService.student!);
+
+      if (success) {
+        Get.snackbar(
+          appLocalizations.success,
+          appLocalizations.requestToJoinClass,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        Get.snackbar(
+          appLocalizations.error,
+          appLocalizations.errorMessage,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    }
+  }
+
+  /// Unified Loading & Navigation Logic
+  Future<void> _handleNavigation(dynamic classItem) async {
+    _searchFocusNode.unfocus();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final instructorClassService = Provider.of<InstructorClassService>(context, listen: false);
+      await instructorClassService.getClassOwner(classItem.ownerId);
+
+      final classAssistantService = Provider.of<ClassAssistantService>(context, listen: false);
+      classAssistantService.listenToClassAssistants(classItem.id);
+
+      final classGraduationService = Provider.of<ClassGraduationService>(context, listen: false);
+      classGraduationService.listenToClassBelts(classItem.id);
+
+      Get.back(); // Close loader
+
+      Get.to(
+            () => StudentClassDetailsScreen(classId: classItem.id),
+        transition: Transition.rightToLeft,
+        duration: const Duration(milliseconds: 300),
+      );
+    } catch (e) {
+      Get.back(); // Close loader
+    }
   }
 }
