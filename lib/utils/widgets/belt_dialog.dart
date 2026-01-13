@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:iconsax/iconsax.dart';
 import 'package:uuid/uuid.dart';
 import 'package:onmat/utils/constants/sizes.dart';
 
@@ -27,8 +25,20 @@ class _BeltDialogState extends State<BeltDialog> {
   late RangeValues ageRange;
   late TextEditingController classesController;
   late TextEditingController maxStripesController;
-  late Color selectedColor;
-  Color? selectedColor2;
+  late Color primaryBeltColor;
+  Color? secondaryBeltColor;
+
+  final Map<String, Color> beltColors = {
+    'White': Colors.white,
+    'Yellow': Colors.yellow,
+    'Orange': Colors.orange,
+    'Green': Colors.green,
+    'Blue': Colors.blue,
+    'Purple': Colors.purple,
+    'Brown': Colors.brown,
+    'Red': Colors.red,
+    'Black': Colors.black,
+  };
 
   @override
   void initState() {
@@ -37,14 +47,14 @@ class _BeltDialogState extends State<BeltDialog> {
       ageRange = RangeValues(widget.beltToEdit!.minAge.toDouble(), widget.beltToEdit!.maxAge.toDouble());
       classesController = TextEditingController(text: widget.beltToEdit!.classesPerBeltOrStripe.toString());
       maxStripesController = TextEditingController(text: widget.beltToEdit!.maxStripes.toString());
-      selectedColor = widget.beltToEdit!.beltColor1;
-      selectedColor2 = widget.beltToEdit!.beltColor2;
+      primaryBeltColor = widget.beltToEdit!.beltColor1;
+      secondaryBeltColor = widget.beltToEdit!.beltColor2;
     } else {
       ageRange = const RangeValues(5, 15);
       classesController = TextEditingController();
       maxStripesController = TextEditingController(text: "0");
-      selectedColor = Colors.white;
-      selectedColor2 = null;
+      primaryBeltColor = Colors.white;
+      secondaryBeltColor = null;
     }
   }
 
@@ -106,124 +116,9 @@ class _BeltDialogState extends State<BeltDialog> {
 
             const SizedBox(height: TSizes.inputFieldRadius),
 
-            /// Belt Color 1 Picker
-            Row(
-              children: [
-                Text(appLocalizations.beltColor),
-                const SizedBox(width: TSizes.sm),
-                GestureDetector(
-                    onTap: () async {
-                      final color = await showDialog<Color>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text(appLocalizations.pickBeltColor),
-                          content: Container(
-                            padding: EdgeInsets.all(TSizes.sm),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(TSizes.inputFieldRadius),
-                            ),
-                            child: BlockPicker(
-                              pickerColor: selectedColor,
-                              onColorChanged: (c) => Navigator.pop(context, c),
-                              availableColors: [
-                                Colors.white,
-                                Colors.grey,
-                                Colors.yellow,
-                                Colors.orange,
-                                Colors.green,
-                                Colors.blue,
-                                Colors.purple,
-                                Colors.brown,
-                                Colors.black,
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                      if (color != null) {
-                        setState(() => selectedColor = color);
-                      }
-                    },
-                    child: Container(
-                      width: 24,
-                      height: 35,
-                      decoration: BoxDecoration(
-                        color: selectedColor,
-                        border: Border.all(color: Colors.black, width: 1.5),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    )
-                ),
-              ],
-            ),
+            _buildBeltPicker(appLocalizations.primaryBelt, primaryBeltColor, (c) => setState(() => primaryBeltColor = c), appLocalizations),
             const SizedBox(height: TSizes.inputFieldRadius),
-
-            /// Belt Color 2 Picker
-            Row(
-              children: [
-                Text(appLocalizations.beltColor2),
-                const SizedBox(width: TSizes.sm),
-                GestureDetector(
-                  onTap: () async {
-                    final color = await showDialog<Color>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text(appLocalizations.pickBeltColor),
-                        content: Container(
-                          padding: EdgeInsets.all(TSizes.sm),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(TSizes.inputFieldRadius),
-                          ),
-                          child: BlockPicker(
-                            pickerColor: selectedColor2 ?? Colors.transparent,
-                            onColorChanged: (c) => Navigator.pop(context, c),
-                            availableColors: [
-                              Colors.white,
-                              Colors.grey,
-                              Colors.yellow,
-                              Colors.orange,
-                              Colors.green,
-                              Colors.blue,
-                              Colors.purple,
-                              Colors.brown,
-                              Colors.black,
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                    if (color != null) {
-                      setState(() => selectedColor2 = color);
-                    }
-                  },
-                  child: selectedColor2 != null
-                      ? Container(
-                    width: 24,
-                    height: 35,
-                    decoration: BoxDecoration(
-                      color: selectedColor2,
-                      border: Border.all(color: Colors.black, width: 1.5),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  )
-                      : Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.black,
-                        width: 1,
-                      ),
-                    ),
-                    child: CircleAvatar(
-                        backgroundColor: Colors.grey.shade300,
-                        child: Icon(Iconsax.add, color: Colors.black54)
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            _buildBeltPicker(appLocalizations.secondaryBelt, secondaryBeltColor, (c) => setState(() => secondaryBeltColor = c), appLocalizations),
             const SizedBox(height: TSizes.inputFieldRadius),
           ],
         ),
@@ -245,8 +140,8 @@ class _BeltDialogState extends State<BeltDialog> {
                 id: widget.beltToEdit?.id ?? Uuid().v4(), // Use existing ID for edit
                 minAge: minAge,
                 maxAge: maxAge,
-                beltColor1: selectedColor,
-                beltColor2: selectedColor2,
+                beltColor1: primaryBeltColor,
+                beltColor2: secondaryBeltColor,
                 classesPerBeltOrStripe: classes,
                 maxStripes: maxStripes ?? 0,
                 priority: widget.beltToEdit != null
@@ -267,6 +162,70 @@ class _BeltDialogState extends State<BeltDialog> {
           child: Text(appLocalizations.save),
         ),
       ],
+    );
+  }
+
+  Widget _buildBeltPicker(String label, Color? value, Function(Color) onSet, AppLocalizations appLocalizations) {
+    return InkWell(
+      onTap: () => _showBeltColorPicker(context, onSet),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(fontSize: 13), // Match label size
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10), // Match dropdown padding
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Pushes the arrow to the end
+          children: [
+            Row(
+              children: [
+                if (value != null)
+                  Container(
+                    width: 16,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: value,
+                      border: Border.all(width: 0.5, color: Colors.black),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                if (value != null) const SizedBox(width: 8),
+                Text(
+                  value == null ? appLocalizations.select : Belt.getColorName(value),
+                  // Sync this style exactly with the dropdown
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: value == null ? Colors.grey[600] : null,
+                  ),
+                ),
+              ],
+            ),
+            const Icon(Icons.arrow_drop_down, color: Colors.grey, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showBeltColorPicker(BuildContext context, Function(Color) onChanged) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Belt Color'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView(
+            shrinkWrap: true,
+            children: beltColors.entries.map((e) => ListTile(
+              leading: Container(width: 20, height: 20, color: e.value),
+              title: Text(e.key),
+              onTap: () { onChanged(e.value); Navigator.pop(context); },
+            )).toList(),
+          ),
+        ),
+      ),
     );
   }
 }

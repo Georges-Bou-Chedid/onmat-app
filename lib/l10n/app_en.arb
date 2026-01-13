@@ -227,5 +227,6 @@
   "secondaryBelt": "Secondary Belt",
   "applyFilters": "Apply Filters",
   "select": "Select",
-  "changePhoto": "Change Photo"
+  "changePhoto": "Change Photo",
+  "schedule": "Schedule"
 }

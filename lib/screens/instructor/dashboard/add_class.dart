@@ -1,22 +1,15 @@
 import 'package:country_picker/country_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 
-import '../../../controllers/classItem/class_graduation.dart';
 import '../../../controllers/instructor/instructor_class.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../models/Belt.dart';
 import '../../../models/Class.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/helpers/helper_functions.dart';
-import '../../../utils/widgets/background_image_header_container.dart';
-import '../../../utils/widgets/belt_dialog.dart';
-import '../start.dart';
 
 class AddClassScreen extends StatefulWidget {
   const AddClassScreen({super.key});
@@ -36,7 +29,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
   late AppLocalizations appLocalizations;
   String? selectedType;
   bool _isSaving = false;
-  List<Belt> graduationBelts = [];
+  // List<Belt> graduationBelts = [];
 
   @override
   void initState() {
@@ -55,20 +48,20 @@ class _AddClassScreenState extends State<AddClassScreen> {
     super.dispose();
   }
 
-  bool hasOverlap(Belt newBelt, List<Belt> existingBelts) {
-    for (final b in existingBelts) {
-      final sameBeltColor =
-              b.beltColor1.value == newBelt.beltColor1.value &&
-              (b.beltColor2?.value ?? -1) == (newBelt.beltColor2?.value ?? -1);
-
-      if (sameBeltColor) {
-        if (!(newBelt.maxAge < b.minAge || newBelt.minAge > b.maxAge)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
+  // bool hasOverlap(Belt newBelt, List<Belt> existingBelts) {
+  //   for (final b in existingBelts) {
+  //     final sameBeltColor =
+  //             b.beltColor1.value == newBelt.beltColor1.value &&
+  //             (b.beltColor2?.value ?? -1) == (newBelt.beltColor2?.value ?? -1);
+  //
+  //     if (sameBeltColor) {
+  //       if (!(newBelt.maxAge < b.minAge || newBelt.minAge > b.maxAge)) {
+  //         return true;
+  //       }
+  //     }
+  //   }
+  //   return false;
+  // }
 
   bool validateSchedule() {
     bool valid = true;
@@ -105,50 +98,24 @@ class _AddClassScreenState extends State<AddClassScreen> {
     ];
 
     return Scaffold(
+        backgroundColor: dark ? Colors.black : Colors.grey[50],
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: true, // This is the professional choice here
+          title: Text(
+              appLocalizations.addClass,
+              style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold)
+          ),
+          leading: IconButton(
+            icon: const Icon(Iconsax.arrow_left_2), // Modern thin icon
+            onPressed: () => Get.back(),
+            color: dark ? Colors.white : Colors.black,
+          ),
+        ),
         body: SingleChildScrollView(
           child: Column(
             children: [
-              /// -- Header
-              TBackgroundImageHeaderContainer(
-                image: 'assets/images/create_class_background.jpg',
-                child: Column(
-                  children: [
-                    /// AppBar
-                    Container(
-                      height: 150, // enough height for your image
-                      padding: EdgeInsets.only(top: TSizes.defaultSpace),
-                      alignment: Alignment.centerLeft,
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-                            onPressed: () => Get.back(),
-                          ),
-                          GestureDetector(
-                            onTap: () => Get.offAll(() => const StartScreen()),
-                            child: Image.asset(
-                              'assets/images/logo-white.png',
-                              width: 80,
-                              height: 80,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    /// Classes Card
-                    ListTile(
-                      title: Text(
-                          appLocalizations.addClass,
-                          style: Theme.of(context).textTheme.headlineSmall!.apply(color: Colors.white)
-                      ),
-                    ),
-                    const SizedBox(height: TSizes.spaceBtwSections)
-                  ],
-                ),
-              ),
-
               /// Body
               Form(
                 key: createClassKey,
@@ -162,7 +129,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
                           appLocalizations.classInfo,
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
@@ -269,164 +236,164 @@ class _AddClassScreenState extends State<AddClassScreen> {
 
 
                     /// Graduation System
-                    if (selectedType != null) ...[
-                      Center(
-                        child: Text(
-                          appLocalizations.graduationSystem,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: TSizes.spaceBtwItems),
-
-                      Center(
-                        child: ElevatedButton.icon(
-                          icon: Icon(Iconsax.additem),
-                          label: Text(appLocalizations.addBeltPerOrder),
-                          onPressed: () async {
-                            final newBelt = await showDialog<Belt>(
-                              context: context,
-                              builder: (context) {
-                                return BeltDialog(
-                                  existingBelts: graduationBelts,
-                                  hasOverlap: hasOverlap, // Pass your overlap function
-                                );
-                              },
-                            );
-
-                            if (newBelt != null) {
-                              setState(() {
-                                graduationBelts.add(newBelt);
-                              });
-                            }
-                          },
-                        ),
-                      ),
-
-                      if (graduationBelts.isNotEmpty)
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: graduationBelts.length,
-                          itemBuilder: (context, index) {
-                            final belt = graduationBelts[index];
-                            return Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              margin: const EdgeInsets.symmetric(vertical: 6),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Row(
-                                  children: [
-                                    belt.beltColor2 != null
-                                        ? Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Container(
-                                          width: 24,
-                                          height: 35,
-                                          decoration: BoxDecoration(
-                                            color: belt.beltColor1,
-                                            border: Border.all(color: Colors.black, width: 1.5),
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Container(
-                                          width: 24,
-                                          height: 35,
-                                          decoration: BoxDecoration(
-                                            color: belt.beltColor2,
-                                            border: Border.all(color: Colors.black, width: 1.5),
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                    : Container(
-                                      width: 24,
-                                      height: 35,
-                                      decoration: BoxDecoration(
-                                        color: belt.beltColor1,
-                                        border: Border.all(color: Colors.black, width: 1.5),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    ),
-
-                                    const SizedBox(width: 16),
-
-                                    // Details
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Wrap(
-                                            spacing: 8,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Chip(
-                                                    label: Text(
-                                                      "${belt.minAge}–${belt.maxAge} ${appLocalizations.years}",
-                                                      style: const TextStyle(fontWeight: FontWeight.w500),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Chip(
-                                                    label: belt.beltColor2 == null
-                                                        ? Text(Belt.getColorName(belt.beltColor1))
-                                                        : Text("${Belt.getColorName(belt.beltColor1)}/${Belt.getColorName(belt.beltColor2!)}",
-                                                      style: const TextStyle(fontWeight: FontWeight.w500),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              Chip(
-                                                label: Text("${belt.maxStripes} ${appLocalizations.maxStripes}",
-                                                  style: const TextStyle(fontWeight: FontWeight.w500),
-                                                ),
-                                              ),
-                                              Chip(
-                                                label: Text(
-                                                  "${belt.classesPerBeltOrStripe} ${appLocalizations.classesPerBeltOrStripe}",
-                                                  style: const TextStyle(fontWeight: FontWeight.w500),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    // Delete button
-                                    IconButton(
-                                      icon: const Icon(Iconsax.trash, color: Color(0xFFDF1E42)),
-                                      onPressed: () {
-                                        setState(() => graduationBelts.removeAt(index));
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-
-
-                      const SizedBox(height: TSizes.defaultSpace),
-                    ],
+                    // if (selectedType != null) ...[
+                    //   Center(
+                    //     child: Text(
+                    //       appLocalizations.graduationSystem,
+                    //       textAlign: TextAlign.center,
+                    //       style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    //         fontWeight: FontWeight.w500,
+                    //       ),
+                    //     ),
+                    //   ),
+                    //   const SizedBox(height: TSizes.spaceBtwItems),
+                    //
+                    //   Center(
+                    //     child: ElevatedButton.icon(
+                    //       icon: Icon(Iconsax.additem),
+                    //       label: Text(appLocalizations.addBeltPerOrder),
+                    //       onPressed: () async {
+                    //         final newBelt = await showDialog<Belt>(
+                    //           context: context,
+                    //           builder: (context) {
+                    //             return BeltDialog(
+                    //               existingBelts: graduationBelts,
+                    //               hasOverlap: hasOverlap, // Pass your overlap function
+                    //             );
+                    //           },
+                    //         );
+                    //
+                    //         if (newBelt != null) {
+                    //           setState(() {
+                    //             graduationBelts.add(newBelt);
+                    //           });
+                    //         }
+                    //       },
+                    //     ),
+                    //   ),
+                    //
+                    //   if (graduationBelts.isNotEmpty)
+                    //     ListView.builder(
+                    //       shrinkWrap: true,
+                    //       physics: const NeverScrollableScrollPhysics(),
+                    //       itemCount: graduationBelts.length,
+                    //       itemBuilder: (context, index) {
+                    //         final belt = graduationBelts[index];
+                    //         return Card(
+                    //           shape: RoundedRectangleBorder(
+                    //             borderRadius: BorderRadius.circular(12),
+                    //           ),
+                    //           margin: const EdgeInsets.symmetric(vertical: 6),
+                    //           child: Padding(
+                    //             padding: const EdgeInsets.all(12),
+                    //             child: Row(
+                    //               children: [
+                    //                 belt.beltColor2 != null
+                    //                     ? Row(
+                    //                   mainAxisSize: MainAxisSize.min,
+                    //                   children: [
+                    //                     Container(
+                    //                       width: 24,
+                    //                       height: 35,
+                    //                       decoration: BoxDecoration(
+                    //                         color: belt.beltColor1,
+                    //                         border: Border.all(color: Colors.black, width: 1.5),
+                    //                         borderRadius: BorderRadius.circular(4),
+                    //                       ),
+                    //                     ),
+                    //                     const SizedBox(width: 4),
+                    //                     Container(
+                    //                       width: 24,
+                    //                       height: 35,
+                    //                       decoration: BoxDecoration(
+                    //                         color: belt.beltColor2,
+                    //                         border: Border.all(color: Colors.black, width: 1.5),
+                    //                         borderRadius: BorderRadius.circular(4),
+                    //                       ),
+                    //                     ),
+                    //                   ],
+                    //                 )
+                    //                 : Container(
+                    //                   width: 24,
+                    //                   height: 35,
+                    //                   decoration: BoxDecoration(
+                    //                     color: belt.beltColor1,
+                    //                     border: Border.all(color: Colors.black, width: 1.5),
+                    //                     borderRadius: BorderRadius.circular(4),
+                    //                   ),
+                    //                 ),
+                    //
+                    //                 const SizedBox(width: 16),
+                    //
+                    //                 // Details
+                    //                 Expanded(
+                    //                   child: Column(
+                    //                     crossAxisAlignment: CrossAxisAlignment.start,
+                    //                     children: [
+                    //                       Wrap(
+                    //                         spacing: 8,
+                    //                         children: [
+                    //                           Row(
+                    //                             children: [
+                    //                               Chip(
+                    //                                 label: Text(
+                    //                                   "${belt.minAge}–${belt.maxAge} ${appLocalizations.years}",
+                    //                                   style: const TextStyle(fontWeight: FontWeight.w500),
+                    //                                 ),
+                    //                               ),
+                    //                               const SizedBox(width: 4),
+                    //                               Chip(
+                    //                                 label: belt.beltColor2 == null
+                    //                                     ? Text(Belt.getColorName(belt.beltColor1))
+                    //                                     : Text("${Belt.getColorName(belt.beltColor1)}/${Belt.getColorName(belt.beltColor2!)}",
+                    //                                   style: const TextStyle(fontWeight: FontWeight.w500),
+                    //                                 ),
+                    //                               ),
+                    //                             ],
+                    //                           ),
+                    //                           Chip(
+                    //                             label: Text("${belt.maxStripes} ${appLocalizations.maxStripes}",
+                    //                               style: const TextStyle(fontWeight: FontWeight.w500),
+                    //                             ),
+                    //                           ),
+                    //                           Chip(
+                    //                             label: Text(
+                    //                               "${belt.classesPerBeltOrStripe} ${appLocalizations.classesPerBeltOrStripe}",
+                    //                               style: const TextStyle(fontWeight: FontWeight.w500),
+                    //                             ),
+                    //                           ),
+                    //                         ],
+                    //                       ),
+                    //                     ],
+                    //                   ),
+                    //                 ),
+                    //
+                    //                 // Delete button
+                    //                 IconButton(
+                    //                   icon: const Icon(Iconsax.trash, color: Color(0xFFDF1E42)),
+                    //                   onPressed: () {
+                    //                     setState(() => graduationBelts.removeAt(index));
+                    //                   },
+                    //                 ),
+                    //               ],
+                    //             ),
+                    //           ),
+                    //         );
+                    //       },
+                    //     ),
+                    //
+                    //
+                    //   const SizedBox(height: TSizes.defaultSpace),
+                    // ],
 
 
                       /// Schedule List
                       Center(
                         child: Text(
-                          appLocalizations.addSchedule,
+                          appLocalizations.schedule,
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
@@ -540,6 +507,7 @@ class _AddClassScreenState extends State<AddClassScreen> {
                         }).toList(),
                       ),
 
+                      const SizedBox(height: TSizes.sm),
                       // Add Schedule Entry Button
                       Center(
                         child: ElevatedButton.icon(
@@ -586,10 +554,10 @@ class _AddClassScreenState extends State<AddClassScreen> {
                               });
 
                               if (classId != null) {
-                                final graduationService = ClassGraduationService();
-                                final success = await graduationService.setBeltsForClass(classId, graduationBelts);
+                                // final graduationService = ClassGraduationService();
+                                // final success = await graduationService.setBeltsForClass(classId, graduationBelts);
 
-                                if (success) {
+                                // if (success) {
                                   Get.back();
                                   Get.snackbar(
                                     appLocalizations.success,
@@ -603,13 +571,12 @@ class _AddClassScreenState extends State<AddClassScreen> {
                                     snackPosition: SnackPosition.BOTTOM,
                                   );
                                 }
-                              } else {
-                                Get.snackbar(
-                                  appLocalizations.error,
-                                  appLocalizations.errorMessage,
-                                  snackPosition: SnackPosition.BOTTOM,
-                                );
-                              }
+                            } else {
+                              Get.snackbar(
+                                appLocalizations.error,
+                                appLocalizations.errorMessage,
+                                snackPosition: SnackPosition.BOTTOM,
+                              );
                             }
                           },
                           child: _isSaving

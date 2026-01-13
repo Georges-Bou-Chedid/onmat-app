@@ -669,4 +669,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get changePhoto => 'Change Photo';
+
+  @override
+  String get schedule => 'Schedule';
 }

@@ -1414,6 +1414,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change Photo'**
   String get changePhoto;
+
+  /// No description provided for @schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get schedule;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

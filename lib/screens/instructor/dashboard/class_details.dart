@@ -157,35 +157,30 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                 image: 'assets/images/class_details_background.jpg',
                 child: Column(
                   children: [
-                    /// AppBar
-                    Container(
-                      height: 150, // enough height for your image
-                      padding: EdgeInsets.only(top: TSizes.defaultSpace),
-                      alignment: Alignment.centerLeft,
+                    const SizedBox(height: TSizes.sm),
+                    SizedBox(
+                      height: 100, // enough height for your image
+                      // padding: const EdgeInsets.all(TSizes.defaultSpace),
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                            icon: const Icon(Iconsax.arrow_left_2, size: 20), // Modern thin icon
                             onPressed: () => Get.back(),
+                            color: Colors.white,
                           ),
-                          GestureDetector(
-                            onTap: () => Get.offAll(() => const StartScreen()),
-                            child: Image.asset(
-                              'assets/images/logo-white.png',
-                              width: 80,
-                              height: 80,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
+                          Image.asset('assets/images/logo-white.png', height: 45)
                         ],
                       ),
                     ),
 
-                    /// Classes Card
-                    ListTile(
-                      title: Text(
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: ListTile(
+                        title: Text(
                           classItem.className ?? '',
-                          style: Theme.of(context).textTheme.headlineSmall!.apply(color: Colors.white)
+                          style: Theme.of(context).textTheme.headlineSmall!.apply(color: Colors.white),
+                        ),
                       ),
                     ),
                     const SizedBox(height: TSizes.appBarHeight)
