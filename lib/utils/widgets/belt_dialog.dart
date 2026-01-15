@@ -29,15 +29,16 @@ class _BeltDialogState extends State<BeltDialog> {
   Color? secondaryBeltColor;
 
   final Map<String, Color> beltColors = {
-    'White': Colors.white,
-    'Yellow': Colors.yellow,
-    'Orange': Colors.orange,
-    'Green': Colors.green,
-    'Blue': Colors.blue,
-    'Purple': Colors.purple,
-    'Brown': Colors.brown,
-    'Red': Colors.red,
-    'Black': Colors.black,
+    "White": Colors.white,
+    "Grey": Colors.grey,
+    "Yellow": Colors.yellow,
+    "Orange": Colors.orange,
+    "Green": Colors.green,
+    "Blue": Colors.blue,
+    "Purple": Colors.purple,
+    "Brown": Colors.brown,
+    "Red": Colors.red,
+    "Black": Colors.black,
   };
 
   @override
@@ -167,7 +168,7 @@ class _BeltDialogState extends State<BeltDialog> {
 
   Widget _buildBeltPicker(String label, Color? value, Function(Color) onSet, AppLocalizations appLocalizations) {
     return InkWell(
-      onTap: () => _showBeltColorPicker(context, onSet),
+      onTap: () => _showBeltColorPicker(context, onSet, appLocalizations),
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: label,
@@ -196,8 +197,7 @@ class _BeltDialogState extends State<BeltDialog> {
                   // Sync this style exactly with the dropdown
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: value == null ? Colors.grey[600] : null,
+                    color: Colors.black,
                   ),
                 ),
               ],
@@ -209,11 +209,11 @@ class _BeltDialogState extends State<BeltDialog> {
     );
   }
 
-  Future<void> _showBeltColorPicker(BuildContext context, Function(Color) onChanged) {
+  Future<void> _showBeltColorPicker(BuildContext context, Function(Color) onChanged, AppLocalizations appLocalizations) {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Select Belt Color'),
+        title: Text(appLocalizations.selectBeltColor),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView(

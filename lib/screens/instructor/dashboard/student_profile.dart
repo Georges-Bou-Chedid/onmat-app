@@ -8,106 +8,88 @@ import '../../../controllers/student/class_student.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/Belt.dart';
 import '../../../utils/constants/sizes.dart';
+import '../../../utils/helpers/helper_functions.dart';
 import '../../../utils/widgets/circular_image.dart';
-import 'class_details.dart';
 
 class StudentProfileScreen extends StatefulWidget {
   final String studentId;
   final String classId;
   final bool isAssistant;
+  final bool showInstructorFeatures;
 
-  const StudentProfileScreen({super.key, required this.studentId, required this.classId, required this.isAssistant});
+  const StudentProfileScreen({
+    super.key,
+    required this.studentId,
+    required this.classId,
+    required this.isAssistant,
+    required this.showInstructorFeatures
+  });
 
   @override
   _StudentProfileScreenState createState() => _StudentProfileScreenState();
 }
 
 class _StudentProfileScreenState extends State<StudentProfileScreen> {
+  final Color primaryBrandColor = const Color(0xFFDF1E42);
   late ClassStudentService _classStudentService;
-  late ClassGraduationService _classGraduationService;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _classStudentService = Provider.of<ClassStudentService>(context, listen: false);
-    _classGraduationService = Provider.of<ClassGraduationService>(context, listen: false);
-  }
-
-  @override
-  void dispose() {
-    _classStudentService.cancelListener();
-    _classGraduationService.cancelListener();
-    super.dispose();
   }
 
   int calculateAge(String dobString) {
     try {
-      // Parse: dd/MM/yyyy
       final parts = dobString.split('/');
       if (parts.length != 3) return 0;
-
-      final day = int.parse(parts[0]);
-      final month = int.parse(parts[1]);
-      final year = int.parse(parts[2]);
-
-      final birthDate = DateTime(year, month, day);
+      final birthDate = DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
       final today = DateTime.now();
-
       int age = today.year - birthDate.year;
-
-      // If birthday hasn’t happened yet this year, subtract 1
-      if (today.month < birthDate.month ||
-          (today.month == birthDate.month && today.day < birthDate.day)) {
-        age--;
-      }
-
+      if (today.month < birthDate.month || (today.month == birthDate.month && today.day < birthDate.day)) age--;
       return age;
     } catch (e) {
-      return 0; // fallback if parsing fails
+      return 0;
     }
   }
 
   Belt? getNextBeltForStudent(int studentAge, List<Belt> belts, Color currentBelt1Color, Color? currentBelt2Color) {
-    // Filter belts by age range
+    // 1. Filter by age
     final eligibleBelts = belts.where((belt) {
       return studentAge >= belt.minAge && studentAge <= belt.maxAge;
     }).toList();
 
     if (eligibleBelts.isEmpty) return null;
 
-    // Sort by priority (lower number = higher rank)
+    // 2. Sort by priority (e.g., Priority 1 is Black, Priority 10 is White)
+    // We want to find the belt that is "one step better" than current
     eligibleBelts.sort((a, b) => a.priority.compareTo(b.priority));
 
-    // Skip belts that match student's current belt(s)
+    // 3. Find the current belt's priority index
+    int currentPriority = 999; // Default low rank
     for (var belt in eligibleBelts) {
-      final beltColors = [belt.beltColor1, belt.beltColor2].whereType<Color>().toList();
-      // Must contain current belt 1 color
-      final matchesFirstColor = beltColors.contains(currentBelt1Color);
-
-      // Must have a second color OR allow anything if current has none
-      final validSecondColor = currentBelt2Color == null
-          ? belt.beltColor2 != null   // next belt must introduce a new color2
-          : beltColors.contains(currentBelt2Color);
-
-      if (matchesFirstColor && validSecondColor) {
-        return belt;
+      if (belt.beltColor1 == currentBelt1Color && belt.beltColor2 == currentBelt2Color) {
+        currentPriority = belt.priority;
+        break;
       }
     }
 
-    // No next belt found
-    return null;
+    // 4. Return the belt that has the next highest priority (immediately lower number than current)
+    try {
+      // We look for the belt whose priority is less than currentPriority
+      // but is the largest among those smaller values (the immediate next step)
+      return eligibleBelts.lastWhere((belt) => belt.priority < currentPriority);
+    } catch (e) {
+      // If no higher belt is found in that age range
+      return null;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final appLocalizations = AppLocalizations.of(context)!;
-
-    final classStudentService = Provider.of<ClassStudentService>(context, listen: true);
+    final dark = THelperFunctions.isDarkMode(context);
+    final classStudentService = Provider.of<ClassStudentService>(context);
     final student = classStudentService.myStudents.firstWhereOrNull((s) => s.userId == widget.studentId);
 
     if (student == null) {
@@ -116,374 +98,315 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     }
 
     final studentAge = calculateAge(student.dob!);
-
-    final classGraduationService = Provider.of<ClassGraduationService>(context, listen: true);
-    final myGraduationBelts = classGraduationService.myGradutationBelts;
-
-    final nextBelt = getNextBeltForStudent(
-      studentAge,
-      myGraduationBelts,
-      student.belt1,
-      student.belt2
-    );
+    final myGraduationBelts = Provider.of<ClassGraduationService>(context).myGradutationBelts;
+    final nextBelt = getNextBeltForStudent(studentAge, myGraduationBelts, student.belt1, student.belt2);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("${student.firstName} ${student.lastName}"),
+        title: Text("Student Profile"),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(TSizes.defaultSpace),
         child: Column(
           children: [
-            // Profile Picture & Basic Info
-            TCircularImage(
-              image: "assets/images/settings/user.png",
-              width: 50,
-              height: 50,
-              padding: 0,
+            /// 1. PROFILE HEADER
+            Center(
+              child: Column(
+                children: [
+                  TCircularImage(
+                    image:  "assets/images/settings/user.png",
+                    // isNetworkImage: (student.profilePicture != null && student.profilePicture!.isNotEmpty),
+                    width: 100,
+                    height: 100,
+                    padding: 0,
+                  ),
+                  const SizedBox(height: TSizes.spaceBtwItems),
+                  Text("${student.firstName} ${student.lastName}", style: Theme.of(context).textTheme.headlineSmall),
+                  Text(student.email ?? '', style: TextStyle(color: Colors.grey[600])),
+                ],
+              ),
             ),
-            // CircleAvatar(
-            //   radius: 50,
-            //   backgroundImage: NetworkImage(student.profilePicture ?? ''),
-            // ),
+
+            const SizedBox(height: TSizes.spaceBtwSections),
+
+            /// 2. PERSONAL INFO GRID
+            _buildSectionContainer(
+              dark,
+              child: GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                childAspectRatio: 2.8,
+                children: [
+                  _infoTile(appLocalizations.age, "$studentAge"),
+                  _infoTile(appLocalizations.weight, "${student.weight} kg"),
+                  _infoTile(appLocalizations.height, "${student.height} cm"),
+                  _infoTile(appLocalizations.gender, student.gender?.capitalizeFirst ?? 'N/A'),
+                ],
+              ),
+            ),
+
             const SizedBox(height: TSizes.spaceBtwItems),
-            Text(
-              "${student.firstName} ${student.lastName}",
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            Text(student.email ?? '', style: Theme.of(context).textTheme.bodyMedium),
 
-            const SizedBox(height: TSizes.defaultSpace),
-
-            // Info Grid
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(TSizes.spaceBtwItems),
-                child: GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 2,
-                  childAspectRatio: 3,
-                  children: [
-                    _infoTile(appLocalizations.age, "$studentAge"),
-                    _infoTile(appLocalizations.weight, "${student.weight} kg"),
-                    _infoTile(appLocalizations.height, "${student.height} cm"),
-                    _infoTile(appLocalizations.phoneNumber, student.phoneNumber ?? ''),
-                    _infoTile(
-                      appLocalizations.gender,
-                      (student.gender ?? '').isEmpty
-                          ? ''
-                          : '${(student.gender![0].toUpperCase())}${student.gender!.substring(1).toLowerCase()}',
-                    ),
-                    _infoTile(appLocalizations.attendedToday, student.hasAttendanceToday ? "Yes" : "No"),
-                  ],
-                ),
-              ),
-            ),
-
-            // Achievements Grid
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(TSizes.spaceBtwItems),
-                child: GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 2,
-                  childAspectRatio: 2.2,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(appLocalizations.upcomingBelt, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 2),
-                        if (nextBelt != null) ...[
-                          Row(
-                            children: [
-                              Container(
-                                width: 24,
-                                height: 35,
-                                decoration: BoxDecoration(
-                                  color: nextBelt.beltColor1,
-                                  border: Border.all(color: Colors.black, width: 1.5),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                              ),
-                              if (nextBelt.beltColor2 != null) ...[
-                                const SizedBox(width: 4),
-                                Container(
-                                  width: 24,
-                                  height: 35,
-                                  decoration: BoxDecoration(
-                                    color: nextBelt.beltColor2,
-                                    border: Border.all(color: Colors.black, width: 1.5),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
+            /// 3. GRADUATION & BELT STATUS
+            _buildSectionContainer(
+              dark,
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(appLocalizations.currentBelt, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)),
+                          const SizedBox(height: 8),
+                          _buildBeltVisual(student.belt1, student.belt2),
                         ],
-                      ],
-                    ),
-                    _infoTile(
-                      appLocalizations.remainingClasses,
-                      nextBelt != null
-                          ? "${student.classAttended} / ${nextBelt.classesPerBeltOrStripe}"
-                          : "",
-                      trailing: (nextBelt != null && student.classAttended >= nextBelt.classesPerBeltOrStripe)
-                          ? const Icon(Iconsax.warning_2, color: Colors.orange)
-                          : null,
-                    ),
-                    _infoTile(
-                      appLocalizations.stripes,
-                      nextBelt != null
-                          ? "${student.stripes} / ${nextBelt.maxStripes}"
-                          : "${student.stripes}",
-                      trailing: (nextBelt != null && student.stripes >= nextBelt.maxStripes)
-                          ? const Icon(Iconsax.warning_2, color: Colors.orange)
-                          : null,
-                    ),
-                    _infoTile(appLocalizations.achievements, "")
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: TSizes.defaultSpace),
-
-            // Belt & Upgrade
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(TSizes.spaceBtwItems),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Text(
-                      appLocalizations.currentBelt,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    Container(
-                      width: 24,
-                      height: 35,
-                      decoration: BoxDecoration(
-                        color: student.belt1,
-                        border: Border.all(color: Colors.black, width: 1.5),
-                        borderRadius: BorderRadius.circular(4),
                       ),
-                    ),
-                    if (student.belt2 != null) ...[
-                      const SizedBox(width: 4),
-                      Container(
-                        width: 24,
-                        height: 35,
-                        decoration: BoxDecoration(
-                          color: student.belt2,
-                          border: Border.all(color: Colors.black, width: 1.5),
-                          borderRadius: BorderRadius.circular(4),
+                      if (widget.showInstructorFeatures)
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryBrandColor,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () => _handleUpgrade(student, nextBelt, classStudentService, appLocalizations),
+                          child: Text(appLocalizations.upgrade),
+                        ),
+                    ],
+                  ),
+                  const Divider(height: 32),
+
+                  Row(
+                    children: [
+                      // Upcoming Belt
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(appLocalizations.upcomingBelt, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+                            const SizedBox(height: 8),
+                            if (nextBelt != null)
+                              _buildBeltVisual(nextBelt.beltColor1, nextBelt.beltColor2)
+                            else
+                              const Text("—", style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                      // Stripes
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(appLocalizations.stripes, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Text(
+                                  nextBelt != null ? "${student.stripes} / ${nextBelt.maxStripes}" : "${student.stripes}",
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                                if (nextBelt != null && student.stripes >= nextBelt.maxStripes)
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 8.0),
+                                    child: Icon(Iconsax.warning_2, color: Colors.orange, size: 18),
+                                  ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ],
-                    ElevatedButton(
-                      onPressed: () {
-                        // Show belt upgrade dialog
-                      },
-                      child: Text(appLocalizations.upgrade),
-                    ),
-                  ],
-                ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  _progressTile(
+                      appLocalizations.classesAttended,
+                      student.classAttended,
+                      nextBelt?.classesPerBeltOrStripe ?? 0,
+                      appLocalizations,
+                      showWarning: (nextBelt != null && student.classAttended >= nextBelt.classesPerBeltOrStripe)
+                  ),
+                ],
               ),
             ),
 
-            const SizedBox(height: TSizes.defaultSpace),
-
-            // Progress
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(appLocalizations.progressBar,
-                  style: Theme.of(context).textTheme.titleMedium),
-            ),
             const SizedBox(height: TSizes.spaceBtwItems),
 
-            _progressTile(
-              appLocalizations.classesAttended,
-              student.classAttended,
-              nextBelt != null
-                  ? nextBelt.classesPerBeltOrStripe - student.classAttended
-                  : 0,
-              appLocalizations
-            ),
-            const SizedBox(height: TSizes.spaceBtwItems),
-
-            Wrap(
-              spacing: TSizes.borderRadiusLg,
-              runSpacing: TSizes.borderRadiusLg,
-              children: [
-                ElevatedButton.icon(
-                  icon: Icon(Iconsax.copy_success, size: TSizes.iconSm),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  onPressed: () async {
-                    await showDialog(
-                      context: context,
-                      barrierDismissible: true,
-                      builder: (context) => AlertDialog(
-                        title: Text(appLocalizations.removeFromClass),
-                        content: Text(appLocalizations.removeFromClassText("${student.firstName} ${student.lastName}")),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: Text(appLocalizations.cancel),
-                          ),
-                          ElevatedButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: Text(appLocalizations.remove),
-                          ),
-                        ],
+            /// 4. ACHIEVEMENTS SECTION
+            _buildSectionContainer(
+              dark,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(appLocalizations.achievements, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      IconButton(
+                        onPressed: () {}, // Add achievement logic
+                        icon: Icon(Iconsax.add_square, color: primaryBrandColor),
                       ),
-                    ).then((confirmed) async {
-                      if (confirmed == true) {
-                        final success = await classStudentService.removeStudentFromClass(
-                            widget.classId,
-                            student.userId!
-                        );
-
-                        if (! success) {
-                          Get.snackbar(
-                            appLocalizations.error,
-                            appLocalizations.errorMessage,
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
-                        }
-                      }
-                    });
-                  },
-                  label: Text(appLocalizations.addAchievemnt),
-                ),
-                ElevatedButton.icon(
-                  icon: Icon(Iconsax.profile_remove, size: TSizes.iconSm),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ],
                   ),
-                  onPressed: () async {
-                    await showDialog(
-                      context: context,
-                      barrierDismissible: true,
-                      builder: (context) => AlertDialog(
-                        title: Text(appLocalizations.removeFromClass),
-                        content: Text(appLocalizations.removeFromClassText("${student.firstName} ${student.lastName}")),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: Text(appLocalizations.cancel),
-                          ),
-                          ElevatedButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: Text(appLocalizations.remove),
-                          ),
-                        ],
-                      ),
-                    ).then((confirmed) async {
-                      if (confirmed == true) {
-                        final success = await classStudentService.removeStudentFromClass(
-                            widget.classId,
-                            student.userId!
-                        );
-
-                        if (! success) {
-                          Get.snackbar(
-                            appLocalizations.error,
-                            appLocalizations.errorMessage,
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
-                        }
-                      }
-                    });
-                  },
-                  label: Text(appLocalizations.remove),
-                ),
-              ]
+                  // if (student.achievements == null || student.achievements!.isEmpty)
+                  //   Padding(
+                  //     padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  //     child: Text(
+                  //         "No achievements recorded yet.",
+                  //         style: TextStyle(color: Colors.grey[500], fontSize: 13, fontStyle: FontStyle.italic)
+                  //     ),
+                  //   )
+                  // else
+                  // // Example Achievement List
+                  //   ListView.builder(
+                  //     shrinkWrap: true,
+                  //     physics: const NeverScrollableScrollPhysics(),
+                  //     itemCount: student.achievements?.length ?? 0,
+                  //     itemBuilder: (context, index) => ListTile(
+                  //       contentPadding: EdgeInsets.zero,
+                  //       leading: const Icon(Iconsax.medal_star, color: Colors.amber),
+                  //       title: Text(student.achievements![index]),
+                  //     ),
+                  //   ),
+                ],
+              ),
             ),
-            const SizedBox(height: TSizes.lg),
+
+            const SizedBox(height: TSizes.spaceBtwSections),
+
+            /// 5. DANGER ZONE
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                    foregroundColor: primaryBrandColor,
+                    side: BorderSide(color: primaryBrandColor)
+                ),
+                icon: const Icon(Iconsax.profile_remove),
+                onPressed: () => _confirmRemoval(student, classStudentService, appLocalizations),
+                label: Text(appLocalizations.remove),
+              ),
+            ),
+            const SizedBox(height: TSizes.spaceBtwSections),
           ],
         ),
       ),
     );
   }
 
-  Widget _infoTile(String label, String value, {Widget? trailing}) {
+  /// HELPER WIDGETS
+  Widget _buildSectionContainer(bool dark, {required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: dark ? Colors.grey[900] : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildBeltVisual(Color c1, Color? c2) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 25, height: 40,
+          decoration: BoxDecoration(color: c1, border: Border.all(width: 1.5, color: Colors.black), borderRadius: BorderRadius.circular(4)),
+        ),
+        if (c2 != null) ...[
+          const SizedBox(width: 4),
+          Container(
+            width: 25, height: 40,
+            decoration: BoxDecoration(color: c2, border: Border.all(width: 1.5, color: Colors.black), borderRadius: BorderRadius.circular(4)),
+          ),
+        ]
+      ],
+    );
+  }
+
+  Widget _infoTile(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 2),
+        Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+      ],
+    );
+  }
+
+  Widget _progressTile(String label, int attended, int required, AppLocalizations l10n, {bool showWarning = false}) {
+    final progress = required > 0 ? (attended / required).clamp(0.0, 1.0) : 0.0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(value),
-            const SizedBox(width: TSizes.spaceBtwItems),
-            if (trailing != null) trailing,
+            Row(
+              children: [
+                Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+                if (showWarning) const Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Icon(Iconsax.warning_2, color: Colors.orange, size: 16),
+                ),
+              ],
+            ),
+            Text("$attended / $required"),
           ],
+        ),
+        const SizedBox(height: 8),
+        LinearProgressIndicator(
+          value: progress,
+          backgroundColor: Colors.grey[200],
+          color: primaryBrandColor,
+          minHeight: 8,
+          borderRadius: BorderRadius.circular(4),
         ),
       ],
     );
   }
 
-  Widget _progressTile(String label, int attended, int left, AppLocalizations appLocalization) {
-    final totalRequired = attended + left; // classes needed for current belt
-    final cappedAttended = attended > totalRequired ? totalRequired : attended;
-    final progress = totalRequired > 0 ? (cappedAttended / totalRequired) : 0.0;
+  void _handleUpgrade(student, Belt? nextBelt, service, l10n) {
+    if (nextBelt == null) return;
+    bool isStripeUpgrade = student.stripes < nextBelt.maxStripes;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Label with progress count
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-              Text("$attended / $totalRequired"),
-            ],
-          ),
-          const SizedBox(height: 6),
+    Get.defaultDialog(
+        title: l10n.upgrade,
+        middleText: isStripeUpgrade
+            ? "Add a stripe to ${student.firstName}?"
+            : "Promote ${student.firstName} to the next belt?",
+        textConfirm: l10n.confirm,
+        confirmTextColor: Colors.white,
+        buttonColor: primaryBrandColor,
+        onConfirm: () async {
+          if (isStripeUpgrade) {
+            await service.updateStudentStripes(widget.classId, student.userId!, student.stripes + 1);
+          } else {
+            await service.upgradeStudentBelt(widget.classId, student.userId!, nextBelt.beltColor1, nextBelt.beltColor2);
+          }
+          Get.back();
+        }
+    );
+  }
 
-          // Progress bar capped at 100%
-          LinearProgressIndicator(
-            value: progress, // stays at 1.0 max
-            backgroundColor: Colors.grey.shade300,
-            color: Color(0xFFDF1E42), // 🔴 red for progress
-            minHeight: 10,
-          ),
-
-          // Show how many classes left if requirement not met
-          if (attended < totalRequired)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                "$left ${appLocalization.classesLeft}",
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
-              ),
-            ),
-
-          // Show extra info if they passed requirement but no upgrade yet
-          if (attended > totalRequired)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                "+${attended - totalRequired} ${appLocalization.extraClasses}",
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
-              ),
-            ),
-        ],
-      ),
+  void _confirmRemoval(student, service, l10n) {
+    Get.defaultDialog(
+        title: l10n.removeFromClass,
+        middleText: l10n.removeFromClassText("${student.firstName} ${student.lastName}"),
+        textConfirm: l10n.remove,
+        confirmTextColor: Colors.white,
+        buttonColor: primaryBrandColor,
+        onConfirm: () async {
+          await service.removeStudentFromClass(widget.classId, student.userId!);
+          Get.back();
+          Get.back();
+        }
     );
   }
 }

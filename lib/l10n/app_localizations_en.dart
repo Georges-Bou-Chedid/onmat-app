@@ -672,4 +672,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get schedule => 'Schedule';
+
+  @override
+  String get selectBeltColor => 'Select Belt Color';
+
+  @override
+  String get confirm => 'Confirm';
 }

@@ -46,6 +46,7 @@ class Belt {
     Colors.blue: "Blue",
     Colors.purple: "Purple",
     Colors.brown: "Brown",
+    Colors.red: "Red"
   };
 
   static const Map<String, Color> nameToColor = {
@@ -57,6 +58,7 @@ class Belt {
     "Blue": Colors.blue,
     "Purple": Colors.purple,
     "Brown": Colors.brown,
+    "Red": Colors.red,
     "Black": Colors.black,
   };
 

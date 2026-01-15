@@ -28,18 +28,19 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
   final Color primaryBrandColor = const Color(0xFFDF1E42);
 
   final List<String> genderOptions = ['Male', 'Female'];
-  final List<String> classTypeOptions = ['Kids', 'Adults', 'Teens'];
+  final List<String> classTypeOptions = ['Jiu‑Jitsu'];
 
   final Map<String, Color> beltColors = {
-    'White': Colors.white,
-    'Yellow': Colors.yellow,
-    'Orange': Colors.orange,
-    'Green': Colors.green,
-    'Blue': Colors.blue,
-    'Purple': Colors.purple,
-    'Brown': Colors.brown,
-    'Red': Colors.red,
-    'Black': Colors.black,
+    "White": Colors.white,
+    "Grey": Colors.grey,
+    "Yellow": Colors.yellow,
+    "Orange": Colors.orange,
+    "Green": Colors.green,
+    "Blue": Colors.blue,
+    "Purple": Colors.purple,
+    "Brown": Colors.brown,
+    "Red": Colors.red,
+    "Black": Colors.black,
   };
 
   void _applyFilters(GlobalStudentSearchService searchService) {

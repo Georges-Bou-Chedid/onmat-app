@@ -43,6 +43,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
   late TabController _tabController;
   late List<Student> myAttendanceStudents;
   Map<String, dynamic>? todaySchedule;
+  final Color primaryBrandColor = const Color(0xFFDF1E42);
   bool extraSession = false;
   bool isEditing = false;
   bool hasChanges = false;
@@ -377,143 +378,178 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
   }
 
   Widget _buildStudentsTab(appLocalizations, paginatedStudents, classStudentService, startIndex, endIndex, filteredStudents) {
+    final dark = THelperFunctions.isDarkMode(context);
+
     return Column(
-        children: [
-          TextField(
-            controller: _searchController,
-            focusNode: _searchFocusNode,
-            decoration: InputDecoration(
-              hintText: appLocalizations.searchStudents,
-              prefixIcon: Icon(Iconsax.search_normal),
+      children: [
+        /// SEARCH BAR (Pill Style)
+        TextField(
+          controller: _searchController,
+          focusNode: _searchFocusNode,
+          decoration: InputDecoration(
+            hintText: appLocalizations.searchStudents,
+            prefixIcon: const Icon(Iconsax.search_normal),
+            filled: true,
+            fillColor: dark ? Colors.grey[900] : Colors.grey[100],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide.none,
             ),
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value;
-              });
-            },
           ),
-          Column(
-            children: [
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: paginatedStudents.length,
-                itemBuilder: (context, index) {
-                  final studentItem = paginatedStudents[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: TSizes.iconXs),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(TSizes.md)),
-                    elevation: 4,
-                    child: ListTile(
-                        leading: CircleAvatar(child: Text(studentItem.firstName[0])),
-                        title: Text(
-                          "${studentItem.firstName ?? ''} ${studentItem.lastName ?? ''}",
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        subtitle: Text(
-                          studentItem.email ?? '',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        trailing: studentItem.isActive
-                            ? const Icon(Iconsax.arrow_21, size: TSizes.md)
-                            : SizedBox(
-                          width: 100, // max width for both buttons
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
+          onChanged: (value) {
+            setState(() {
+              _searchQuery = value;
+            });
+          },
+        ),
+        const SizedBox(height: TSizes.spaceBtwItems),
+
+        /// STUDENTS LIST
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: paginatedStudents.length,
+          itemBuilder: (context, index) {
+            final studentItem = paginatedStudents[index];
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: IntrinsicHeight(
+                  child: Row(
+                    children: [
+                      // BRAND ACCENT LINE
+                      Container(width: 5, color: primaryBrandColor),
+                      Expanded(
+                        child: InkWell(
+                          onTap: studentItem.isActive
+                              ? () => Get.to(
+                                () => StudentProfileScreen(
+                              studentId: studentItem.userId,
+                              classId: widget.classId,
+                              isAssistant: widget.isAssistant,
+                              showInstructorFeatures: true,
+                            ),
+                            transition: Transition.rightToLeft,
+                          )
+                              : null,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
                             child: Row(
                               children: [
-                                IconButton(
-                                  icon: const Icon(Iconsax.close_square, color: Color(0xFFDF1E42)),
-                                  tooltip: appLocalizations.ignore,
-                                  onPressed: () async {
-                                    await classStudentService.ignoreStudent(
-                                        widget.classId,
-                                        studentItem.userId!
-                                    );
-                                  },
+                                // AVATAR
+                                CircleAvatar(
+                                  radius: 22,
+                                  backgroundColor: primaryBrandColor.withOpacity(0.1),
+                                  child: Text(
+                                    studentItem.firstName?[0].toUpperCase() ?? '?',
+                                    style: TextStyle(color: primaryBrandColor, fontWeight: FontWeight.bold),
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Iconsax.tick_square, color: Colors.green),
-                                  tooltip: appLocalizations.accept,
-                                  onPressed: () async {
-                                    await classStudentService.acceptStudent(
-                                        widget.classId,
-                                        studentItem.userId!
-                                    );
-                                  },
+                                const SizedBox(width: 12),
+
+                                // INFO
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "${studentItem.firstName} ${studentItem.lastName}",
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                      ),
+                                      Text(
+                                        studentItem.email ?? '',
+                                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
                                 ),
+
+                                // ACTIONS (TRAILING)
+                                if (studentItem.isActive)
+                                  const Icon(Iconsax.arrow_right_3, size: 16, color: Colors.grey)
+                                else
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        constraints: const BoxConstraints(),
+                                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                                        icon: const Icon(Iconsax.close_square, color: Color(0xFFDF1E42), size: 28),
+                                        onPressed: () async => await classStudentService.ignoreStudent(widget.classId, studentItem.userId!),
+                                      ),
+                                      IconButton(
+                                        constraints: const BoxConstraints(),
+                                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                                        icon: const Icon(Iconsax.tick_square, color: Colors.green, size: 28),
+                                        onPressed: () async => await classStudentService.acceptStudent(widget.classId, studentItem.userId!),
+                                      ),
+                                    ],
+                                  ),
                               ],
                             ),
                           ),
                         ),
-                        onTap: studentItem.isActive
-                            ? () async {
-                          Get.to(() => StudentProfileScreen(
-                              studentId: studentItem.userId,
-                              classId: widget.classId,
-                              isAssistant: widget.isAssistant,
-                            ),
-                            transition: Transition.rightToLeft,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        }
-                            : null
-                    ),
-                  );
-                },
+                      ),
+                    ],
+                  ),
+                ),
               ),
+            );
+          },
+        ),
 
-              // Pagination Controls
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: Icon(Iconsax.arrow_left_1, color: currentPage > 0 ? const Color(0xFFDF1E42) : Colors.grey),
-                    onPressed: currentPage > 0
-                        ? () {
-                      setState(() {
-                        currentPage--;
-                      });
-                    }
-                        : null,
-                  ),
-                  Text(
-                    "${startIndex + 1}-${endIndex} / ${filteredStudents.length}",
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  IconButton(
-                    icon: Icon(Iconsax.arrow_right_4, color: endIndex < filteredStudents.length ? const Color(0xFFDF1E42) : Colors.grey),
-                    onPressed: endIndex < filteredStudents.length
-                        ? () {
-                      setState(() {
-                        currentPage++;
-                      });
-                    }
-                        : null,
-                  ),
-                ],
+        /// PAGINATION CONTROLS
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: TSizes.md),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Iconsax.arrow_left),
+                color: primaryBrandColor,
+                onPressed: currentPage > 0 ? () => setState(() => currentPage--) : null,
+              ),
+              Text(
+                "${startIndex + 1}–$endIndex of ${filteredStudents.length}",
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              IconButton(
+                icon: const Icon(Iconsax.arrow_right),
+                color: primaryBrandColor,
+                onPressed: endIndex < filteredStudents.length ? () => setState(() => currentPage++) : null,
               ),
             ],
           ),
-        ]
+        ),
+      ],
     );
   }
 
   Widget _buildAttendanceTab(classItem, appLocalizations, classStudentService) {
     final today = DateTime.now();
+    final dark = THelperFunctions.isDarkMode(context);
+    final Color primaryBrandColor = const Color(0xFFDF1E42);
+
     const weekdayNames = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
     ];
     final todayName = weekdayNames[today.weekday - 1];
 
-    if (! extraSession) {
+    if (!extraSession) {
       todaySchedule = classItem?.schedule?.firstWhere(
             (s) => s['day'] == todayName,
         orElse: () => <String, String>{},
@@ -529,18 +565,33 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
       }
     }
 
+    // --- NO CLASS SCHEDULED VIEW ---
     if (todaySchedule == null) {
-      return Card(
+      return Container(
         margin: const EdgeInsets.all(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Text(appLocalizations.noClassScheduledToday),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.add),
-                label: Text(appLocalizations.addExtraSession),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: dark ? Colors.grey[900] : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Iconsax.calendar_remove, size: 40, color: primaryBrandColor.withOpacity(0.5)),
+            const SizedBox(height: 16),
+            Text(
+              appLocalizations.noClassScheduledToday,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: primaryBrandColor),
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: Text(appLocalizations.addExtraSession, style: const TextStyle(color: Colors.white)),
                 onPressed: () async {
                   final TimeOfDay? pickedTime = await showTimePicker(
                     context: context,
@@ -553,21 +604,22 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                       builder: (context) {
                         final controller = TextEditingController();
                         return AlertDialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           title: Text(appLocalizations.duration),
                           content: TextFormField(
                             controller: controller,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
-                              labelText: appLocalizations.duration,
-                              prefixIcon: const Icon(Iconsax.timer)
-                            ),
+                                labelText: appLocalizations.duration,
+                                prefixIcon: const Icon(Iconsax.timer)),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context),
-                              child: Text(appLocalizations.cancel),
+                              child: Text(appLocalizations.cancel, style: const TextStyle(color: Colors.grey)),
                             ),
                             ElevatedButton(
+                              style: ElevatedButton.styleFrom(backgroundColor: primaryBrandColor),
                               onPressed: () {
                                 if (controller.text.trim().isNotEmpty) {
                                   Navigator.pop(context, controller.text.trim());
@@ -598,58 +650,115 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                   }
                 },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
 
-    // Otherwise show today’s attendance list
+    // --- ATTENDANCE LIST VIEW ---
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16.0, left: 16.0),
-          child: ListTile(
-            leading: Icon(Iconsax.clock, color: Theme.of(context).primaryColor),
-            title: Text("${todayName}"),
-            subtitle: Text("${todaySchedule?['time']} • ${todaySchedule?['duration']}"),
-          )
+        /// Schedule Header
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: dark ? Colors.white10 : Colors.black12)),
+          ),
+          child: Row(
+            children: [
+              Icon(Iconsax.clock, color: primaryBrandColor, size: 20),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(todayName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(
+                    "${todaySchedule?['time']} • ${todaySchedule?['duration']} ${'min'}",
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
 
+        const SizedBox(height: 8),
+
+        /// Student Cards
         Expanded(
           child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: myAttendanceStudents.length,
             itemBuilder: (context, index) {
               final student = myAttendanceStudents[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: CircleAvatar(child: Text(student.firstName![0])),
-                  title: Text(
-                    "${student.firstName} ${student.lastName}",
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  subtitle: Text(
-                    student.email ?? '',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  trailing: IconButton(
-                    icon: Icon(
-                      Iconsax.tick_square,
-                      color: Colors.green,
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: IntrinsicHeight(
+                    child: Row(
+                      children: [
+                        // BRAND ACCENT LINE
+                        Container(width: 5, color: primaryBrandColor),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 22,
+                                  backgroundColor: primaryBrandColor.withOpacity(0.1),
+                                  child: Text(
+                                    student.firstName![0].toUpperCase(),
+                                    style: TextStyle(color: primaryBrandColor, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "${student.firstName} ${student.lastName}",
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                      ),
+                                      Text(
+                                        student.email ?? '',
+                                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Iconsax.tick_square, color: Colors.green, size: 28),
+                                  onPressed: () async {
+                                    setState(() {
+                                      myAttendanceStudents.removeAt(index);
+                                    });
+                                    await classStudentService.updateAttendance(
+                                      widget.classId,
+                                      student.userId!,
+                                      true,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    onPressed: () async {
-                      setState(() {
-                        myAttendanceStudents.removeAt(index);
-                      });
-
-                      await classStudentService.updateAttendance(
-                        widget.classId,
-                        student.userId!,
-                        true,
-                      );
-                    },
                   ),
                 ),
               );
@@ -697,16 +806,11 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                   child: Row(
                     children: [
                       // Belt colors
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildBeltBox(belt.beltColor1),
-                          if (belt.beltColor2 != null) ...[
-                            const SizedBox(width: 4),
-                            _buildBeltBox(belt.beltColor2!),
-                          ],
-                        ],
-                      ),
+                      _buildBeltBox(belt.beltColor1),
+                      if (belt.beltColor2 != null) ...[
+                        const SizedBox(width: 4),
+                        _buildBeltBox(belt.beltColor2!),
+                      ],
 
                       const SizedBox(width: 16),
 
@@ -715,36 +819,14 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 4,
-                              children: [
-                                Chip(
-                                  label: Text(
-                                    "${belt.minAge}–${belt.maxAge} ${appLocalizations.years}",
-                                    style: const TextStyle(fontWeight: FontWeight.w500),
-                                  ),
-                                ),
-                                Chip(
-                                  label: belt.beltColor2 == null
-                                      ? Text(Belt.getColorName(belt.beltColor1))
-                                      : Text(
-                                    "${Belt.getColorName(belt.beltColor1)}/${Belt.getColorName(belt.beltColor2!)}",
-                                    style: const TextStyle(fontWeight: FontWeight.w500),
-                                  ),
-                                ),
-                                Chip(
-                                  label: Text("${belt.maxStripes} ${appLocalizations.maxStripes}",
-                                    style: const TextStyle(fontWeight: FontWeight.w500),
-                                  ),
-                                ),
-                                Chip(
-                                  label: Text(
-                                    "${belt.classesPerBeltOrStripe} ${appLocalizations.classesPerBeltOrStripe}",
-                                    style: const TextStyle(fontWeight: FontWeight.w500),
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              "${belt.minAge}–${belt.maxAge} ${appLocalizations.years}",
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "${belt.maxStripes} Stripes • ${belt.classesPerBeltOrStripe} Classes Required",
+                              style: const TextStyle(fontSize: 12, color: Colors.grey),
                             ),
                           ],
                         ),

@@ -228,5 +228,7 @@
   "applyFilters": "Apply Filters",
   "select": "Select",
   "changePhoto": "Change Photo",
-  "schedule": "Schedule"
+  "schedule": "Schedule",
+  "selectBeltColor": "Select Belt Color",
+  "confirm": "Confirm"
 }

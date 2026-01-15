@@ -1420,6 +1420,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Schedule'**
   String get schedule;
+
+  /// No description provided for @selectBeltColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Belt Color'**
+  String get selectBeltColor;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
