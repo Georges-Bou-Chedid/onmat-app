@@ -787,8 +787,8 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
             itemCount: myGraduationBelts.length,
             onReorder: isEditing
                 ? (oldIndex, newIndex) {
-                  classGraduationService.updateBeltOrder(oldIndex, newIndex);
                   setState(() {
+                    classGraduationService.updateBeltOrder(oldIndex, newIndex);
                     hasChanges = true;
                   });
                 }
@@ -797,15 +797,23 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
               final belt = myGraduationBelts[index];
               return Card(
                 key: ValueKey(belt.id),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                 child: Padding(
                   padding: const EdgeInsets.all(TSizes.md),
                   child: Row(
                     children: [
-                      // Belt colors
+                      // 1. DRAG HANDLE (Visible only in Edit Mode)
+                      if (isEditing)
+                        ReorderableDragStartListener(
+                          index: index,
+                          child: const Padding(
+                            padding: EdgeInsets.only(right: 16),
+                            child: Icon(Iconsax.row_vertical, color: Colors.grey),
+                          ),
+                        ),
+
+                      // 2. BELT COLORS
                       _buildBeltBox(belt.beltColor1),
                       if (belt.beltColor2 != null) ...[
                         const SizedBox(width: 4),
@@ -814,7 +822,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
 
                       const SizedBox(width: 16),
 
-                      // Belt details
+                      // 3. BELT DETAILS
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -824,14 +832,16 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                               style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 4),
+                            // Displaying priority helps you debug during development
                             Text(
-                              "${belt.maxStripes} Stripes • ${belt.classesPerBeltOrStripe} Classes Required",
+                              "Rank ${belt.priority}: ${belt.maxStripes} Stripes • ${belt.classesPerBeltOrStripe} Classes",
                               style: const TextStyle(fontSize: 12, color: Colors.grey),
                             ),
                           ],
                         ),
                       ),
 
+                      // 4. EDIT/DELETE ACTIONS
                       if (isEditing)
                       Column(
                         children: [
@@ -854,8 +864,8 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                                   final index = myGraduationBelts.indexWhere((b) => b.id == updatedBelt.id);
                                   if (index != -1) {
                                     myGraduationBelts[index] = updatedBelt;
+                                    hasChanges = true;
                                   }
-                                  hasChanges = true;
                                 });
                               }
                             },
@@ -912,6 +922,13 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                   });
                 }
               }),
+              _actionButton(context, Iconsax.pen_close, appLocalizations.cancel, onTap: () {
+                classGraduationService.cancelChanges();
+                setState(() {
+                  isEditing = false;
+                  hasChanges = false;
+                });
+              }),
               if (hasChanges) ...[
                 _actionButton(context, Iconsax.save_2, appLocalizations.saveChanges,
                     onTap: isLoading ? null : () async {
@@ -941,13 +958,6 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                       hasChanges = false;
                     });
                   }
-                }),
-                _actionButton(context, Iconsax.pen_close, appLocalizations.cancel, onTap: () {
-                  classGraduationService.cancelChanges();
-                  setState(() {
-                    isEditing = false;
-                    hasChanges = false;
-                  });
                 }),
               ]
             ]

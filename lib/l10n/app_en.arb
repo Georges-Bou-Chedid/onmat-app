@@ -230,5 +230,17 @@
   "changePhoto": "Change Photo",
   "schedule": "Schedule",
   "selectBeltColor": "Select Belt Color",
-  "confirm": "Confirm"
+  "confirm": "Confirm",
+  "addStripe": "Add a Stripe (+1)",
+  "currentStripes": "Current Stripes",
+  "promoteToNextBelt": "Promote to Next Belt",
+  "promotionWarning": "Will reset stripes and attendance",
+  "confirmPromotion": "Confirm Promotion",
+  "promoteConfirmText": "Are you sure you want to promote",
+  "syncRank": "Sync Student Rank",
+  "rankMismatchDesc": "This student's belt is not in the current curriculum. Sync to fix.",
+  "rankMismatch": "Rank Mismatch Detected",
+  "studentProfile": "Student Profile",
+  "selectCorrectRank": "Select Correct Rank",
+  "rank": "Rank"
 }

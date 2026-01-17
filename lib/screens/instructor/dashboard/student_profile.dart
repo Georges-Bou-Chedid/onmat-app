@@ -53,36 +53,36 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     }
   }
 
+  /// Detects if the student's current belt is missing from the curriculum
+  bool isStudentRankLost(int studentAge, List<Belt> belts, Color c1, Color? c2) {
+    // If they are a basic white belt, they aren't "lost", they are just new.
+    if (c1.value == Colors.white.value && c2 == null) return false;
+
+    final eligible = belts.where((b) => studentAge >= b.minAge && studentAge <= b.maxAge).toList();
+
+    // If we can't find their current belt colors in the system, they are lost.
+    return !eligible.any((b) => b.beltColor1.value == c1.value && b.beltColor2?.value == c2?.value);
+  }
+
   Belt? getNextBeltForStudent(int studentAge, List<Belt> belts, Color currentBelt1Color, Color? currentBelt2Color) {
-    // 1. Filter by age
-    final eligibleBelts = belts.where((belt) {
-      return studentAge >= belt.minAge && studentAge <= belt.maxAge;
-    }).toList();
+    final eligible = belts.where((b) => studentAge >= b.minAge && studentAge <= b.maxAge).toList();
+    if (eligible.isEmpty) return null;
 
-    if (eligibleBelts.isEmpty) return null;
+    eligible.sort((a, b) => a.priority.compareTo(b.priority));
 
-    // 2. Sort by priority (e.g., Priority 1 is Black, Priority 10 is White)
-    // We want to find the belt that is "one step better" than current
-    eligibleBelts.sort((a, b) => a.priority.compareTo(b.priority));
+    final currentIndex = eligible.indexWhere((b) =>
+    b.beltColor1.value == currentBelt1Color.value &&
+        b.beltColor2?.value == currentBelt2Color?.value);
 
-    // 3. Find the current belt's priority index
-    int currentPriority = 999; // Default low rank
-    for (var belt in eligibleBelts) {
-      if (belt.beltColor1 == currentBelt1Color && belt.beltColor2 == currentBelt2Color) {
-        currentPriority = belt.priority;
-        break;
+    if (currentIndex == -1) {
+      if (currentBelt1Color.value == Colors.white.value && currentBelt2Color == null) {
+        return eligible.first;
       }
-    }
-
-    // 4. Return the belt that has the next highest priority (immediately lower number than current)
-    try {
-      // We look for the belt whose priority is less than currentPriority
-      // but is the largest among those smaller values (the immediate next step)
-      return eligibleBelts.lastWhere((belt) => belt.priority < currentPriority);
-    } catch (e) {
-      // If no higher belt is found in that age range
       return null;
+    } else if (currentIndex < eligible.length - 1) {
+      return eligible[currentIndex + 1];
     }
+    return null;
   }
 
   @override
@@ -100,12 +100,10 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     final studentAge = calculateAge(student.dob!);
     final myGraduationBelts = Provider.of<ClassGraduationService>(context).myGradutationBelts;
     final nextBelt = getNextBeltForStudent(studentAge, myGraduationBelts, student.belt1, student.belt2);
+    final isLost = isStudentRankLost(studentAge, myGraduationBelts, student.belt1, student.belt2);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Student Profile"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text(appLocalizations.studentProfile), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(TSizes.defaultSpace),
         child: Column(
@@ -114,25 +112,61 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             Center(
               child: Column(
                 children: [
-                  TCircularImage(
-                    image:  "assets/images/settings/user.png",
-                    // isNetworkImage: (student.profilePicture != null && student.profilePicture!.isNotEmpty),
-                    width: 100,
-                    height: 100,
-                    padding: 0,
-                  ),
+                  TCircularImage(image: "assets/images/settings/user.png", width: 100, height: 100, padding: 0),
                   const SizedBox(height: TSizes.spaceBtwItems),
                   Text("${student.firstName} ${student.lastName}", style: Theme.of(context).textTheme.headlineSmall),
                   Text(student.email ?? '', style: TextStyle(color: Colors.grey[600])),
                 ],
               ),
             ),
-
             const SizedBox(height: TSizes.spaceBtwSections),
 
-            /// 2. PERSONAL INFO GRID
-            _buildSectionContainer(
-              dark,
+            /// 2. SYNC WARNING (If rank is lost)
+            if (widget.showInstructorFeatures && isLost) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(TSizes.md),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange.withOpacity(0.5)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Iconsax.warning_2, color: Colors.orange),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            appLocalizations.rankMismatch ?? "Rank Mismatch Detected",
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      appLocalizations.rankMismatchDesc ?? "This student's belt is not in the current curriculum. Sync to fix.",
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
+                        onPressed: () => _showSyncMenu(student, myGraduationBelts, classStudentService, appLocalizations),
+                        child: Text(appLocalizations.syncRank ?? "Sync Student Rank"),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              const SizedBox(height: TSizes.spaceBtwItems),
+            ],
+
+            /// 3. PERSONAL INFO
+            _buildSectionContainer(dark,
               child: GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -146,12 +180,10 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: TSizes.spaceBtwItems),
 
-            /// 3. GRADUATION & BELT STATUS
-            _buildSectionContainer(
-              dark,
+            /// 4. GRADUATION & BELT STATUS
+            _buildSectionContainer(dark,
               child: Column(
                 children: [
                   Row(
@@ -165,63 +197,42 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                           _buildBeltVisual(student.belt1, student.belt2),
                         ],
                       ),
-                      if (widget.showInstructorFeatures)
+                      if (widget.showInstructorFeatures && !isLost)
                         ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryBrandColor,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
+                          style: ElevatedButton.styleFrom(backgroundColor: primaryBrandColor),
                           onPressed: () => _handleUpgrade(student, nextBelt, classStudentService, appLocalizations),
                           child: Text(appLocalizations.upgrade),
                         ),
                     ],
                   ),
                   const Divider(height: 32),
-
                   Row(
                     children: [
-                      // Upcoming Belt
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(appLocalizations.upcomingBelt, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
                             const SizedBox(height: 8),
-                            if (nextBelt != null)
-                              _buildBeltVisual(nextBelt.beltColor1, nextBelt.beltColor2)
-                            else
-                              const Text("—", style: TextStyle(fontWeight: FontWeight.bold)),
+                            if (nextBelt != null) _buildBeltVisual(nextBelt.beltColor1, nextBelt.beltColor2)
+                            else const Text("—", style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),
-                      // Stripes
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(appLocalizations.stripes, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
                             const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Text(
-                                  nextBelt != null ? "${student.stripes} / ${nextBelt.maxStripes}" : "${student.stripes}",
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                ),
-                                if (nextBelt != null && student.stripes >= nextBelt.maxStripes)
-                                  const Padding(
-                                    padding: EdgeInsets.only(left: 8.0),
-                                    child: Icon(Iconsax.warning_2, color: Colors.orange, size: 18),
-                                  ),
-                              ],
-                            ),
+                            Text("${student.stripes}${nextBelt != null ? ' / ${nextBelt.maxStripes}' : ''}",
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 24),
-
                   _progressTile(
                       appLocalizations.classesAttended,
                       student.classAttended,
@@ -232,72 +243,94 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 ],
               ),
             ),
-
-            const SizedBox(height: TSizes.spaceBtwItems),
-
-            /// 4. ACHIEVEMENTS SECTION
-            _buildSectionContainer(
-              dark,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(appLocalizations.achievements, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      IconButton(
-                        onPressed: () {}, // Add achievement logic
-                        icon: Icon(Iconsax.add_square, color: primaryBrandColor),
-                      ),
-                    ],
-                  ),
-                  // if (student.achievements == null || student.achievements!.isEmpty)
-                  //   Padding(
-                  //     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  //     child: Text(
-                  //         "No achievements recorded yet.",
-                  //         style: TextStyle(color: Colors.grey[500], fontSize: 13, fontStyle: FontStyle.italic)
-                  //     ),
-                  //   )
-                  // else
-                  // // Example Achievement List
-                  //   ListView.builder(
-                  //     shrinkWrap: true,
-                  //     physics: const NeverScrollableScrollPhysics(),
-                  //     itemCount: student.achievements?.length ?? 0,
-                  //     itemBuilder: (context, index) => ListTile(
-                  //       contentPadding: EdgeInsets.zero,
-                  //       leading: const Icon(Iconsax.medal_star, color: Colors.amber),
-                  //       title: Text(student.achievements![index]),
-                  //     ),
-                  //   ),
-                ],
-              ),
-            ),
-
             const SizedBox(height: TSizes.spaceBtwSections),
 
             /// 5. DANGER ZONE
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                    foregroundColor: primaryBrandColor,
-                    side: BorderSide(color: primaryBrandColor)
+            if (widget.showInstructorFeatures)
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(foregroundColor: primaryBrandColor, side: BorderSide(color: primaryBrandColor)),
+                  icon: const Icon(Iconsax.profile_remove),
+                  onPressed: () => _confirmRemoval(student, classStudentService, appLocalizations),
+                  label: Text(appLocalizations.remove),
                 ),
-                icon: const Icon(Iconsax.profile_remove),
-                onPressed: () => _confirmRemoval(student, classStudentService, appLocalizations),
-                label: Text(appLocalizations.remove),
               ),
-            ),
-            const SizedBox(height: TSizes.spaceBtwSections),
           ],
         ),
       ),
     );
   }
 
-  /// HELPER WIDGETS
+  /// UI Helper Methods
+  void _showSyncMenu(student, List<Belt> belts, service, l10n) {
+    // 1. Calculate student age (using your existing helper)
+    final studentAge = calculateAge(student.dob!);
+
+    // 2. Filter belts to only show those valid for the student's age
+    final eligibleBelts = belts.where((b) =>
+    studentAge >= b.minAge && studentAge <= b.maxAge
+    ).toList();
+
+    // 3. Sort them by priority so they appear in order
+    eligibleBelts.sort((a, b) => a.priority.compareTo(b.priority));
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(TSizes.md),
+        decoration: BoxDecoration(
+          color: THelperFunctions.isDarkMode(context) ? const Color(0xFF1E1E1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag Handle
+            Container(
+              width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+            ),
+
+            Text(l10n.selectCorrectRank ?? "Select Correct Rank", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 16),
+
+            // Use the filtered list here
+            if (eligibleBelts.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Text(l10n.noBeltsForAge ?? "No curriculum found for this age group."),
+              )
+            else
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: eligibleBelts.length,
+                  itemBuilder: (context, index) {
+                    final belt = eligibleBelts[index];
+                    return ListTile(
+                      leading: _buildBeltVisual(belt.beltColor1, belt.beltColor2),
+                      title: Text("${l10n.rank ?? 'Rank'} ${belt.priority}"),
+                      subtitle: Text("${belt.minAge}-${belt.maxAge} ${l10n.years ?? 'years'}"),
+                      onTap: () async {
+                        await service.upgradeStudentBelt(
+                            widget.classId,
+                            student.userId!,
+                            belt.beltColor1,
+                            belt.beltColor2
+                        );
+                        Get.back();
+                      },
+                    );
+                  },
+                ),
+              ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSectionContainer(bool dark, {required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -373,25 +406,54 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
   }
 
   void _handleUpgrade(student, Belt? nextBelt, service, l10n) {
-    if (nextBelt == null) return;
-    bool isStripeUpgrade = student.stripes < nextBelt.maxStripes;
-
-    Get.defaultDialog(
-        title: l10n.upgrade,
-        middleText: isStripeUpgrade
-            ? "Add a stripe to ${student.firstName}?"
-            : "Promote ${student.firstName} to the next belt?",
-        textConfirm: l10n.confirm,
-        confirmTextColor: Colors.white,
-        buttonColor: primaryBrandColor,
-        onConfirm: () async {
-          if (isStripeUpgrade) {
-            await service.updateStudentStripes(widget.classId, student.userId!, student.stripes + 1);
-          } else {
-            await service.upgradeStudentBelt(widget.classId, student.userId!, nextBelt.beltColor1, nextBelt.beltColor2);
-          }
-          Get.back();
-        }
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(TSizes.md),
+        decoration: BoxDecoration(
+          color: THelperFunctions.isDarkMode(context) ? const Color(0xFF1E1E1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20), decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
+            Text(l10n.upgrade, style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: TSizes.spaceBtwSections),
+            ListTile(
+              leading: const Icon(Iconsax.medal_star, color: Colors.orange),
+              title: Text(l10n.addStripe ?? "Add Stripe"),
+              subtitle: Text("${l10n.currentStripes ?? 'Current'}: ${student.stripes}"),
+              onTap: () async {
+                await service.updateStudentStripes(widget.classId, student.userId!, student.stripes + 1);
+                Get.back();
+              },
+            ),
+            const Divider(),
+            if (nextBelt != null)
+              ListTile(
+                leading: const Icon(Iconsax.award, color: Color(0xFFDF1E42)),
+                title: Text(l10n.promoteToNextBelt ?? "Promote to Next Belt"),
+                subtitle: Text(l10n.promotionWarning ?? "Resets stripes and attendance"),
+                onTap: () {
+                  Get.back();
+                  Get.defaultDialog(
+                    title: l10n.confirmPromotion ?? "Confirm Promotion",
+                    middleText: "${l10n.promoteConfirmText ?? 'Are you sure you want to promote'} ${student.firstName}?",
+                    textConfirm: l10n.confirm,
+                    textCancel: l10n.cancel,
+                    confirmTextColor: Colors.white,
+                    buttonColor: primaryBrandColor,
+                    onConfirm: () async {
+                      await service.upgradeStudentBelt(widget.classId, student.userId!, nextBelt.beltColor1, nextBelt.beltColor2);
+                      Get.back();
+                    },
+                  );
+                },
+              ),
+            const SizedBox(height: TSizes.spaceBtwSections),
+          ],
+        ),
+      ),
     );
   }
 

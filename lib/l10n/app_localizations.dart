@@ -1432,6 +1432,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Confirm'**
   String get confirm;
+
+  /// No description provided for @addStripe.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a Stripe (+1)'**
+  String get addStripe;
+
+  /// No description provided for @currentStripes.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Stripes'**
+  String get currentStripes;
+
+  /// No description provided for @promoteToNextBelt.
+  ///
+  /// In en, this message translates to:
+  /// **'Promote to Next Belt'**
+  String get promoteToNextBelt;
+
+  /// No description provided for @promotionWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Will reset stripes and attendance'**
+  String get promotionWarning;
+
+  /// No description provided for @confirmPromotion.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Promotion'**
+  String get confirmPromotion;
+
+  /// No description provided for @promoteConfirmText.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to promote'**
+  String get promoteConfirmText;
+
+  /// No description provided for @syncRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Student Rank'**
+  String get syncRank;
+
+  /// No description provided for @rankMismatchDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This student\'s belt is not in the current curriculum. Sync to fix.'**
+  String get rankMismatchDesc;
+
+  /// No description provided for @rankMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank Mismatch Detected'**
+  String get rankMismatch;
+
+  /// No description provided for @studentProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Student Profile'**
+  String get studentProfile;
+
+  /// No description provided for @selectCorrectRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Correct Rank'**
+  String get selectCorrectRank;
+
+  /// No description provided for @rank.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank'**
+  String get rank;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

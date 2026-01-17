@@ -49,27 +49,32 @@ class ClassGraduationService with ChangeNotifier {
 
   void updateBeltOrder(int oldIndex, int newIndex) {
     if (newIndex > oldIndex) newIndex -= 1;
-    final belt = _myGradutationBelts.removeAt(oldIndex);
-    _myGradutationBelts.insert(newIndex, belt);
+    final item = _myGradutationBelts.removeAt(oldIndex);
+    _myGradutationBelts.insert(newIndex, item);
 
-    // Reassign priorities
-    for (var i = 0; i < _myGradutationBelts.length; i++) {
+    // RE-ASSIGN ALL PRIORITIES so they match the new visual order
+    for (int i = 0; i < _myGradutationBelts.length; i++) {
       _myGradutationBelts[i].priority = i + 1;
     }
-
     notifyListeners();
   }
 
   void removeBelt(int index) {
+    // 1. Remove from local list
     _myGradutationBelts.removeAt(index);
-    // Reassign priorities
-    for (var i = 0; i < _myGradutationBelts.length; i++) {
+
+    // 2. Force priorities to be 1, 2, 3... regardless of what they were
+    for (int i = 0; i < _myGradutationBelts.length; i++) {
       _myGradutationBelts[i].priority = i + 1;
     }
+
+    // 3. Notify listeners so the UI (Student Profile) sees the change
     notifyListeners();
   }
 
   void addBelt(Belt belt) {
+    // Ensure the new belt has a priority based on current list
+    belt.priority = _myGradutationBelts.length + 1;
     _myGradutationBelts.add(belt);
     notifyListeners();
   }

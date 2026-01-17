@@ -246,6 +246,53 @@ class ClassStudentService with ChangeNotifier {
     }
   }
 
+  Future<bool> updateStudentStripes(String classId, String uid, int newStripes) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('class_student')
+          .where('class_id', isEqualTo: classId)
+          .where('student_id', isEqualTo: uid)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) return false;
+
+      await _firestore.collection('class_student').doc(querySnapshot.docs.first.id).update({
+        'stripes': newStripes,
+      });
+
+      return true;
+    } catch (e) {
+      print("🔥 Failed to update stripes: $e");
+      return false;
+    }
+  }
+
+  Future<bool> upgradeStudentBelt(String classId, String uid, Color belt1, Color? belt2) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('class_student')
+          .where('class_id', isEqualTo: classId)
+          .where('student_id', isEqualTo: uid)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) return false;
+
+      await _firestore.collection('class_student').doc(querySnapshot.docs.first.id).update({
+        'belt1': Belt.getColorName(belt1), // Assuming you store names like 'White' in DB
+        'belt2': belt2 != null ? Belt.getColorName(belt2) : null,
+        'stripes': 0, // Reset stripes to 0 when a new belt is awarded
+        'class_attended': 0, // Optionally reset attendance for the new rank
+      });
+
+      return true;
+    } catch (e) {
+      print("🔥 Failed to upgrade belt: $e");
+      return false;
+    }
+  }
+
   Future<bool> removeStudentFromClass(String classId, String uid) async {
     try {
       // Step 1: Find existing class_student document for this student

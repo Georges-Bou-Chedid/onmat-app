@@ -678,4 +678,40 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get confirm => 'Confirm';
+
+  @override
+  String get addStripe => 'Add a Stripe (+1)';
+
+  @override
+  String get currentStripes => 'Current Stripes';
+
+  @override
+  String get promoteToNextBelt => 'Promote to Next Belt';
+
+  @override
+  String get promotionWarning => 'Will reset stripes and attendance';
+
+  @override
+  String get confirmPromotion => 'Confirm Promotion';
+
+  @override
+  String get promoteConfirmText => 'Are you sure you want to promote';
+
+  @override
+  String get syncRank => 'Sync Student Rank';
+
+  @override
+  String get rankMismatchDesc => 'This student\'s belt is not in the current curriculum. Sync to fix.';
+
+  @override
+  String get rankMismatch => 'Rank Mismatch Detected';
+
+  @override
+  String get studentProfile => 'Student Profile';
+
+  @override
+  String get selectCorrectRank => 'Select Correct Rank';
+
+  @override
+  String get rank => 'Rank';
 }
