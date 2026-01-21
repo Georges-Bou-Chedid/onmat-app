@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.myapp.onmat"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -24,10 +24,10 @@ android {
 
     defaultConfig {
         applicationId = "com.myapp.onmat"
-        minSdk = 23
-        targetSdk = 35
+        minSdk = flutter.minSdkVersion
+        targetSdk = 36
         versionCode = 1
-        versionName = "1.2"
+        versionName = "1.3"
     }
 
     signingConfigs {
