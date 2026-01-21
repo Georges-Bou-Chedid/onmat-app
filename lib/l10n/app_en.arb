@@ -242,5 +242,12 @@
   "rankMismatch": "Rank Mismatch Detected",
   "studentProfile": "Student Profile",
   "selectCorrectRank": "Select Correct Rank",
-  "rank": "Rank"
+  "rank": "Rank",
+  "recentUpgrades": "Recent Upgrades",
+  "paymentMethod": "Payment Method",
+  "change": "Change",
+  "add": "Add",
+  "payNow": "Pay Now",
+  "addCard": "Add Card",
+  "totalBalance": "Total Outstanding Balance"
 }

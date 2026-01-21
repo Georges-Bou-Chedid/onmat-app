@@ -177,6 +177,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   _infoTile(appLocalizations.weight, "${student.weight} kg"),
                   _infoTile(appLocalizations.height, "${student.height} cm"),
                   _infoTile(appLocalizations.gender, student.gender?.capitalizeFirst ?? 'N/A'),
+                  _infoTile(appLocalizations.attendedToday, student.hasAttendanceToday ? 'Yes' : 'No'),
                 ],
               ),
             ),
@@ -200,7 +201,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       if (widget.showInstructorFeatures && !isLost)
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(backgroundColor: primaryBrandColor),
-                          onPressed: () => _handleUpgrade(student, nextBelt, classStudentService, appLocalizations),
+                          onPressed: () => _handleUpgrade(student, nextBelt, classStudentService, dark, appLocalizations),
                           child: Text(appLocalizations.upgrade),
                         ),
                     ],
@@ -405,7 +406,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     );
   }
 
-  void _handleUpgrade(student, Belt? nextBelt, service, l10n) {
+  void _handleUpgrade(student, Belt? nextBelt, service, dark, l10n) {
+    final String studentName = "${student.firstName} ${student.lastName}".trim();
+
     Get.bottomSheet(
       Container(
         padding: const EdgeInsets.all(TSizes.md),
@@ -424,7 +427,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               title: Text(l10n.addStripe ?? "Add Stripe"),
               subtitle: Text("${l10n.currentStripes ?? 'Current'}: ${student.stripes}"),
               onTap: () async {
-                await service.updateStudentStripes(widget.classId, student.userId!, student.stripes + 1);
+                await service.updateStudentStripes(widget.classId, student.userId!, studentName, student.stripes + 1);
                 Get.back();
               },
             ),
@@ -435,19 +438,47 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 title: Text(l10n.promoteToNextBelt ?? "Promote to Next Belt"),
                 subtitle: Text(l10n.promotionWarning ?? "Resets stripes and attendance"),
                 onTap: () {
-                  Get.back();
-                  Get.defaultDialog(
-                    title: l10n.confirmPromotion ?? "Confirm Promotion",
-                    middleText: "${l10n.promoteConfirmText ?? 'Are you sure you want to promote'} ${student.firstName}?",
-                    textConfirm: l10n.confirm,
-                    textCancel: l10n.cancel,
-                    confirmTextColor: Colors.white,
-                    buttonColor: primaryBrandColor,
-                    onConfirm: () async {
-                      await service.upgradeStudentBelt(widget.classId, student.userId!, nextBelt.beltColor1, nextBelt.beltColor2);
-                      Get.back();
-                    },
-                  );
+                  Get.back(); // Close the BottomSheet first
+
+                  showDialog<bool>(
+                    context: context,
+                    barrierDismissible: true,
+                    builder: (context) => AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide.none,
+                      ),
+                      title: Text(l10n.confirmPromotion ?? "Confirm Promotion", style: const TextStyle(fontWeight: FontWeight.bold)),
+                      content: Text("${l10n.promoteConfirmText ?? 'Are you sure you want to promote'} ${student.firstName}?"),
+                      actions: [
+                        // Cancel Button: Simple TextButton
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: Text(l10n.cancel, style: TextStyle(color: dark ? Colors.white70 : Colors.black87)),
+                        ),
+                        // Confirm Button: Branded ElevatedButton
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryBrandColor,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: Text(l10n.confirm, style: const TextStyle(color: Colors.white)),
+                        ),
+                      ],
+                    ),
+                  ).then((confirmed) async {
+                    if (confirmed == true && nextBelt != null) {
+                      await service.upgradeStudentBelt(
+                          widget.classId,
+                          student.userId!,
+                          studentName,
+                          nextBelt.beltColor1,
+                          nextBelt.beltColor2
+                      );
+                    }
+                  });
                 },
               ),
             const SizedBox(height: TSizes.spaceBtwSections),

@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:onmat/controllers/auth.dart';
 import 'package:onmat/screens/instructor/settings/account_security.dart';
 import 'package:onmat/screens/instructor/settings/support_legal.dart';
+import 'package:onmat/screens/instructor/settings/wallet_screen.dart';
 import 'package:onmat/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
@@ -109,8 +110,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _buildMenuTile(
                         icon: Iconsax.wallet_check,
                         title: appLocalizations.myWallet,
-                        subtitle: "Balance: \$135.00",
-                        onTap: () {},
+                        subtitle: (instructor?.outstandingBalance ?? 0) > 0
+                            ? "Outstanding: \$${instructor!.outstandingBalance.toStringAsFixed(2)}"
+                            : "Balance: \$0.00",
+                        onTap: () => Get.to(() => const WalletScreen(), transition: Transition.rightToLeft),
                       ),
                       _buildMenuTile(
                         icon: Iconsax.setting_2,

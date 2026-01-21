@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:onmat/models/Student.dart';
 
@@ -9,6 +10,7 @@ import '../../models/ClassStudent.dart';
 
 class ClassStudentService with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   List<Student> _myStudents = [];
   List<Student> get myStudents => _myStudents;
@@ -246,49 +248,108 @@ class ClassStudentService with ChangeNotifier {
     }
   }
 
-  Future<bool> updateStudentStripes(String classId, String uid, int newStripes) async {
+  Future<bool> updateStudentStripes(String classId, String studentUid, String studentName, int newStripes) async {
+    final instructorId = _auth.currentUser!.uid;
+    const double fee = 2.0;
+
     try {
-      final querySnapshot = await _firestore
-          .collection('class_student')
-          .where('class_id', isEqualTo: classId)
-          .where('student_id', isEqualTo: uid)
-          .limit(1)
-          .get();
+      return await _firestore.runTransaction((transaction) async {
+        // 1. Find the student record
+        final querySnapshot = await _firestore
+            .collection('class_student')
+            .where('class_id', isEqualTo: classId)
+            .where('student_id', isEqualTo: studentUid)
+            .limit(1)
+            .get();
 
-      if (querySnapshot.docs.isEmpty) return false;
+        if (querySnapshot.docs.isEmpty) return false;
 
-      await _firestore.collection('class_student').doc(querySnapshot.docs.first.id).update({
-        'stripes': newStripes,
+        final studentDoc = querySnapshot.docs.first;
+        final studentData = studentDoc.data();
+        final int oldStripes = studentData['stripes'] ?? 0;
+
+        // 2. Always update the stripes count
+        transaction.update(studentDoc.reference, {'stripes': newStripes});
+
+        // 3. ONLY charge and log if stripes increased
+        if (newStripes > oldStripes) {
+          // Create Transaction Log
+          final transactionRef = _firestore.collection('transactions').doc();
+          transaction.set(transactionRef, {
+            'instructor_id': instructorId,
+            'student_name': studentName,
+            'student_id': studentUid,
+            'type': 'stripe_addition',
+            'amount': fee,
+            'status': 'pending',
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+
+          // Increment Instructor Balance
+          final instructorRef = _firestore.collection('instructors').doc(instructorId);
+          transaction.update(instructorRef, {
+            'outstanding_balance': FieldValue.increment(fee),
+          });
+        }
+
+        return true;
       });
-
-      return true;
     } catch (e) {
       print("🔥 Failed to update stripes: $e");
       return false;
     }
   }
 
-  Future<bool> upgradeStudentBelt(String classId, String uid, Color belt1, Color? belt2) async {
+  Future<bool> upgradeStudentBelt(String classId, String studentUid, String studentName, Color belt1, Color? belt2) async {
+    final batch = _firestore.batch();
+    final instructorId = _auth.currentUser!.uid;
+    const double fee = 2.0;
+
     try {
+      // 1. Find the student record to get their name and document ID
       final querySnapshot = await _firestore
           .collection('class_student')
           .where('class_id', isEqualTo: classId)
-          .where('student_id', isEqualTo: uid)
+          .where('student_id', isEqualTo: studentUid)
           .limit(1)
           .get();
 
       if (querySnapshot.docs.isEmpty) return false;
 
-      await _firestore.collection('class_student').doc(querySnapshot.docs.first.id).update({
-        'belt1': Belt.getColorName(belt1), // Assuming you store names like 'White' in DB
+      final studentDoc = querySnapshot.docs.first;
+
+      // 2. Queue the Student Update in Batch
+      batch.update(studentDoc.reference, {
+        'belt1': Belt.getColorName(belt1), // Storing .value (int) is safer for logic than Strings
         'belt2': belt2 != null ? Belt.getColorName(belt2) : null,
-        'stripes': 0, // Reset stripes to 0 when a new belt is awarded
-        'class_attended': 0, // Optionally reset attendance for the new rank
+        'stripes': 0,
+        'class_attended': 0,
       });
 
+      // 3. Queue the Transaction Log in Batch
+      final transactionRef = _firestore.collection('transactions').doc();
+      batch.set(transactionRef, {
+        'instructor_id': instructorId,
+        'student_name': studentName,
+        'student_id': studentUid,
+        'type': 'belt_upgrade',
+        'amount': fee,
+        'status': 'pending',
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      // 4. Queue the Balance Increment in Batch
+      final instructorRef = _firestore.collection('instructors').doc(instructorId);
+      batch.update(instructorRef, {
+        'outstanding_balance': FieldValue.increment(fee),
+      });
+
+      // 5. Commit all changes at once
+      await batch.commit();
       return true;
+
     } catch (e) {
-      print("🔥 Failed to upgrade belt: $e");
+      print("🔥 Failed to upgrade belt and log transaction: $e");
       return false;
     }
   }

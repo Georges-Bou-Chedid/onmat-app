@@ -714,4 +714,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get rank => 'Rank';
+
+  @override
+  String get recentUpgrades => 'Recent Upgrades';
+
+  @override
+  String get paymentMethod => 'Payment Method';
+
+  @override
+  String get change => 'Change';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get payNow => 'Pay Now';
+
+  @override
+  String get addCard => 'Add Card';
+
+  @override
+  String get totalBalance => 'Total Outstanding Balance';
 }

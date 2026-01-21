@@ -15,6 +15,11 @@ class Instructor {
   final String? phoneNumber;
   final bool? notifications;
 
+  // --- NEW FINANCIAL FIELDS ---
+  final double outstandingBalance;
+  final bool hasPaymentMethod;
+  final bool isAccountSuspended;
+
   Instructor({
     this.userId,
     this.firstName,
@@ -26,7 +31,11 @@ class Instructor {
     this.height,
     this.email,
     this.phoneNumber,
-    this.notifications
+    this.notifications,
+    // Default values for new instructors
+    this.outstandingBalance = 0.0,
+    this.hasPaymentMethod = false,
+    this.isAccountSuspended = false,
   });
 
   // Factory method to convert data from Firebase to Account
@@ -42,7 +51,11 @@ class Instructor {
       height: THelperFunctions.parseInt(map['height']),
       email: map['email'] ?? '',
       phoneNumber: map['phone_number'] ?? '',
-      notifications: map['notifications'] ?? false
+      notifications: map['notifications'] ?? false,
+      // Handle potential nulls and force double type
+      outstandingBalance: ((map['outstanding_balance'] as num?) ?? 0.0).toDouble(),
+      hasPaymentMethod: map['has_payment_method'] ?? false,
+      isAccountSuspended: map['is_account_suspended'] ?? false,
     );
   }
 
@@ -59,6 +72,12 @@ class Instructor {
       'email': email,
       'phone_number': phoneNumber,
       'notifications': notifications,
+
+      // Financial fields for DB
+      'outstanding_balance': outstandingBalance,
+      'has_payment_method': hasPaymentMethod,
+      'is_account_suspended': isAccountSuspended,
+
       'created_at': FieldValue.serverTimestamp(),
       'updated_at': FieldValue.serverTimestamp()
     };
