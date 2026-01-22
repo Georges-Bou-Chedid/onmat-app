@@ -158,23 +158,33 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                 image: 'assets/images/class_details_background.jpg',
                 child: Column(
                   children: [
-                    const SizedBox(height: TSizes.sm),
-                    SizedBox(
-                      height: 100, // enough height for your image
-                      // padding: const EdgeInsets.all(TSizes.defaultSpace),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Iconsax.arrow_left_2, size: 20), // Modern thin icon
-                            onPressed: () => Get.back(),
-                            color: Colors.white,
-                          ),
-                          Image.asset('assets/images/logo-white.png', height: 45)
-                        ],
+                    /// 1. Consistent SafeArea Top Bar
+                    SafeArea(
+                      bottom: false,
+                      child: SizedBox(
+                        height: 65, // Matches the Dashboard height exactly
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            /// BACK BUTTON
+                            IconButton(
+                              padding: EdgeInsets.zero, // Removes extra button padding
+                              constraints: const BoxConstraints(), // Allows button to sit tighter to the edge
+                              icon: const Icon(Iconsax.arrow_left_2, size: 24),
+                              onPressed: () => Get.back(),
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 8),
+
+                            /// LOGO
+                            Image.asset('assets/images/logo-white.png', height: 45),
+                          ],
+                        ),
                       ),
                     ),
 
+                    /// 2. TITLE SECTION
                     Align(
                       alignment: Alignment.centerLeft,
                       child: ListTile(
@@ -182,9 +192,12 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                           classItem.className ?? '',
                           style: Theme.of(context).textTheme.headlineSmall!.apply(color: Colors.white),
                         ),
+                        /// Adding an empty subtitle or a small spacer keeps the vertical rhythm
+                        /// identical to the Dashboard's two-line ListTile
+                        subtitle: const Text(''),
                       ),
                     ),
-                    const SizedBox(height: TSizes.appBarHeight)
+                    const SizedBox(height: TSizes.appBarHeight),
                   ],
                 ),
               ),
@@ -407,6 +420,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
         /// STUDENTS LIST
         ListView.builder(
           shrinkWrap: true,
+          padding: EdgeInsets.zero,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: paginatedStudents.length,
           itemBuilder: (context, index) {

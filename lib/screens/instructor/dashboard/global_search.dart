@@ -83,17 +83,30 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
                 image: 'assets/images/dashboard_background.jpg',
                 child: Column(
                   children: [
-                    const SizedBox(height: TSizes.sm),
-                    Container(
-                      height: 100,
-                      padding: const EdgeInsets.all(TSizes.defaultSpace),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Image.asset('assets/images/logo-white.png', height: 45),
-                        ],
+                    /// 1. Consistent SafeArea Top Bar
+                    SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        /// Using symmetric horizontal padding to match Dashboard and Class Details
+                        padding: const EdgeInsets.symmetric(horizontal: TSizes.defaultSpace),
+                        child: SizedBox(
+                          height: 65, // Same height used in the other headers
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              /// LOGO
+                              Image.asset('assets/images/logo-white.png', height: 45),
+
+                              /// If you want to add a Close or Back button here later,
+                              /// MainAxisAlignment.spaceBetween will keep the layout balanced.
+                            ],
+                          ),
+                        ),
                       ),
                     ),
+
+                    /// 2. TITLE SECTION (Global Search)
                     Align(
                       alignment: Alignment.centerLeft,
                       child: ListTile(
