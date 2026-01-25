@@ -67,11 +67,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         shape: BoxShape.circle,
                         border: Border.all(color: primaryBrandColor, width: 2),
                       ),
-                      child: const TCircularImage(
-                        image: "assets/images/settings/user.png",
+                      child: TCircularImage(
+                        image: (instructor?.profilePicture != null && instructor!.profilePicture!.isNotEmpty)
+                            ? instructor.profilePicture!
+                            : "assets/images/settings/user.png",
                         width: 100,
                         height: 100,
-                        padding: 0,
                       ),
                     ),
                     GestureDetector(

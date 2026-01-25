@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:provider/provider.dart';
 import '../../../controllers/instructor/instructor.dart';
@@ -35,17 +38,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    // Pre-fill data from the provider
-    final instructor = Provider.of<InstructorService>(context, listen: false).instructor;
-
-    if (instructor != null) {
-      _firstNameEditingController.text   = instructor.firstName ?? '';
-      _lastNameEditingController.text    = instructor.lastName ?? '';
-      _genderEditingController.text      = instructor.gender ?? '';
-      _usernameEditingController.text    = instructor.username ?? '';
-      _dateOfBirthEditingController.text = instructor.dob ?? '';
-      _phoneNumberEditingController.text = instructor.phoneNumber ?? '';
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final instructor = Provider.of<InstructorService>(context, listen: false).instructor;
+      if (instructor != null) {
+        _firstNameEditingController.text   = instructor.firstName ?? '';
+        _lastNameEditingController.text    = instructor.lastName ?? '';
+        _genderEditingController.text      = instructor.gender ?? '';
+        _usernameEditingController.text    = instructor.username ?? '';
+        _dateOfBirthEditingController.text = instructor.dob ?? '';
+        _phoneNumberEditingController.text = instructor.phoneNumber ?? '';
+      }
+    });
   }
 
   @override
@@ -61,6 +64,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final instructorService = Provider.of<InstructorService>(context);
+    final instructor = instructorService.instructor;
     final dark = THelperFunctions.isDarkMode(context);
     final appLocalizations = AppLocalizations.of(context)!;
 
@@ -93,32 +98,25 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       children: [
                         Container(
                           padding: const EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: primaryBrandColor, width: 2),
-                          ),
-                          child: const TCircularImage(
-                            image: "assets/images/settings/user.png",
+                          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: primaryBrandColor, width: 2)),
+                          child: TCircularImage(
+                            // Use the URL from the instructor object, or fallback to asset
+                            image: (instructor?.profilePicture != null && instructor!.profilePicture!.isNotEmpty)
+                                ? instructor.profilePicture!
+                                : "assets/images/settings/user.png",
                             width: 100,
                             height: 100,
-                            padding: 0,
                           ),
                         ),
-                        CircleAvatar(
-                          radius: 17,
-                          backgroundColor: primaryBrandColor,
-                          child: const Icon(Iconsax.camera, color: Colors.white, size: 18),
+                        GestureDetector(
+                          onTap: _pickAndUploadImage,
+                          child: CircleAvatar(
+                            radius: 17,
+                            backgroundColor: primaryBrandColor,
+                            child: const Icon(Iconsax.camera, color: Colors.white, size: 18),
+                          ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      appLocalizations.changePhoto,
-                      style: TextStyle(
-                          color: primaryBrandColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13
-                      ),
                     ),
                   ],
                 ),
@@ -279,6 +277,27 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _pickAndUploadImage() async {
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+
+    if (image != null) {
+      setState(() => _isLoading = true);
+
+      final instructorService = Provider.of<InstructorService>(context, listen: false);
+      // You'll need to add this method to your InstructorService
+      String? imageUrl = await instructorService.uploadProfilePicture(File(image.path));
+
+      setState(() => _isLoading = false);
+
+      if (imageUrl != null) {
+        Get.snackbar("Success", "Profile picture updated!");
+      } else {
+        Get.snackbar("Error", "Failed to upload image.");
+      }
+    }
   }
 
   /// Optional wrapper for extra styling consistency

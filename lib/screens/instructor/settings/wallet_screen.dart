@@ -19,14 +19,13 @@ class WalletScreen extends StatefulWidget {
 
 class _WalletScreenState extends State<WalletScreen> {
   final Color primaryBrandColor = const Color(0xFFDF1E42);
-  String selectedFilter = 'all'; // 'all', 'pending', 'paid'
+  String selectedFilter = 'all';
 
   @override
   Widget build(BuildContext context) {
     final dark = THelperFunctions.isDarkMode(context);
     final appLocalizations = AppLocalizations.of(context)!;
 
-    // Get live instructor data from Provider
     final instructorService = Provider.of<InstructorService>(context);
     final instructor = instructorService.instructor;
     final bool hasCard = instructor?.hasPaymentMethod ?? false;
@@ -72,7 +71,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         onPressed: hasCard
                             ? () => _showPaymentDialog(context, instructor?.outstandingBalance ?? 0.0, instructorService)
                             : () => _showAddCardSheet(context, instructorService),
-                        child: Text(hasCard ? (appLocalizations.payNow ?? "Pay Now") : (appLocalizations.addCard ?? "Add Card")),
+                        child: Text(hasCard ? (appLocalizations.payNow ?? "Pay Now") : (appLocalizations.addCard ?? "Add Whish Card")),
                       ),
                     ],
                   )
@@ -140,9 +139,11 @@ class _WalletScreenState extends State<WalletScreen> {
             const SizedBox(height: TSizes.spaceBtwItems),
             _buildPaymentMethodTile(dark, instructor, appLocalizations, instructorService),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
+            const Icon(Iconsax.info_circle, color: Colors.grey, size: 20),
+            const SizedBox(height: 8),
             const Text(
-              "Note: Balances are automatically charged at the end of each month.",
+              "IMPORTANT: To maintain account access, your Whish card will be automatically charged on the last day of every month. Failure to clear balance will result in account suspension.",
               style: TextStyle(fontSize: 11, color: Colors.grey),
               textAlign: TextAlign.center,
             ),
@@ -152,7 +153,7 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  /// HELPER: Filtered Query (Requires Firestore Composite Index)
+  /// HELPER: Filtered Stream
   Stream<QuerySnapshot> _getFilteredStream(String? instructorId) {
     Query query = FirebaseFirestore.instance
         .collection('transactions')
@@ -199,7 +200,7 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  /// HELPER: Payment Method ListTile
+  /// HELPER: Payment Method Tile
   Widget _buildPaymentMethodTile(bool dark, dynamic instructor, dynamic l10n, InstructorService service) {
     final bool hasCard = instructor?.hasPaymentMethod ?? false;
     return Container(
@@ -213,11 +214,11 @@ class _WalletScreenState extends State<WalletScreen> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 8),
         leading: Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-          child: const Icon(Iconsax.card, color: Colors.blue),
+          decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+          child: const Icon(Iconsax.card, color: Colors.green),
         ),
-        title: Text(hasCard ? "Visa ending in 4242" : "No card added"),
-        subtitle: Text(hasCard ? "Expires 12/26" : "Add a card to enable upgrades"),
+        title: const Text("Whish Visa Card"),
+        subtitle: Text(hasCard ? "Auto-pay enabled (•••• 4242)" : "Link your Whish card for auto-billing"),
         trailing: TextButton(
             onPressed: () => _showAddCardSheet(context, service),
             child: Text(hasCard ? (l10n.change ?? "Change") : (l10n.add ?? "Add"))
@@ -238,26 +239,18 @@ class _WalletScreenState extends State<WalletScreen> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
-          children: [Icon(Iconsax.verify, color: Colors.green), SizedBox(width: 10), Text("Settle Balance")],
+          children: [Icon(Iconsax.verify, color: Colors.green), SizedBox(width: 10), Text("Confirm Payment")],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Your payment method will be charged for your total outstanding balance."),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.grey.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-              child: const Row(
-                children: [Icon(Iconsax.card, size: 20), SizedBox(width: 12), Text("Visa •••• 4242", style: TextStyle(fontWeight: FontWeight.bold))],
-              ),
-            ),
+            const Text("Your Whish Visa card will be charged for your total outstanding balance."),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text("Total Payable:"),
-                Text("\$${balance.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                Text("\$${balance.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFFDF1E42))),
               ],
             ),
           ],
@@ -273,16 +266,20 @@ class _WalletScreenState extends State<WalletScreen> {
                 Get.snackbar("Payment Successful", "Your balance has been cleared.", backgroundColor: Colors.green.withOpacity(0.1), colorText: Colors.green);
               }
             },
-            child: const Text("Confirm Payment", style: TextStyle(color: Colors.white)),
+            child: const Text("Pay Now", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
 
-  /// BOTTOM SHEET: Add Card
+  /// BOTTOM SHEET: Add Whish Card (Visa Details)
   void _showAddCardSheet(BuildContext context, InstructorService service) {
     final dark = THelperFunctions.isDarkMode(context);
+    final cardNoController = TextEditingController();
+    final expiryController = TextEditingController();
+    final cvvController = TextEditingController();
+
     Get.bottomSheet(
       Container(
         padding: const EdgeInsets.all(24),
@@ -297,29 +294,70 @@ class _WalletScreenState extends State<WalletScreen> {
             children: [
               Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)))),
               const SizedBox(height: 20),
-              const Text("Add Payment Method", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
-              _buildCardField("Card Number", "0000 0000 0000 0000", Iconsax.card),
-              const SizedBox(height: 16),
-              Row(
+
+              const Row(
                 children: [
-                  Expanded(child: _buildCardField("Expiry", "MM/YY", Iconsax.calendar_1)),
-                  const SizedBox(width: 16),
-                  Expanded(child: _buildCardField("CVV", "123", Iconsax.lock)),
+                  Icon(Iconsax.card, color: Colors.green),
+                  SizedBox(width: 10),
+                  Text("Whish Visa Card", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 ],
               ),
+              const SizedBox(height: 12),
+
+              // Restriction Note
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.blue.withOpacity(0.3))
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Iconsax.info_circle, color: Colors.blue, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        "Note: Enter your Whish Visa card details. Your card will be charged automatically at the end of each month.",
+                        style: TextStyle(fontSize: 12, color: dark ? Colors.white70 : Colors.black87),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Card Number
+              _buildCardField("Card Number", "0000 0000 0000 0000", Iconsax.card, cardNoController),
+              const SizedBox(height: 16),
+
+              // Expiry and CVV
+              Row(
+                children: [
+                  Expanded(child: _buildCardField("Expiry", "MM/YY", Iconsax.calendar_1, expiryController)),
+                  const SizedBox(width: 16),
+                  Expanded(child: _buildCardField("CVV", "123", Iconsax.lock, cvvController)),
+                ],
+              ),
+
               const SizedBox(height: 32),
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: primaryBrandColor, padding: const EdgeInsets.symmetric(vertical: 16)),
                   onPressed: () async {
-                    // This toggles has_payment_method to true in Firestore
+                    if (cardNoController.text.length < 16) {
+                      Get.snackbar("Invalid Card", "Please enter a valid card number.");
+                      return;
+                    }
+                    // This enables has_payment_method and activates the auto-billing status
                     await service.updatePaymentMethodStatus(true);
                     Get.back();
-                    Get.snackbar("Success", "Card added successfully!");
+                    Get.snackbar("Success", "Whish Card linked and Auto-Pay active!");
                   },
-                  child: const Text("Save Card", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: const Text("Link & Authorize Auto-Pay", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -330,13 +368,14 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  Widget _buildCardField(String label, String hint, IconData icon) {
+  Widget _buildCardField(String label, String hint, IconData icon, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
         const SizedBox(height: 8),
         TextField(
+          controller: controller,
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: Icon(icon, size: 20),

@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import '../../models/Instructor.dart';
 
@@ -69,6 +72,29 @@ class InstructorService with ChangeNotifier {
     } catch (e) {
       print("🔥 Failed to update instructor: $e");
       return false;
+    }
+  }
+
+  Future<String?> uploadProfilePicture(File imageFile) async {
+    try {
+      final storageRef = FirebaseStorage.instance.ref().child('instructors/${instructor!.userId}/profile.jpg');
+
+      // Upload
+      await storageRef.putFile(imageFile);
+
+      // Get URL
+      String downloadUrl = await storageRef.getDownloadURL();
+
+      // Update Firestore
+      await updateFields(instructor!.userId, {'profile_picture': downloadUrl});
+
+      // Update local instructor object so UI refreshes
+      instructor!.profilePicture = downloadUrl;
+      notifyListeners();
+
+      return downloadUrl;
+    } catch (e) {
+      return null;
     }
   }
 

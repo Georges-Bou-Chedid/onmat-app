@@ -8,6 +8,10 @@
     <string>We need your camera to scan QR codes</string>
 	<key>CFBundleDisplayName</key>
 	<string>ONmat</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>We need access to your gallery to update your profile picture.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>We need access to your camera to take a profile picture.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
