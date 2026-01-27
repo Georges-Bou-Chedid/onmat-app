@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:onmat/controllers/student/student.dart';
 import 'package:provider/provider.dart';
@@ -65,6 +68,8 @@ class _StudentEditProfilePageState extends State<StudentEditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final studentService = Provider.of<StudentService>(context);
+    final student = studentService.student;
     final dark = THelperFunctions.isDarkMode(context);
     final appLocalizations = AppLocalizations.of(context)!;
 
@@ -101,17 +106,22 @@ class _StudentEditProfilePageState extends State<StudentEditProfilePage> {
                             shape: BoxShape.circle,
                             border: Border.all(color: primaryBrandColor, width: 2),
                           ),
-                          child: const TCircularImage(
-                            image: "assets/images/settings/user.png",
+                          child: TCircularImage(
+                            // Checks if student has a network image URL
+                            image: (student?.profilePicture != null && student!.profilePicture!.isNotEmpty)
+                                ? student.profilePicture!
+                                : "assets/images/settings/user.png",
                             width: 100,
                             height: 100,
-                            padding: 0,
                           ),
                         ),
-                        CircleAvatar(
-                          radius: 17,
-                          backgroundColor: primaryBrandColor,
-                          child: const Icon(Iconsax.camera, color: Colors.white, size: 18),
+                        GestureDetector(
+                          onTap: _pickAndUploadImage,
+                          child: CircleAvatar(
+                            radius: 17,
+                            backgroundColor: primaryBrandColor,
+                            child: const Icon(Iconsax.camera, color: Colors.white, size: 18),
+                          ),
                         ),
                       ],
                     ),
@@ -278,6 +288,28 @@ class _StudentEditProfilePageState extends State<StudentEditProfilePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _pickAndUploadImage() async {
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70
+    );
+
+    if (image != null) {
+      setState(() => _isLoading = true);
+
+      final studentService = Provider.of<StudentService>(context, listen: false);
+
+      final url = await studentService.uploadProfilePicture(File(image.path));
+
+      setState(() => _isLoading = false);
+
+      if (url != null) {
+        Get.snackbar("Success", "Profile picture updated!");
+      }
+    }
   }
 
   Future<void> _handleSave() async {

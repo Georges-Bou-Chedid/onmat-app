@@ -16,6 +16,9 @@ class Student {
   final String? phoneNumber;
   final bool? notifications;
 
+  // --- NEW PROFILE FIELD ---
+  String? profilePicture;
+
   // from class_student table
   final bool isActive;
   final bool hasAttendanceToday;
@@ -36,6 +39,7 @@ class Student {
     this.email,
     this.phoneNumber,
     this.notifications,
+    this.profilePicture,
     this.isActive = false,
     this.hasAttendanceToday = false,
     this.classAttended = 0,
@@ -68,6 +72,8 @@ class Student {
       email: map['email'] ?? '',
       phoneNumber: map['phone_number'] ?? '',
       notifications: map['notifications'] ?? false,
+      // Mapping the Firestore field 'profile_picture' to the model
+      profilePicture: map['profile_picture'],
       isActive: isActive,
       hasAttendanceToday: attendanceToday,
       classAttended: classAttended,
@@ -90,6 +96,8 @@ class Student {
       'email': email,
       'phone_number': phoneNumber,
       'notifications': notifications,
+      // Save profile picture URL to Firestore
+      'profile_picture': profilePicture,
       'created_at': FieldValue.serverTimestamp(),
       'updated_at': FieldValue.serverTimestamp()
     };
@@ -111,6 +119,7 @@ class Student {
       email: updateData['email'] ?? email,
       phoneNumber: updateData['phone_number'] ?? phoneNumber,
       notifications: updateData['notifications'] ?? notifications,
+      profilePicture: updateData['profile_picture'] ?? profilePicture,
       isActive: isActiveOverride ?? isActive,
       hasAttendanceToday: hasAttendanceTodayOverride ?? hasAttendanceToday,
       classAttended: classAttendedOverride ?? classAttended,

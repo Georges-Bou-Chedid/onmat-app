@@ -107,26 +107,40 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 image: 'assets/images/dashboard_background.jpg',
                 child: Column(
                   children: [
-                    const SizedBox(height: TSizes.sm),
-                    Container(
-                      height: 100,
-                      padding: const EdgeInsets.all(TSizes.defaultSpace),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Image.asset('assets/images/logo-white.png', height: 45),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: GestureDetector(
-                              onTap: () => Get.to(() => const StudentSettingsScreen()), // Or StudentSettingsPage
-                              child: const CircleAvatar(
-                                radius: 18,
-                                backgroundColor: Colors.white24,
-                                child: Icon(Iconsax.user, color: Colors.white, size: 20),
+                    SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        /// Only add horizontal padding here to keep the logo away from edges
+                        padding: const EdgeInsets.symmetric(horizontal: TSizes.defaultSpace),
+                        child: SizedBox(
+                          height: 65, // Giving it a clear height without crushing it
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              /// LOGO
+                              Image.asset('assets/images/logo-white.png', height: 45),
+
+                              /// RIGHT ACTIONS
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Iconsax.notification, color: Colors.white),
+                                    onPressed: () {},
+                                  ),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: () => Get.to(() => const StudentSettingsScreen()),
+                                    child: const CircleAvatar(
+                                      radius: 18,
+                                      backgroundColor: Colors.white24,
+                                      child: Icon(Iconsax.user, color: Colors.white, size: 20),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                     Align(

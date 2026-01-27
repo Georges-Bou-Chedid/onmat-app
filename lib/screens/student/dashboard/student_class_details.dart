@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart'; // Ensure this is imported fo
 import '../../../controllers/classItem/class_graduation.dart';
 import '../../../controllers/instructor/class_assistant.dart';
 import '../../../controllers/instructor/instructor_class.dart';
+import '../../../controllers/student/class_student.dart';
 import '../../../controllers/student/student_class.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
@@ -46,12 +47,15 @@ class _StudentClassDetailsScreenState extends State<StudentClassDetailsScreen> w
     super.didChangeDependencies();
     _classAssistantService = Provider.of<ClassAssistantService>(context, listen: false);
     _classGraduationService = Provider.of<ClassGraduationService>(context, listen: false);
+
+    Provider.of<ClassStudentService>(context, listen: false).listenToClassStudents(widget.classId);
   }
 
   @override
   void dispose() {
     _classAssistantService.cancelListener();
     _classGraduationService.cancelListener();
+    Provider.of<ClassStudentService>(context, listen: false).cancelListener();
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
@@ -91,19 +95,29 @@ class _StudentClassDetailsScreenState extends State<StudentClassDetailsScreen> w
                 image: 'assets/images/class_details_background.jpg',
                 child: Column(
                   children: [
-                    const SizedBox(height: TSizes.sm),
-                    SizedBox(
-                      height: 100,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Iconsax.arrow_left_2, size: 20),
-                            onPressed: () => Get.back(),
-                            color: Colors.white,
-                          ),
-                          Image.asset('assets/images/logo-white.png', height: 45)
-                        ],
+                    /// 1. Consistent SafeArea Top Bar
+                    SafeArea(
+                      bottom: false,
+                      child: SizedBox(
+                        height: 65, // Matches the Dashboard height exactly
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            /// BACK BUTTON
+                            IconButton(
+                              padding: EdgeInsets.zero, // Removes extra button padding
+                              constraints: const BoxConstraints(), // Allows button to sit tighter to the edge
+                              icon: const Icon(Iconsax.arrow_left_2, size: 24),
+                              onPressed: () => Get.back(),
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 8),
+
+                            /// LOGO
+                            Image.asset('assets/images/logo-white.png', height: 45),
+                          ],
+                        ),
                       ),
                     ),
                     Align(
@@ -215,6 +229,8 @@ class _StudentClassDetailsScreenState extends State<StudentClassDetailsScreen> w
                 ),
                 onPressed: () {
                   if (currentUserId != null) {
+                    Provider.of<ClassStudentService>(context, listen: false).listenToClassStudents(widget.classId);
+
                     Get.to(() => StudentProfileScreen(
                       studentId: currentUserId,
                       classId: widget.classId,

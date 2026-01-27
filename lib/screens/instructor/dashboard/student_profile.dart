@@ -112,7 +112,15 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             Center(
               child: Column(
                 children: [
-                  TCircularImage(image: "assets/images/settings/user.png", width: 100, height: 100, padding: 0),
+                  TCircularImage(
+                    // Check if the student in the class list has a profile picture URL
+                    image: (student.profilePicture != null && student.profilePicture!.isNotEmpty)
+                        ? student.profilePicture!
+                        : "assets/images/settings/user.png",
+                    width: 100,
+                    height: 100,
+                    padding: 0,
+                  ),
                   const SizedBox(height: TSizes.spaceBtwItems),
                   Text("${student.firstName} ${student.lastName}", style: Theme.of(context).textTheme.headlineSmall),
                   Text(student.email ?? '', style: TextStyle(color: Colors.grey[600])),

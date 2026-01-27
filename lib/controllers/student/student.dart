@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:onmat/models/Student.dart';
 
@@ -46,6 +49,29 @@ class StudentService with ChangeNotifier {
     } catch (e) {
       print("🔥 Failed to update student: $e");
       return false;
+    }
+  }
+
+  Future<String?> uploadProfilePicture(File imageFile) async {
+    try {
+      final storageRef = FirebaseStorage.instance.ref().child('instructors/${student!.userId}/profile.jpg');
+
+      // Upload
+      await storageRef.putFile(imageFile);
+
+      // Get URL
+      String downloadUrl = await storageRef.getDownloadURL();
+
+      // Update Firestore
+      await updateFields(student!.userId, {'profile_picture': downloadUrl});
+
+      // Update local instructor object so UI refreshes
+      student!.profilePicture = downloadUrl;
+      notifyListeners();
+
+      return downloadUrl;
+    } catch (e) {
+      return null;
     }
   }
 }

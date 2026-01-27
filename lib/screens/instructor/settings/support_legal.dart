@@ -55,18 +55,6 @@ class _SupportLegalPageState extends State<SupportLegalPage> {
               ),
               child: Column(
                 children: [
-                  /// Website tile
-                  _buildLegalTile(
-                    icon: Iconsax.link,
-                    title: appLocalizations.website,
-                    subtitle: appLocalizations.websiteSub,
-                    onTap: () {
-                      // Use url_launcher to open your website
-                    },
-                  ),
-
-                  const Divider(indent: 50, endIndent: 20, height: 1),
-
                   /// Privacy Policy tile
                   _buildLegalTile(
                     icon: Iconsax.shield_tick,

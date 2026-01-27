@@ -65,8 +65,11 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                         shape: BoxShape.circle,
                         border: Border.all(color: primaryBrandColor, width: 2),
                       ),
-                      child: const TCircularImage(
-                        image: "assets/images/settings/user.png",
+                      child: TCircularImage(
+                        // SYNCED IMAGE LOGIC
+                        image: (student?.profilePicture != null && student!.profilePicture!.isNotEmpty)
+                            ? student.profilePicture!
+                            : "assets/images/settings/user.png",
                         width: 100,
                         height: 100,
                         padding: 0,
