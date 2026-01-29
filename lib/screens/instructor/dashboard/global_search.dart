@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/helpers/helper_functions.dart';
 import '../../../utils/widgets/background_image_header_container.dart';
+import '../../../utils/widgets/circular_image.dart';
 
 class GlobalStudentSearchScreen extends StatefulWidget {
   const GlobalStudentSearchScreen({super.key});
@@ -28,7 +29,7 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
   final Color primaryBrandColor = const Color(0xFFDF1E42);
 
   final List<String> genderOptions = ['Male', 'Female'];
-  final List<String> classTypeOptions = ['Jiu‑Jitsu'];
+  final List<String> classTypeOptions = ['Jiu‑Jitsu', 'Muay Thai', 'Boxing', 'Karate', 'Taekwondo', 'MMA', 'Yoga', 'Pilates', 'Strength Training', 'Conditioning'];
 
   final Map<String, Color> beltColors = {
     "White": Colors.white,
@@ -42,29 +43,6 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
     "Red": Colors.red,
     "Black": Colors.black,
   };
-
-  void _applyFilters(GlobalStudentSearchService searchService) {
-    searchService.applyFilters(
-      query: query.isEmpty ? null : query,
-      gender: gender,
-      classType: classType,
-      belt1Color: belt1Color,
-      belt2Color: belt2Color,
-      ageRange: ageRange,
-    );
-  }
-
-  void _resetFilters(GlobalStudentSearchService searchService) {
-    setState(() {
-      query = "";
-      gender = null;
-      classType = null;
-      belt1Color = null;
-      belt2Color = null;
-      ageRange = const RangeValues(5, 60);
-    });
-    searchService.resetFilters();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -136,10 +114,7 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
                         prefixIcon: const Icon(Iconsax.search_normal),
                         filled: true,
                         fillColor: dark ? Colors.grey[900] : Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                          borderSide: BorderSide.none,
-                        ),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
                       ),
                       onChanged: (val) {
                         query = val;
@@ -152,10 +127,7 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          appLocalizations.filters,
-                          style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
-                        ),
+                        Text(appLocalizations.filters, style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold)),
                         TextButton.icon(
                           onPressed: () => setState(() => _showFilters = !_showFilters),
                           icon: Icon(_showFilters ? Iconsax.filter_remove : Iconsax.filter_edit, size: 18, color: primaryBrandColor),
@@ -171,22 +143,16 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
                     ],
 
                     /// RESULTS SUMMARY
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${appLocalizations.found} ${searchService.total} ${appLocalizations.st}',
-                            style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.grey),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('${appLocalizations.found} ${searchService.total} ${appLocalizations.st}', style: const TextStyle(color: Colors.grey)),
+                        if (gender != null || classType != null || belt1Color != null || query.isNotEmpty)
+                          GestureDetector(
+                            onTap: () => _resetFilters(searchService),
+                            child: Text(appLocalizations.clearAll, style: TextStyle(color: primaryBrandColor, fontWeight: FontWeight.bold, fontSize: 12)),
                           ),
-                          if (gender != null || classType != null || belt1Color != null || query.isNotEmpty)
-                            GestureDetector(
-                              onTap: () => _resetFilters(searchService),
-                              child: Text(appLocalizations.clearAll, style: TextStyle(color: primaryBrandColor, fontWeight: FontWeight.bold, fontSize: 12)),
-                            ),
-                        ],
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -196,10 +162,7 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
 
               /// RESULTS LIST
               searchService.isLoading
-                  ? Padding(
-                padding: const EdgeInsets.only(top: 50),
-                child: CircularProgressIndicator(color: primaryBrandColor),
-              )
+                  ? const Padding(padding: EdgeInsets.only(top: 50), child: CircularProgressIndicator(color: Color(0xFFDF1E42)))
                   : ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -207,7 +170,7 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
                 itemCount: searchService.paginatedResults.length,
                 itemBuilder: (context, index) {
                   final s = searchService.paginatedResults[index];
-                  final age = searchService.calculateAge(s.dob);
+                  final age = searchService.calculateAge(s['dob']);
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 16),
@@ -216,56 +179,35 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: IntrinsicHeight(
-                        child: Row(
-                          children: [
-                            // BRAND ACCENT "BELT" LINE
-                            Container(width: 5, color: primaryBrandColor),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 22,
-                                          backgroundColor: primaryBrandColor.withOpacity(0.1),
-                                          child: Text(s.firstName?[0].toUpperCase() ?? '?', style: TextStyle(color: primaryBrandColor, fontWeight: FontWeight.bold)),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text("${s.firstName} ${s.lastName}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                                              Text(s.email ?? '', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                                            ],
-                                          ),
-                                        ),
-                                        const Icon(Iconsax.arrow_right_3, size: 16, color: Colors.grey),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      children: [
-                                        _infoChip(icon: Iconsax.calendar, label: '$age yrs', context: context),
-                                        const SizedBox(width: 8),
-                                        _infoChip(icon: Iconsax.user, label: s.gender ?? 'N/A', context: context),
-                                        const Spacer(),
-                                        // BELT VISUALIZATION
-                                        _buildBeltBadge(s.belt1, s.belt2),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: TCircularImage(
+                            image: (s['profile_picture'] != null && s['profile_picture'].isNotEmpty)
+                                ? s['profile_picture']
+                                : "assets/images/settings/user.png",
+                            isNetworkImage: s['profile_picture'] != null && s['profile_picture'].isNotEmpty,
+                            width: 44, height: 44, padding: 0,
+                          ),
+                          title: Text("${s['first_name']} ${s['last_name']}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                          // NOW SHOWING CLASS NAME
+                          subtitle: Text(s['class_name'], style: TextStyle(color: primaryBrandColor, fontWeight: FontWeight.w600, fontSize: 12)),
+                          trailing: _buildBeltBadge(s['belt1'], s['belt2']),
                         ),
-                      ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 70, right: 16, bottom: 12),
+                          child: Row(
+                            children: [
+                              _infoChip(icon: Iconsax.calendar, label: '$age yrs', context: context),
+                              const SizedBox(width: 8),
+                              // NOW SHOWING STRIPES
+                              _infoChip(icon: Iconsax.medal, label: "${s['stripes']} Stripes", context: context),
+                              const Spacer(),
+                              Text(s['email'], style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -283,6 +225,29 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
     );
   }
 
+  void _applyFilters(GlobalStudentSearchService searchService) {
+    searchService.applyFilters(
+      query: query.isEmpty ? null : query,
+      gender: gender,
+      classType: classType,
+      belt1Color: belt1Color,
+      belt2Color: belt2Color,
+      ageRange: ageRange,
+    );
+  }
+
+  void _resetFilters(GlobalStudentSearchService searchService) {
+    setState(() {
+      query = "";
+      gender = null;
+      classType = null;
+      belt1Color = null;
+      belt2Color = null;
+      ageRange = const RangeValues(5, 60);
+    });
+    searchService.resetFilters();
+  }
+
   /// Helper to build the belt display on the card
   Widget _buildBeltBadge(Color b1, Color? b2) {
     return Container(
@@ -293,17 +258,12 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
         border: Border.all(color: Colors.grey[300]!),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 14, height: 14,
-            decoration: BoxDecoration(color: b1, border: Border.all(width: 0.5), borderRadius: BorderRadius.circular(2)),
-          ),
+          Container(width: 14, height: 14, decoration: BoxDecoration(color: b1, border: Border.all(width: 0.5), borderRadius: BorderRadius.circular(2))),
           if (b2 != null) ...[
             const SizedBox(width: 4),
-            Container(
-              width: 14, height: 14,
-              decoration: BoxDecoration(color: b2, border: Border.all(width: 0.5), borderRadius: BorderRadius.circular(2)),
-            ),
+            Container(width: 14, height: 14, decoration: BoxDecoration(color: b2, border: Border.all(width: 0.5), borderRadius: BorderRadius.circular(2))),
           ],
         ],
       ),
@@ -313,10 +273,7 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
   Widget _infoChip({required IconData icon, required String label, required BuildContext context}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: primaryBrandColor.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(6),
-      ),
+      decoration: BoxDecoration(color: primaryBrandColor.withOpacity(0.05), borderRadius: BorderRadius.circular(6)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -384,6 +341,7 @@ class _GlobalStudentSearchScreenState extends State<GlobalStudentSearchScreen> {
   // Refined Dropdowns
   Widget _buildFilterDropdown(String label, String? value, List<String> opts, Function(String) onSet) {
     return DropdownButtonFormField<String>(
+      isExpanded: true,
       value: value,
       // Standardizes the text style of the selected value
       style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 14, fontWeight: FontWeight.w500),

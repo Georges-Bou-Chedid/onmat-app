@@ -102,12 +102,38 @@ class ClassStudentService with ChangeNotifier {
         return false;
       }
 
+      final classDoc = await _firestore.collection('classes').doc(classId).get();
+      if (!classDoc.exists) return false;
+
+      final String instructorId = classDoc.data()?['owner_id'] ?? '';
+      final String className = classDoc.data()?['class_name'] ?? 'Class';
+
       ClassStudent cs = ClassStudent(
         classId: classId,
         studentId: uid,
         isActive: false
       );
       await _firestore.collection('class_student').add(cs.toMap());
+
+      final instructorDoc = await _firestore.collection('instructors').doc(instructorId).get();
+      bool notificationsEnabled = true;
+
+      if (instructorDoc.exists) {
+        notificationsEnabled = instructorDoc.data()?['notifications'] ?? true;
+      }
+
+      if (notificationsEnabled) {
+        await _firestore.collection('notifications').add({
+          'receiver_id': instructorId,
+          'sender_id': uid,
+          'title': 'New Join Request',
+          'message': '${student.firstName} ${student.lastName} wants to join $className',
+          'timestamp': FieldValue.serverTimestamp(),
+          'is_read': false,
+          'type': 'join_request',
+          'class_id': classId,
+        });
+      }
 
       _myStudents.add(student);
       notifyListeners();

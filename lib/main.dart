@@ -13,6 +13,7 @@ import 'controllers/auth.dart';
 import 'controllers/instructor/global_search.dart';
 import 'controllers/instructor/instructor.dart';
 import 'controllers/instructor/instructor_class.dart';
+import 'controllers/notification_service.dart';
 import 'controllers/student/class_student.dart';
 import 'controllers/student/student.dart';
 import 'controllers/student/student_class.dart';
@@ -40,6 +41,7 @@ void main() async {
           ChangeNotifierProvider(create: (_) => StudentClassService()),
           ChangeNotifierProvider(create: (_) => ClassGraduationService()),
           ChangeNotifierProvider(create: (_) => GlobalStudentSearchService()),
+          ChangeNotifierProvider(create: (_) => NotificationService()),
         ],
         child: MyApp(startLocale),
       )

@@ -11,6 +11,7 @@ import 'package:onmat/screens/student/dashboard/student_scan_qr_code.dart';
 import '../../../controllers/classItem/class_graduation.dart';
 import '../../../controllers/instructor/class_assistant.dart';
 import '../../../controllers/instructor/instructor_class.dart';
+import '../../../controllers/notification_service.dart';
 import '../../../controllers/student/student.dart';
 import '../../../controllers/student/student_class.dart';
 
@@ -19,6 +20,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../utils/constants/sizes.dart';
 import '../../../utils/helpers/helper_functions.dart';
 import '../../../utils/widgets/background_image_header_container.dart';
+import '../../notification.dart';
 import '../settings/student_settings.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
@@ -123,9 +125,32 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                               /// RIGHT ACTIONS
                               Row(
                                 children: [
-                                  IconButton(
-                                    icon: const Icon(Iconsax.notification, color: Colors.white),
-                                    onPressed: () {},
+                                  Stack(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Iconsax.notification, color: Colors.white),
+                                        onPressed: () => Get.to(() => const NotificationScreen()),
+                                      ),
+                                      // Show red dot if count > 0
+                                      Consumer<NotificationService>(
+                                        builder: (_, service, __) => service.unreadCount > 0
+                                            ? Positioned(
+                                          right: 8,
+                                          top: 8,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(2),
+                                            decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(10)),
+                                            constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                                            child: Text(
+                                              '${service.unreadCount}',
+                                              style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        )
+                                            : const SizedBox.shrink(),
+                                      ),
+                                    ],
                                   ),
                                   const SizedBox(width: 8),
                                   GestureDetector(
