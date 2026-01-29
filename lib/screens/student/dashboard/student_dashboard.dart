@@ -52,6 +52,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null) {
         _studentClassService.listenToStudentClasses(uid);
+        Provider.of<NotificationService>(context, listen: false).listenToNotifications(uid);
       }
       setState(() => _isLoading = false);
     });

@@ -57,6 +57,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       if (uid != null) {
         _instructorClassService.listenToAssistantClasses(uid);
         _instructorClassService.listenToOwnerClasses(uid);
+        // This ensures the bell icon red badge updates the moment a student scans a QR
+        Provider.of<NotificationService>(context, listen: false).listenToNotifications(uid);
       }
       setState(() => _isLoading = false);
     });

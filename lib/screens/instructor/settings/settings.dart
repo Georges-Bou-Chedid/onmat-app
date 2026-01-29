@@ -10,6 +10,7 @@ import 'package:onmat/utils/helpers/helper_functions.dart';
 import 'package:provider/provider.dart';
 
 import '../../../controllers/instructor/instructor.dart';
+import '../../../controllers/notification_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/widgets/circular_image.dart';
 import '../../splash.dart';
@@ -217,6 +218,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: primaryBrandColor),
             onPressed: () async {
+              // 1. Stop notification listener and reset count
+              Provider.of<NotificationService>(context, listen: false).stopListening();
               await authService.signOut();
               Get.offAll(() => const SplashScreen());
             },

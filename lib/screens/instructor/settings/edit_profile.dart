@@ -284,11 +284,24 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
 
     if (image != null) {
+      final File file = File(image.path);
+
+      final int sizeInBytes = file.lengthSync();
+      final double sizeInMb = sizeInBytes / (1024 * 1024);
+
+      if (sizeInMb > 2.0) {
+        Get.snackbar(
+          "File Too Large",
+          "Image must be smaller than 2MB. Your file: ${sizeInMb.toStringAsFixed(2)}MB",
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        return; // Stop the process here
+      }
       setState(() => _isLoading = true);
 
       final instructorService = Provider.of<InstructorService>(context, listen: false);
-      // You'll need to add this method to your InstructorService
-      String? imageUrl = await instructorService.uploadProfilePicture(File(image.path));
+      String? imageUrl = await instructorService.uploadProfilePicture(file);
 
       setState(() => _isLoading = false);
 

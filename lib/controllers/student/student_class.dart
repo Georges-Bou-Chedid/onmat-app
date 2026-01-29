@@ -69,8 +69,12 @@ class StudentClassService with ChangeNotifier {
           } else {
             _classes.add(updated);
           }
-          notifyListeners();
+        } else {
+          _classes.removeWhere((c) => c.id == classId);
+          _classListeners[classId]?.cancel();
+          _classListeners.remove(classId);
         }
+        notifyListeners();
       });
 
       _classListeners[classId] = subscription;

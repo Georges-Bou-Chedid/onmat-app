@@ -8,6 +8,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:onmat/utils/helpers/helper_functions.dart';
 import 'package:provider/provider.dart';
 
+import '../../../controllers/notification_service.dart';
 import '../../../controllers/student/student.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/widgets/circular_image.dart';
@@ -209,6 +210,8 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: primaryBrandColor),
             onPressed: () async {
+              // 1. Stop notification listener and reset count
+              Provider.of<NotificationService>(context, listen: false).stopListening();
               await authService.signOut();
               Get.offAll(() => const SplashScreen());
             },

@@ -10,8 +10,11 @@ class NotificationService with ChangeNotifier {
 
   StreamSubscription? _subscription;
 
+  /// Starts listening to real-time updates for unread notifications
   void listenToNotifications(String userId) {
+    // Cancel any existing subscription before starting a new one
     _subscription?.cancel();
+
     _subscription = _firestore
         .collection('notifications')
         .where('receiver_id', isEqualTo: userId)
@@ -20,7 +23,16 @@ class NotificationService with ChangeNotifier {
         .listen((snapshot) {
       _unreadCount = snapshot.docs.length;
       notifyListeners();
+    }, onError: (error) {
+      debugPrint("Error listening to notifications: $error");
     });
+  }
+
+  void stopListening() {
+    _subscription?.cancel();
+    _subscription = null;
+    _unreadCount = 0;
+    notifyListeners();
   }
 
   @override

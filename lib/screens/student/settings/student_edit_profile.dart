@@ -292,22 +292,34 @@ class _StudentEditProfilePageState extends State<StudentEditProfilePage> {
 
   Future<void> _pickAndUploadImage() async {
     final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 70
-    );
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
 
     if (image != null) {
+      final File file = File(image.path);
+
+      final int sizeInBytes = file.lengthSync();
+      final double sizeInMb = sizeInBytes / (1024 * 1024);
+
+      if (sizeInMb > 2.0) {
+        Get.snackbar(
+          "File Too Large",
+          "Image must be smaller than 2MB. Your file: ${sizeInMb.toStringAsFixed(2)}MB",
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        return; // Stop the process here
+      }
       setState(() => _isLoading = true);
 
       final studentService = Provider.of<StudentService>(context, listen: false);
-
-      final url = await studentService.uploadProfilePicture(File(image.path));
+      final url = await studentService.uploadProfilePicture(file);
 
       setState(() => _isLoading = false);
 
       if (url != null) {
         Get.snackbar("Success", "Profile picture updated!");
+      } else {
+        Get.snackbar("Error", "Failed to upload image.");
       }
     }
   }
