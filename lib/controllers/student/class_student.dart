@@ -144,7 +144,11 @@ class ClassStudentService with ChangeNotifier {
     }
   }
 
-  Future<bool> acceptStudent(String classId, String uid) async {
+  Future<bool> acceptStudent(String classId, String uid, String studentName) async {
+    final batch = _firestore.batch();
+    final instructorId = _auth.currentUser!.uid;
+    const double joinFee = 2.0;
+
     try {
       // Step 1: Find existing class_student document for this student
       final existing = await _firestore
@@ -154,23 +158,53 @@ class ClassStudentService with ChangeNotifier {
           .limit(1)
           .get();
 
-      if (existing.docs.isEmpty) {
-        print("⚠️ Student not found in this class");
-        return false;
-      }
+      if (existing.docs.isEmpty) return false;
+      final enrollmentDoc = existing.docs.first;
 
-      final doc = existing.docs.first;
+      if (enrollmentDoc['is_active'] == true) return false;
 
-      // Step 2: Check if already active
-      if (doc['is_active'] == true) {
-        print("ℹ️ Student already accepted in this class");
-        return false;
-      }
+      final classDoc = await _firestore.collection('classes').doc(classId).get();
+      final String className = classDoc.data()?['class_name'] ?? 'Class';
 
-      // Step 3: Update is_active to true
-      await _firestore.collection('class_student').doc(doc.id).update({
-        'is_active': true,
+      batch.update(enrollmentDoc.reference, {'is_active': true});
+
+      final transactionRef = _firestore.collection('transactions').doc();
+      batch.set(transactionRef, {
+        'instructor_id': instructorId,
+        'student_id': uid,
+        'student_name': studentName,
+        'type': 'join_fee',
+        'amount': joinFee,
+        'status': 'pending',
+        'timestamp': FieldValue.serverTimestamp(),
       });
+
+      final instructorRef = _firestore.collection('instructors').doc(instructorId);
+      batch.update(instructorRef, {
+        'outstanding_balance': FieldValue.increment(joinFee),
+      });
+
+      // 6. Queue Notification for the Student
+      // Check if student has notifications enabled first
+      final studentDoc = await _firestore.collection('students').doc(uid).get();
+      bool studentWantsNotifs = studentDoc.data()?['notifications'] ?? true;
+
+      if (studentWantsNotifs) {
+        final notifRef = _firestore.collection('notifications').doc();
+        batch.set(notifRef, {
+          'receiver_id': uid,
+          'sender_id': instructorId,
+          'title': 'Request Accepted! 🥋',
+          'message': 'You have been accepted into $className. Welcome to the mats!',
+          'timestamp': FieldValue.serverTimestamp(),
+          'is_read': false,
+          'type': 'join_accepted',
+          'class_id': classId,
+        });
+      }
+
+      // 7. Commit Batch
+      await batch.commit();
 
       // Optional: update in-memory student if needed
       final idx = _myStudents.indexWhere((s) => s.userId == uid);

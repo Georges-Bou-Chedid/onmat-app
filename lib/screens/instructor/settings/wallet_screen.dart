@@ -118,11 +118,24 @@ class _WalletScreenState extends State<WalletScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (context, index) {
+                    String getTransactionLabel(String? type) {
+                      switch (type) {
+                        case 'belt_upgrade':
+                          return "Belt Upgrade";
+                        case 'stripe_addition':
+                          return "Stripe Added";
+                        case 'join_fee':
+                          return "Join Fee";
+                        default:
+                          return "Other Transaction";
+                      }
+                    }
+
                     var data = snapshot.data!.docs[index].data() as Map<String, dynamic>;
                     return _buildTransactionTile(
                         context,
                         data['student_name'] ?? 'Unknown Student',
-                        data['type'] == 'belt_upgrade' ? "Belt Upgrade" : "Stripe Added",
+                        getTransactionLabel(data['type']),
                         "\$${(data['amount'] ?? 0.0).toStringAsFixed(2)}",
                         (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
                         data['status'] ?? 'pending'

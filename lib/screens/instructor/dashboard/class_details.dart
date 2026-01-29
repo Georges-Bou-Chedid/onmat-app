@@ -509,7 +509,11 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> with SingleTick
                                         constraints: const BoxConstraints(),
                                         padding: const EdgeInsets.symmetric(horizontal: 4),
                                         icon: const Icon(Iconsax.tick_square, color: Colors.green, size: 28),
-                                        onPressed: () async => await classStudentService.acceptStudent(widget.classId, studentItem.userId!),
+                                        onPressed: () async => await classStudentService.acceptStudent(
+                                            widget.classId,
+                                            studentItem.userId!,
+                                            '${studentItem.firstName} ${studentItem.lastName}'
+                                        ),
                                       ),
                                     ],
                                   ),
