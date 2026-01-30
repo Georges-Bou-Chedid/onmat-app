@@ -1546,6 +1546,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Total Outstanding Balance'**
   String get totalBalance;
+
+  /// No description provided for @emailProvidedByGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Provided By Google'**
+  String get emailProvidedByGoogle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

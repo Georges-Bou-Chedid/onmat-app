@@ -323,10 +323,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: IconButton(
                           onPressed: () async {
-                            final result = await _authService.signInWithGoogleIfExists();
+                            final result = await _authService.signInWithGoogle();
 
                             if (result.success) {
-                              Get.offAll(() => const SplashScreen());
+                              if (result.errorMessage == 'new-user') {
+                                // Redirect new Google users to pick their role and fill details
+                                Get.offAll(() => const SelectRoleScreen());
+                              } else {
+                                Get.offAll(() => const SplashScreen());
+                              }
                             } else {
                               if (! mounted) return;
                               final errorCode = result.errorMessage;

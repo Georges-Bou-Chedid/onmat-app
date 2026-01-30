@@ -735,4 +735,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get totalBalance => 'Total Outstanding Balance';
+
+  @override
+  String get emailProvidedByGoogle => 'Email Provided By Google';
 }

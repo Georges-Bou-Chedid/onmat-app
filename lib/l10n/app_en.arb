@@ -249,5 +249,6 @@
   "add": "Add",
   "payNow": "Pay Now",
   "addCard": "Add Card",
-  "totalBalance": "Total Outstanding Balance"
+  "totalBalance": "Total Outstanding Balance",
+  "emailProvidedByGoogle": "Email Provided By Google"
 }

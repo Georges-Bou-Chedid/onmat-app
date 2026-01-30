@@ -126,12 +126,10 @@ class AuthService {
     }
   }
 
-  Future<AuthResult> signInWithGoogleIfExists() async {
+  Future<AuthResult> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        return AuthResult(success: false, errorMessage: 'google-cancelled');
-      }
+      if (googleUser == null) return AuthResult(success: false, errorMessage: 'google-cancelled');
 
       final googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
@@ -139,17 +137,14 @@ class AuthService {
         idToken: googleAuth.idToken,
       );
 
-      final result = await FirebaseAuth.instance.signInWithCredential(credential);
+      final result = await _auth.signInWithCredential(credential);
       final user = result.user;
-      if (user == null) {
-        return AuthResult(success: false, errorMessage: 'auth-failed');
-      }
+      if (user == null) return AuthResult(success: false, errorMessage: 'auth-failed');
 
       final role = await getUserRole(user.uid);
       if (role == null) {
-        await user.delete();
-        await signOut();
-        return AuthResult(success: false, errorMessage: 'user-not-found');
+        // NEW USER: Return a specific status so the UI knows to redirect to SelectRole
+        return AuthResult(success: true, errorMessage: 'new-user');
       }
 
       await saveDeviceToken();

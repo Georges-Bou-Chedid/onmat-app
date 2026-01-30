@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:onmat/models/Student.dart';
+import 'package:onmat/screens/authentication/onboarding/success.dart';
 import 'package:onmat/screens/authentication/onboarding/verify_email.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -42,11 +45,23 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
   bool _isLoading = false;
   bool skipEmailValidation = false;
   bool skipPasswordValidation = false;
+  bool isGoogleUser = false;
 
   @override
   void initState() {
     super.initState();
     _selectedRole = widget.selectedRole;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null && user.providerData.any((p) => p.providerId == 'google.com')) {
+      isGoogleUser = true;
+      _emailEditingController.text = user.email ?? '';
+      // Pre-fill name if available from Google
+      if (user.displayName != null) {
+        List<String> nameParts = user.displayName!.split(' ');
+        _firstNameEditingController.text = nameParts.first;
+        if (nameParts.length > 1) _lastNameEditingController.text = nameParts.sublist(1).join(' ');
+      }
+    }
   }
 
   @override
@@ -244,6 +259,7 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                     /// Email
                     TextFormField(
                       controller: _emailEditingController,
+                      readOnly: isGoogleUser,
                       validator: (value) {
                         if (skipEmailValidation) return null;
 
@@ -259,8 +275,11 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                         return null;
                       },
                       decoration: InputDecoration(
-                          labelText: appLocalizations.email,
-                          prefixIcon: Icon(Iconsax.direct)
+                        labelText: appLocalizations.email,
+                        prefixIcon: Icon(Iconsax.direct),
+                        helperText: isGoogleUser ? appLocalizations.emailProvidedByGoogle : null,
+                        filled: isGoogleUser,
+                        fillColor: isGoogleUser ? Colors.grey.withOpacity(0.1) : null,
                       ),
                     ),
                     const SizedBox(height: TSizes.spaceBtwInputFields),
@@ -303,28 +322,30 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                     const SizedBox(height: TSizes.spaceBtwInputFields),
 
                     /// Password
-                    TextFormField(
-                      controller: _passwordEditingController,
-                      validator: (value) {
-                        if (skipPasswordValidation) return null;
+                    if (!isGoogleUser) ...[
+                      TextFormField(
+                        controller: _passwordEditingController,
+                        validator: (value) {
+                          if (skipPasswordValidation) return null;
 
-                        if (value == null || value.isEmpty) {
-                          return appLocalizations.enterYourPassword;
-                        }
+                          if (value == null || value.isEmpty) {
+                            return appLocalizations.enterYourPassword;
+                          }
 
-                        if (value.length < 6) {
-                          return appLocalizations.passwordValidation;
-                        }
-                        return null;
-                      },
-                      obscureText: true,
-                      decoration: InputDecoration(
-                          labelText: appLocalizations.password,
-                          prefixIcon: Icon(Iconsax.password_check),
-                          suffixIcon: Icon(Iconsax.eye_slash)
+                          if (value.length < 6) {
+                            return appLocalizations.passwordValidation;
+                          }
+                          return null;
+                        },
+                        obscureText: true,
+                        decoration: InputDecoration(
+                            labelText: appLocalizations.password,
+                            prefixIcon: Icon(Iconsax.password_check),
+                            suffixIcon: Icon(Iconsax.eye_slash)
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: TSizes.spaceBtwSections),
+                      const SizedBox(height: TSizes.spaceBtwSections),
+                    ],
 
                     /// Terms&Conditions Checkbox
                     Row(
@@ -406,72 +427,99 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                             _isLoading = true;
                           });
 
-                          Instructor? instructor;
-                          Student? student;
-                          if (_selectedRole == 'instructor') {
-                            instructor = Instructor(
-                                firstName: _firstNameEditingController.text,
-                                lastName: _lastNameEditingController.text,
-                                gender: _genderEditingController.text,
-                                username: _usernameEditingController.text,
-                                dob: _dateOfBirthEditingController.text,
-                                email: _emailEditingController.text,
-                                phoneNumber: _phoneNumberEditingController.text,
-                                notifications: false
-                            );
-                          } else {
-                            student = Student(
-                                firstName: _firstNameEditingController.text,
-                                lastName: _lastNameEditingController.text,
-                                gender: _genderEditingController.text,
-                                username: _usernameEditingController.text,
-                                dob: _dateOfBirthEditingController.text,
-                                weight: int.tryParse(_weightEditingController.text),
-                                height: int.tryParse(_heightEditingController.text),
-                                email: _emailEditingController.text,
-                                phoneNumber: _phoneNumberEditingController.text,
-                                notifications: false
-                            );
-                          }
-
-                          final result = await _authService.signUpByEmail(
-                            _emailEditingController.text.trim(),
-                            _passwordEditingController.text.trim(),
-                            instructor,
-                            student
+                          dynamic model = _selectedRole == 'instructor'
+                            ? Instructor(
+                              firstName: _firstNameEditingController.text,
+                              lastName: _lastNameEditingController.text,
+                              gender: _genderEditingController.text,
+                              username: _usernameEditingController.text,
+                              dob: _dateOfBirthEditingController.text,
+                              email: _emailEditingController.text,
+                              phoneNumber: _phoneNumberEditingController.text,
+                              notifications: false
+                          ) : Student(
+                              firstName: _firstNameEditingController.text,
+                              lastName: _lastNameEditingController.text,
+                              gender: _genderEditingController.text,
+                              username: _usernameEditingController.text,
+                              dob: _dateOfBirthEditingController.text,
+                              weight: int.tryParse(_weightEditingController.text),
+                              height: int.tryParse(_heightEditingController.text),
+                              email: _emailEditingController.text,
+                              phoneNumber: _phoneNumberEditingController.text,
+                              notifications: false
                           );
 
-                          setState(() {
-                            _isLoading = false;
-                          });
+                          if (isGoogleUser) {
+                            // 2. GOOGLE FLOW: Just save to Firestore
+                            final user = FirebaseAuth.instance.currentUser;
+                            final collection = _selectedRole == 'instructor' ? 'instructors' : 'students';
 
-                          if (result.success) {
-                            Get.to(() => VerifyEmailScreen(email: _emailEditingController.text.trim()));
+                            final existing = await FirebaseFirestore.instance
+                                .collection(collection)
+                                .where('username', isEqualTo: _usernameEditingController.text)
+                                .limit(1)
+                                .get();
+
+                            if (existing.docs.isNotEmpty) {
+                              setState(() => _isLoading = false);
+                              Get.snackbar(appLocalizations.error, appLocalizations.usernameTaken);
+                              return;
+                            }
+
+                            model.userId = user!.uid;
+                            model.email = user.email;
+
+                            await FirebaseFirestore.instance
+                                .collection(collection)
+                                .doc(user.uid)
+                                .set(model.toMap());
+
+                            await _authService.saveDeviceToken();
+                            setState(() {
+                              _isLoading = false;
+                            });
+                            Get.offAll(() => const SuccessScreen());
                           } else {
-                            if (! mounted) return;
-                            final errorCode = result.errorMessage;
-
-                            final message = switch (errorCode) {
-                              'email-already-in-use' => appLocalizations.emailAlreadyInUse,
-                              'invalid-email' => appLocalizations.invalidEmail,
-                              'weak-password' => appLocalizations.weakPassword,
-                              'username-already-taken' => appLocalizations.usernameTaken,
-                              _ => appLocalizations.signUpFailedMessage,
-                            };
-
-                            Get.snackbar(
-                              "",
-                              "",
-                              snackPosition: SnackPosition.BOTTOM,
-                              titleText: Text(
-                                appLocalizations.signUpFailedTitle,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              messageText: Text(
-                                message,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
+                            final result = await _authService.signUpByEmail(
+                              _emailEditingController.text.trim(),
+                              _passwordEditingController.text.trim(),
+                              _selectedRole == 'instructor' ? model : null,
+                              _selectedRole == 'student' ? model : null,
                             );
+
+                            setState(() {
+                              _isLoading = false;
+                            });
+
+                            if (result.success) {
+                              Get.to(() => VerifyEmailScreen(email: _emailEditingController.text.trim()));
+                            } else {
+                              if (! mounted) return;
+                              final errorCode = result.errorMessage;
+
+                              final message = switch (errorCode) {
+                                'email-already-in-use' => appLocalizations.emailAlreadyInUse,
+                                'invalid-email' => appLocalizations.invalidEmail,
+                                'weak-password' => appLocalizations.weakPassword,
+                                'username-already-taken' => appLocalizations.usernameTaken,
+                                _ => appLocalizations.signUpFailedMessage,
+                              };
+
+                              Get.snackbar(
+                                "",
+                                "",
+                                snackPosition: SnackPosition.BOTTOM,
+                                titleText: Text(
+                                  appLocalizations.signUpFailedTitle,
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                messageText: Text(
+                                  message,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              );
+                            }
                           }
                         },
                         child: _isLoading
@@ -494,120 +542,6 @@ class _SignUpScreenScreenState extends State<SignupScreen> {
                 ),
               ),
               const SizedBox(height: TSizes.spaceBtwSections),
-
-              /// Divider
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Flexible(child: Divider(thickness: 0.5, indent: 60, endIndent: 5)),
-                  Text(
-                      appLocalizations.orSignUpWith,
-                      style: Theme.of(context).textTheme.labelMedium
-                  ),
-                  Flexible(child: Divider(thickness: 0.5, indent: 5, endIndent: 60))
-                ],
-              ),
-              const SizedBox(height: TSizes.spaceBtwSections),
-
-              /// Footer
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.grey.shade500,
-                        ),
-                        borderRadius: BorderRadius.circular(100)
-                    ),
-                    child: IconButton(
-                        onPressed: () async {
-                          setState(() {
-                            skipEmailValidation = true;
-                            skipPasswordValidation = true;
-                          });
-
-                          final isFormValid = signUpKey.currentState!.validate();
-
-                          setState(() {
-                            skipEmailValidation = false;
-                            skipPasswordValidation = false;
-                          });
-
-                          if (! isFormValid || ! termsAndConditions) {
-                            if (! termsAndConditions) {
-                              setState(() {
-                                termsError = true;
-                              });
-                            }
-                            return;
-                          }
-
-                          Instructor? instructor;
-                          Student? student;
-                          if (_selectedRole == 'instructor') {
-                            instructor = Instructor(
-                                firstName: _firstNameEditingController.text,
-                                lastName: _lastNameEditingController.text,
-                                gender: _genderEditingController.text,
-                                username: _usernameEditingController.text,
-                                dob: _dateOfBirthEditingController.text,
-                                phoneNumber: _phoneNumberEditingController.text,
-                                notifications: false
-                            );
-                          } else {
-                            student = Student(
-                                firstName: _firstNameEditingController.text,
-                                lastName: _lastNameEditingController.text,
-                                gender: _genderEditingController.text,
-                                username: _usernameEditingController.text,
-                                dob: _dateOfBirthEditingController.text,
-                                weight: int.tryParse(_weightEditingController.text),
-                                height: int.tryParse(_heightEditingController.text),
-                                phoneNumber: _phoneNumberEditingController.text,
-                                notifications: false
-                            );
-                          }
-
-                          final result = await _authService.signUpWithGoogle(instructor, student);
-
-                          if (result.success) {
-                            Get.offAll(() => const SplashScreen());
-                          } else {
-                            if (! mounted) return;
-                            final errorCode = result.errorMessage;
-
-                            final message = switch (errorCode) {
-                              'google-cancelled' => appLocalizations.googleCancelled,
-                              'user-already-exists' => appLocalizations.googleUserFound,
-                              'username-already-taken' => appLocalizations.usernameTaken,
-                              _ => appLocalizations.signUpFailedMessage,
-                            };
-
-                            Get.snackbar(
-                              "",
-                              "",
-                              snackPosition: SnackPosition.BOTTOM,
-                              titleText: Text(
-                                appLocalizations.signUpFailedTitle,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              messageText: Text(
-                                message,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            );
-                          }
-                        },
-                        icon: const Image(
-                            width: TSizes.iconMd,
-                            height: TSizes.iconMd,
-                            image: AssetImage('assets/images/google.png')
-                        )
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         ),
