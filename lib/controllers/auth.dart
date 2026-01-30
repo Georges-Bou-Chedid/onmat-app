@@ -1,5 +1,6 @@
 import "package:cloud_firestore/cloud_firestore.dart";
 import "package:firebase_auth/firebase_auth.dart";
+import "package:firebase_messaging/firebase_messaging.dart";
 import "package:google_sign_in/google_sign_in.dart";
 import "package:onmat/models/Instructor.dart";
 import "package:shared_preferences/shared_preferences.dart";
@@ -26,6 +27,19 @@ class AuthService {
   }
 
   Future<void> signOut() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final role = await getUserRole(user.uid);
+      String? collection = role == 'instructor' ? 'instructors' : role == 'student' ? 'students' : null;
+
+      if (collection != null) {
+        // Remove the token so they don't get pushes after logging out
+        await FirebaseFirestore.instance.collection(collection).doc(user.uid).update({
+          'fcmToken': FieldValue.delete(),
+        });
+      }
+    }
+
     await _auth.signOut();
     await _googleSignIn.signOut();
   }
@@ -36,6 +50,7 @@ class AuthService {
         email: email,
         password: password,
       );
+      await saveDeviceToken();
 
       return AuthResult(success: true);
     } on FirebaseAuthException catch (e) {
@@ -97,6 +112,8 @@ class AuthService {
         .doc(user.uid)
         .set(model.toMap());
 
+      await saveDeviceToken();
+
       return AuthResult(success: true);
     } on FirebaseAuthException catch (e) {
       return AuthResult(success: false, errorMessage: e.code);
@@ -134,6 +151,8 @@ class AuthService {
         await signOut();
         return AuthResult(success: false, errorMessage: 'user-not-found');
       }
+
+      await saveDeviceToken();
 
       return AuthResult(success: true);
     } catch (e) {
@@ -206,6 +225,8 @@ class AuthService {
           .doc(uid)
           .set(model.toMap());
 
+      await saveDeviceToken();
+
       return AuthResult(success: true);
     } catch (e) {
       print('Sign-up error: $e');
@@ -262,5 +283,42 @@ class AuthService {
     if (studentDoc.exists) return 'student';
 
     return null;
+  }
+
+  Future<void> saveDeviceToken() async {
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+      // Request permission (Required for iOS, good practice for Android)
+      NotificationSettings settings = await messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        String? token = await messaging.getToken();
+
+        if (token != null) {
+          final user = _auth.currentUser;
+          if (user != null) {
+            final role = await getUserRole(user.uid);
+            String collection = role == 'instructor' ? 'instructors' : 'students';
+
+            if (role != null) {
+              await FirebaseFirestore.instance
+                  .collection(collection)
+                  .doc(user.uid)
+                  .set({
+                'fcmToken': token,
+                'lastUpdated': FieldValue.serverTimestamp(), // Useful for cleaning old tokens
+              }, SetOptions(merge: true));
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print("Error saving FCM token: $e");
+    }
   }
 }

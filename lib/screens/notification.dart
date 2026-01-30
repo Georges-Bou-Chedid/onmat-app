@@ -17,7 +17,12 @@ class NotificationScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Notifications"),
         actions: [
-          // Clear All Button
+          // Bulk Delete Button
+          IconButton(
+            icon: const Icon(Iconsax.trash, size: 20, color: Colors.grey),
+            onPressed: () => _confirmClearAll(context, uid),
+            tooltip: "Clear All",
+          ),
           TextButton(
             onPressed: () => _markAllAsRead(uid),
             child: const Text("Mark all as read", style: TextStyle(color: Color(0xFFDF1E42))),
@@ -29,6 +34,7 @@ class NotificationScreen extends StatelessWidget {
             .collection('notifications')
             .where('receiver_id', isEqualTo: uid)
             .orderBy('timestamp', descending: true)
+            .limit(20)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) return const Center(child: Text("Something went wrong"));
@@ -55,35 +61,58 @@ class NotificationScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final data = docs[index].data() as Map<String, dynamic>;
               final bool isRead = data['is_read'] ?? false;
+              final String docId = docs[index].id;
 
-              return Container(
-                decoration: BoxDecoration(
-                  color: isRead ? Colors.transparent : (dark ? Colors.white.withOpacity(0.05) : Colors.grey[100]),
-                  borderRadius: BorderRadius.circular(12),
-                  border: isRead ? Border.all(color: Colors.grey.withOpacity(0.2)) : null,
+              return Dismissible(
+                key: Key(docId),
+                direction: DismissDirection.endToStart,
+                onDismissed: (direction) {
+                  FirebaseFirestore.instance.collection('notifications').doc(docId).delete();
+                },
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade400,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Iconsax.trash, color: Colors.white),
                 ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  leading: CircleAvatar(
-                    backgroundColor: isRead ? Colors.grey[300] : const Color(0xFFDF1E42),
-                    child: Icon(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isRead
+                        ? Colors.transparent
+                        : (dark ? Colors.white.withOpacity(0.05) : Colors.grey[100]),
+                    borderRadius: BorderRadius.circular(12),
+                    border: isRead ? Border.all(color: Colors.grey.withOpacity(0.2)) : null,
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    leading: CircleAvatar(
+                      backgroundColor: isRead ? Colors.grey[300] : const Color(0xFFDF1E42),
+                      child: Icon(
                         _getIconForType(data['type']),
                         color: Colors.white,
-                        size: 20
+                        size: 20,
+                      ),
                     ),
-                  ),
-                  title: Text(
-                      data['title'],
+                    title: Text(
+                      data['title'] ?? 'Notification',
                       style: TextStyle(
-                          fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
-                          fontSize: 14
-                      )
+                        fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    subtitle: Text(
+                      data['message'] ?? '',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    onTap: () async {
+                      // Mark as read in Firestore
+                      await docs[index].reference.update({'is_read': true});
+                      _handleTap(data);
+                    },
                   ),
-                  subtitle: Text(data['message'], style: const TextStyle(fontSize: 12)),
-                  onTap: () async {
-                    await docs[index].reference.update({'is_read': true});
-                    _handleTap(data);
-                  },
                 ),
               );
             },
@@ -96,9 +125,16 @@ class NotificationScreen extends StatelessWidget {
   // Helper to change icon based on why they were notified
   IconData _getIconForType(String? type) {
     switch (type) {
-      case 'join_request': return Iconsax.user_add;
-      case 'promotion': return Iconsax.award;
-      default: return Iconsax.notification;
+      case 'join_request':
+        return Iconsax.user_add;
+      case 'join_accepted':
+        return Iconsax.verify;
+      case 'stripe_addition':
+        return Iconsax.medal_star; // Or Iconsax.ranking
+      case 'belt_upgrade':
+        return Iconsax.award; // Or Iconsax.cup
+      default:
+        return Iconsax.notification;
     }
   }
 
@@ -115,6 +151,37 @@ class NotificationScreen extends StatelessWidget {
       batch.update(doc.reference, {'is_read': true});
     }
     await batch.commit();
+  }
+
+  Future<void> _confirmClearAll(BuildContext context, String uid) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Clear all?"),
+        content: const Text("This will permanently delete all your notifications."),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Clear All", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final batch = FirebaseFirestore.instance.batch();
+      final allNotifs = await FirebaseFirestore.instance
+          .collection('notifications')
+          .where('receiver_id', isEqualTo: uid)
+          .get();
+
+      for (var doc in allNotifs.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    }
   }
 
   void _handleTap(Map<String, dynamic> data) {

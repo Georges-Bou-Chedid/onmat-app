@@ -350,6 +350,18 @@ class ClassStudentService with ChangeNotifier {
           transaction.update(instructorRef, {
             'outstanding_balance': FieldValue.increment(fee),
           });
+
+          // SEND NOTIFICATION TO STUDENT
+          final notifRef = _firestore.collection('notifications').doc();
+          transaction.set(notifRef, {
+            'receiver_id': studentUid,
+            'sender_id': instructorId,
+            'title': 'New Stripe! 🥋',
+            'message': 'Congratulations $studentName! You just earned your ${newStripes}º stripe.',
+            'timestamp': FieldValue.serverTimestamp(),
+            'is_read': false,
+            'type': 'stripe_addition',
+          });
         }
 
         return true;
@@ -364,6 +376,7 @@ class ClassStudentService with ChangeNotifier {
     final batch = _firestore.batch();
     final instructorId = _auth.currentUser!.uid;
     const double fee = 2.0;
+    final String beltName = Belt.getColorName(belt1);
 
     try {
       // 1. Find the student record to get their name and document ID
@@ -402,6 +415,18 @@ class ClassStudentService with ChangeNotifier {
       final instructorRef = _firestore.collection('instructors').doc(instructorId);
       batch.update(instructorRef, {
         'outstanding_balance': FieldValue.increment(fee),
+      });
+
+      // 4. SEND NOTIFICATION TO STUDENT
+      final notifRef = _firestore.collection('notifications').doc();
+      batch.set(notifRef, {
+        'receiver_id': studentUid,
+        'sender_id': instructorId,
+        'title': 'New Belt Promotion! 🎊',
+        'message': 'Incredible work $studentName! You have been promoted to $beltName Belt.',
+        'timestamp': FieldValue.serverTimestamp(),
+        'is_read': false,
+        'type': 'belt_upgrade',
       });
 
       // 5. Commit all changes at once

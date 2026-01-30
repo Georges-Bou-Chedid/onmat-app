@@ -1,3 +1,5 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:onmat/screens/notification.dart';
 import 'package:onmat/screens/splash.dart';
 import 'package:onmat/utils/theme_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,11 +22,20 @@ import 'controllers/student/student_class.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print("Handling a background message: ${message.messageId}");
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   final prefs = await SharedPreferences.getInstance();
   final savedCode = prefs.getString('lang');
   final startLocale = savedCode != null
@@ -57,6 +68,43 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
+  @override
+  void initState() {
+    super.initState();
+    _setupInteractedMessage();
+  }
+
+  Future<void> _setupInteractedMessage() async {
+    // This handles the case where the app is opened from a terminated state via a notification
+    RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      _handleNotificationClick(initialMessage);
+    }
+
+    // This handles the case where the app is in the background and tapped
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationClick);
+
+    // This handles foreground notifications (while the app is open)
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        Get.snackbar(
+          message.notification!.title ?? "New Notification",
+          message.notification!.body ?? "",
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.white.withOpacity(0.8),
+          onTap: (_) => _handleNotificationClick(message),
+        );
+      }
+    });
+  }
+
+  void _handleNotificationClick(RemoteMessage message) {
+    // Logic to navigate based on message.data['type']
+    // Example: if(message.data['type'] == 'belt_upgrade') Get.to(ProfileScreen());
+    Get.to(() => const NotificationScreen());
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamProvider<User?>.value(

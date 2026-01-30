@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import 'package:onmat/controllers/classItem/class_graduation.dart';
 import 'package:onmat/screens/instructor/dashboard/add_class.dart';
+import '../../../controllers/auth.dart';
 import '../../../controllers/instructor/class_assistant.dart';
 import '../../../controllers/instructor/instructor_class.dart';
 import '../../../controllers/notification_service.dart';
@@ -49,6 +50,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       setState(() {
         _activeTabIndex = _tabController.index;
       });
+    });
+
+    Future.delayed(Duration.zero, () {
+      AuthService().saveDeviceToken();
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {

@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:onmat/controllers/student/class_student.dart';
 import 'package:onmat/screens/student/dashboard/student_class_details.dart';
 import 'package:onmat/screens/student/dashboard/student_scan_qr_code.dart';
+import '../../../controllers/auth.dart';
 import '../../../controllers/classItem/class_graduation.dart';
 import '../../../controllers/instructor/class_assistant.dart';
 import '../../../controllers/instructor/instructor_class.dart';
@@ -46,6 +47,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   void initState() {
     super.initState();
     _searchFocusNode = FocusNode();
+
+    Future.delayed(Duration.zero, () {
+      AuthService().saveDeviceToken();
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       setState(() => _isLoading = true);
